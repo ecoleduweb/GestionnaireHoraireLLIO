@@ -39,3 +39,7 @@ func TestDeleteUser(t *testing.T) {
 	assertResponse(t, w, http.StatusOK, nil)
 	assert.NotNil(t, w.Body)
 }
+
+func TestIfTwoTablesWithUserId(t *testing.T) {
+
+}

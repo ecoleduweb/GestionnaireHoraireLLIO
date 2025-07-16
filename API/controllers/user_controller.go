@@ -144,22 +144,36 @@ func DeleteUserById(c *gin.Context) {
 		return
 	}
 
-	userHasActivitiesOrProjects, err := services.UserHasActivitiesOrProjects(userID_int)
+	userHasActivities, err := services.UserHasActivities(userID_int)
 	if err != nil {
 		handleError(c, err, userSTR)
 		return
 	}
 
-	if userHasActivitiesOrProjects {
-		c.JSON(http.StatusForbidden, gin.H{"error": "L'utilisateur ne peut pas être supprimé car il a des activités ou des projets associés"})
+	if userHasActivities {
+		c.JSON(http.StatusForbidden, gin.H{"error": "L'utilisateur ne peut pas être supprimé car il a des activités"})
 		return
 	}
-
-	err = services.DeleteUserById(userID)
+	userHasProjects, err := services.UserHasProjects(userID_int)
 	if err != nil {
 		handleError(c, err, userSTR)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Utilisateur supprimé avec succès"})
+	if userHasProjects {
+		c.JSON(http.StatusForbidden, gin.H{"error": "L'utilisateur ne peut pas être supprimé car il est gestionnaire d'un ou plusieurs projets"})
+		return
+	}
+
+	userDTO, err := services.DeleteUserById(userID)
+	if err != nil {
+		handleError(c, err, userSTR)
+		return
+	}
+	if userDTO == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Utilisateur non trouvé"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Utilisateur supprimé avec succès", "user": userDTO})
 }

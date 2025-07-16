@@ -62,7 +62,7 @@
             <select id="userSelect" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" bind:value={selectedUser}>
               <option value={null}>Choisir un utilisateur</option>
               {#each users as user}
-                <option value={user}>{user.firstName} {user.lastName}</option>
+                <option value={user}>{user.firstName} {user.lastName} | {user.email}</option>
               {/each}
             </select>
           </div>

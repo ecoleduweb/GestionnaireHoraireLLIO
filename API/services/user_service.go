@@ -108,21 +108,32 @@ func UpdateUserRole(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	return userDTOResponse, err
 }
 
-func DeleteUserById(id string) error {
+func DeleteUserById(id string) (*DTOs.UserDTO, error) {
 	// Check if the user exists
-	user, err := repositories.GetUserById(id)
+	userDAO, err := repositories.GetUserById(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if user == nil {
-		return nil // User not found, nothing to delete
+	if userDAO == nil {
+		return nil, nil // User not found
 	}
 
 	// Delete the user
-	return repositories.DeleteUserById(id)
+	err = repositories.DeleteUserById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the deleted user
+	userDTO := &DTOs.UserDTO{}
+	err = copier.Copy(userDTO, userDAO)
+	if err != nil {
+		return nil, err
+	}
+	return userDTO, nil
 }
 
-func UserHasActivitiesOrProjects(userId int) (bool, error) {
+func UserHasActivities(userId int) (bool, error) {
 	// Check if the user has any activities
 	activities, err := repositories.GetUsersActivities(userId)
 	if err != nil {
@@ -131,7 +142,11 @@ func UserHasActivitiesOrProjects(userId int) (bool, error) {
 	if len(activities) > 0 {
 		return true, nil
 	}
-	// Check if the user is associated with any projects
+
+	return false, nil
+}
+
+func UserHasProjects(userId int) (bool, error) {
 	projects, err := repositories.GetProjectsByManagerId(userId)
 	if err != nil {
 		return false, err

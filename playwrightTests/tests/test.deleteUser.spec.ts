@@ -24,12 +24,12 @@ test.describe('deleteUser', () => {
       .addMock(userMocks.deleteUserSuccess)
       .apply();
 
+    await page.waitForTimeout(1000); // Attendre que le sélecteur soit interactif 
     await page.locator('#userSelect').click();
-    await page.waitForSelector('#userSelect option'); 
-    await page.locator('#userSelect').selectOption({ label: 'Charle-ÉtienneTest Soucy' });
+    await page.locator('#userSelect').selectOption({ label: 'Charle-ÉtienneTest Soucy | wong@email.com' });
     await page.getByText('Supprimer').click();
     await page.locator('#userSelect').click();
-    expect(page.locator('#userSelect')).not.toContainText('Charle-ÉtienneTest Soucy');
+    expect(page.locator('#userSelect')).not.toContainText('Charle-ÉtienneTest Soucy | wong@email.com');
     await page.waitForLoadState('networkidle'); 
     });
 
@@ -41,11 +41,12 @@ test.describe('deleteUser', () => {
       .addMock(userMocks.deleteUserError)
       .apply();
 
+    await page.waitForTimeout(1000); // Attendre que le sélecteur soit interactif
     await page.locator('#userSelect').click();
-    await page.locator('#userSelect').selectOption({ label: 'Charle-ÉtienneTest Soucy' });
+    await page.locator('#userSelect').selectOption({ label: 'Charle-ÉtienneTest Soucy | wong@email.com' });
     await page.getByRole('button', { name: 'Supprimer' }).click();
     await page.locator('#userSelect').click();
-    expect(page.locator('#userSelect')).toContainText('Charle-ÉtienneTest Soucy');
+    expect(page.locator('#userSelect')).toContainText('Charle-ÉtienneTest Soucy | wong@email.com');
     await page.waitForTimeout(2000);
     
     
