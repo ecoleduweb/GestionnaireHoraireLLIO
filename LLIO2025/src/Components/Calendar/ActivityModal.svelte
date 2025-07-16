@@ -223,7 +223,7 @@
       onClose();
     } catch (error) {
       console.error('Erreur lors de la soumission', error);
-      alert('Une erreur est survenue. Veuillez réessayer.');
+      alert('Activité incomplète \nVeuillez remplir tous les champs obligatoires (suivis d\'une astérisque rouge) de l\'activité avant de l\'enregistrer.');
     } finally {
       isSubmitting = false;
     }
@@ -302,7 +302,15 @@
     return `${uniqueId}${separator}${truncatedName}`;
   };
 
-
+  $effect(() => {
+  if (activity.projectId && projectCategories.length >= 1) {
+    const currentCategoryExists = projectCategories.find(c => c.id === activity.categoryId);
+    
+    if (!activity.categoryId || !currentCategoryExists) {
+      activity.categoryId = projectCategories[0].id;
+    }
+  }
+  });
 
   const { form, errors } = validateActivityForm(handleSubmit, activity);
 </script>

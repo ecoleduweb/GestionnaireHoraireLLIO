@@ -4,22 +4,17 @@ import * as yup from 'yup';
 
 // Schéma de validation Yup amélioré
 const schema = yup.object({
-  // Validation des informations de l'activité
   name: yup
     .string()
     .max(50, "Le nom de l'activité ne doit pas dépasser 50 caractères"),
   description: yup
     .string()
     .max(20000, "La description de l'activité ne doit pas dépasser 20000 caractères"),
-
-  // Validation du projet
   projectId: yup
     .number()
     .required('Veuillez sélectionner un projet')
     .typeError('Veuillez sélectionner un projet')
     .min(1, 'Veuillez sélectionner un projet'),
-  
-  // AVEC VALIDATION de categoryId mais séparée de projectId
   categoryId: yup
     .number()
     .nullable()

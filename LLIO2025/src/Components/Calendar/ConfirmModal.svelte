@@ -38,7 +38,7 @@
         <button
           type="button"
           class="py-2 px-4 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
-          oncclick={onCancel}
+          onclick={onCancel}
         >
           {cancelText}
         </button>
