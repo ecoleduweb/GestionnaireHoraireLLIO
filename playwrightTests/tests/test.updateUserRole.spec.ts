@@ -28,7 +28,7 @@ test.describe('updateUserRole', () => {
             await dialog.dismiss().catch(() => {});
         });
         
-        await page.locator('#userSelect').selectOption('JérémieTest Lapointe');
+        await page.locator('#userSelect').selectOption('JérémieTest Lapointe | jayboss@email.com');
         await page.locator('#roleSelect').selectOption('Chargé de projet');
         
         await page.getByText('Confirmer').click();
@@ -46,7 +46,7 @@ test.describe('updateUserRole', () => {
             await dialog.dismiss().catch(() => {});
         });
         
-        await page.locator('#userSelect').selectOption('JérémieTest Lapointe');
+        await page.locator('#userSelect').selectOption('JérémieTest Lapointe | jayboss@email.com');
         await page.locator('#roleSelect').selectOption('Chargé de projet');
         
         await page.getByText('Confirmer').click();
