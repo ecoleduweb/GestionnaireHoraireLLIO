@@ -31,6 +31,7 @@
       users = users.filter(user => user.email !== selectedUser.email);
       alert('Utilisateur supprimé avec succès');
     } catch (error) {
+      console.error('Error deleting user:', error);
       alert('Erreur lors de la suppression de l\'utilisateur');
     }
 

@@ -10,7 +10,7 @@ func FirstOrCreateUser(user *DAOs.User) (*DAOs.User, error) {
 	return user, DBErrorManager(err)
 }
 
-func GetUserById(id string) (*DAOs.User, error) {
+func GetUserById(id int) (*DAOs.User, error) {
 	var user DAOs.User
 
 	err := database.DB.First(&user, id).Error
@@ -36,7 +36,7 @@ func UpdateUserRole(user *DAOs.User) (*DAOs.User, error) {
 	return user, DBErrorManager(err)
 }
 
-func DeleteUserById(id string) error {
+func DeleteUserById(id int) error {
 	err := database.DB.Delete(&DAOs.User{}, id).Error
 	return DBErrorManager(err)
 }

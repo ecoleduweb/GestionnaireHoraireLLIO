@@ -122,20 +122,20 @@ func DeleteUserById(c *gin.Context) {
 	// Get the current user from context
 	userInfo, isExist := c.Get("current_user")
 	if !isExist {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Utilisateur non trouvé dans le contexte"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Utilisateur non trouvé dans le contexte"})
 		return
 	}
 
 	// Get the user ID from the URL parameters
 	userID := c.Param("id")
 	if userID == "" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "ID de l'utilisateur manquant"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de l'utilisateur manquant"})
 		return
 	}
 
 	userID_int, err := strconv.Atoi(userID)
 	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "ID d'utilisateur invalide"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID d'utilisateur invalide"})
 		return
 	}
 
@@ -144,32 +144,12 @@ func DeleteUserById(c *gin.Context) {
 		return
 	}
 
-	userHasActivities, err := services.UserHasActivities(userID_int)
+	userDTO, err := services.DeleteUserById(userID_int)
 	if err != nil {
 		handleError(c, err, userSTR)
 		return
 	}
 
-	if userHasActivities {
-		c.JSON(http.StatusForbidden, gin.H{"error": "L'utilisateur ne peut pas être supprimé car il a des activités"})
-		return
-	}
-	userHasProjects, err := services.UserHasProjects(userID_int)
-	if err != nil {
-		handleError(c, err, userSTR)
-		return
-	}
-
-	if userHasProjects {
-		c.JSON(http.StatusForbidden, gin.H{"error": "L'utilisateur ne peut pas être supprimé car il est gestionnaire d'un ou plusieurs projets"})
-		return
-	}
-
-	userDTO, err := services.DeleteUserById(userID)
-	if err != nil {
-		handleError(c, err, userSTR)
-		return
-	}
 	if userDTO == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Utilisateur non trouvé"})
 		return

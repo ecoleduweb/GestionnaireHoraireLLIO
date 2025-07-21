@@ -5,10 +5,11 @@ import (
 	"llio-api/models/DTOs"
 	"llio-api/models/enums"
 	"llio-api/repositories"
+	"log"
 
 	"github.com/jinzhu/copier"
 
-	"strconv"
+	"errors"
 )
 
 func FirstOrCreateUser(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
@@ -28,7 +29,7 @@ func FirstOrCreateUser(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	return userDTOResponse, err
 }
 
-func GetUserById(id string) (*DTOs.UserDTO, error) {
+func GetUserById(id int) (*DTOs.UserDTO, error) {
 	user, err := repositories.GetUserById(id)
 	if err != nil {
 		return nil, err
@@ -87,7 +88,7 @@ func GetAllUsers(userRoles []enums.UserRole) ([]*DTOs.UserDTO, error) {
 
 func UpdateUserRole(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	// Get the existing user
-	existingUser, err := repositories.GetUserById(strconv.Itoa(userDTO.Id))
+	existingUser, err := repositories.GetUserById(userDTO.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +109,24 @@ func UpdateUserRole(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	return userDTOResponse, err
 }
 
-func DeleteUserById(id string) (*DTOs.UserDTO, error) {
+func DeleteUserById(id int) (*DTOs.UserDTO, error) {
+	userHasActvities, err := UserHasActivities(id)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("User %d has activities: %v", id, userHasActvities)
+	if userHasActvities {
+		return nil, errors.New("Cannot delete user with activities")
+	}
+	userHasProjects, err := UserHasProjects(id)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("User %d has projects: %v", id, userHasProjects)
+	if userHasProjects {
+		return nil, errors.New("Cannot delete user with projects")
+	}
+
 	// Check if the user exists
 	userDAO, err := repositories.GetUserById(id)
 	if err != nil {
