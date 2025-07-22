@@ -201,7 +201,7 @@
         editMode = true;
         editActivity = {
           id: info.event.extendedProps.id,
-          name: info.event.title,
+          name: info.event.extendedProps.name,
           description: info.event.extendedProps.description,
           userId: info.event.extendedProps.userId,
           projectId: info.event.extendedProps.projectId,
