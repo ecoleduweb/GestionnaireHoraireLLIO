@@ -22,8 +22,8 @@ func TestUserIdColumnCount(t *testing.T) {
 	}
 
 	// Vérifier qu'il y a exactement 2 tables avec une colonne user_id
-	if count != 2 {
-		t.Errorf("ERREUR CRITIQUE: Il y a %d tables avec une colonne 'user_id', mais il devrait y en avoir exactement 2.", count)
+	if count != 1 {
+		t.Errorf("ERREUR CRITIQUE: Il y a %d tables avec une colonne 'user_id', mais il devrait y en avoir exactement 1.", count)
 		t.Error("COMMENTAIRE IMPORTANT: Si ce test échoue, il faut ajouter un check dans la fonction DeleteUserById")
 		t.Error("pour prévenir la suppression involontaire d'un utilisateur. Vérifiez que toutes les")
 		t.Error("tables avec des références à 'user_id' sont correctement gérées lors de la suppression.")

@@ -12,6 +12,5 @@ type CategoryDTO struct {
 	Activities  []ActivityDTO `json:"activities" `
 	CreatedAt   time.Time     `json:"createdAt" `
 	UpdatedAt   time.Time     `json:"updatedAt" `
-	UserId      int           `json:"userId" `
 	ProjectId   int           `json:"projectId" `
 }

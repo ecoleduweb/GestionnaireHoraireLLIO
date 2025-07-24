@@ -25,7 +25,6 @@ func CreateCategory(c *gin.Context) {
 
 	// Récupérer l'id du user depuis le token
 	// A Modifier quand les user ok
-	categoryDTO.UserId = 1
 
 	messageErrs := services.VerifyCreateCategoryJSON(&categoryDTO)
 	if len(messageErrs) > 0 {

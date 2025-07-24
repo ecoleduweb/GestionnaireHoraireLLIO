@@ -1,6 +1,7 @@
 package services
 
 import (
+	"llio-api/customs_errors"
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
 	"llio-api/models/enums"
@@ -8,8 +9,6 @@ import (
 	"log"
 
 	"github.com/jinzhu/copier"
-
-	"errors"
 )
 
 func FirstOrCreateUser(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
@@ -116,7 +115,8 @@ func DeleteUserById(id int) (*DTOs.UserDTO, error) {
 	}
 	log.Printf("User %d has activities: %v", id, userHasActvities)
 	if userHasActvities {
-		return nil, errors.New("Cannot delete user with activities")
+		//return nil, errors.New("l'utilisateur a des activités associées, suppression impossible")
+		return nil, customs_errors.ErrUserHasActivities
 	}
 	userHasProjects, err := UserHasProjects(id)
 	if err != nil {
@@ -124,7 +124,8 @@ func DeleteUserById(id int) (*DTOs.UserDTO, error) {
 	}
 	log.Printf("User %d has projects: %v", id, userHasProjects)
 	if userHasProjects {
-		return nil, errors.New("Cannot delete user with projects")
+		//return nil, errors.New("l'utilisateur a des projets associées, suppression impossible")
+		return nil, customs_errors.ErrUserHasProjects
 	}
 
 	// Check if the user exists
@@ -153,25 +154,19 @@ func DeleteUserById(id int) (*DTOs.UserDTO, error) {
 
 func UserHasActivities(userId int) (bool, error) {
 	// Check if the user has any activities
-	activities, err := repositories.GetUsersActivities(userId)
+	hasActivities, err := repositories.UserHasActivities(userId)
 	if err != nil {
 		return false, err
 	}
-	if len(activities) > 0 {
-		return true, nil
-	}
 
-	return false, nil
+	return hasActivities, nil
 }
 
 func UserHasProjects(userId int) (bool, error) {
-	projects, err := repositories.GetProjectsByManagerId(userId)
+	hasProjects, err := repositories.UserHasProjects(userId)
 	if err != nil {
 		return false, err
 	}
-	if len(projects) > 0 {
-		return true, nil
-	}
 
-	return false, nil
+	return hasProjects, nil
 }

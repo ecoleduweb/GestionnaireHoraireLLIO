@@ -26,6 +26,16 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		log.Printf("ERREUR CRITIQUE - Erreur base de données: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": errorMsg})
 
+	case customs_errors.ErrUserHasActivities:
+		errorMsg := fmt.Sprintf("L'utilisateur a une ou des activités associées, suppression impossible")
+		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
+
+	case customs_errors.ErrUserHasProjects:
+		errorMsg := fmt.Sprintf("L'utilisateur a un ou des projets associées, suppression impossible")
+		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
+
 	default:
 		errorMsg := fmt.Sprintf("Erreur inconnue lors du traitement du(de la) %s", subject)
 		log.Printf("ERREUR INCONNUE: %s - %v", errorMsg, err)

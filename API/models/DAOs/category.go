@@ -14,10 +14,8 @@ type Category struct {
 	UpdatedAt   time.Time  `json:"updatedAt" gorm:"autoUpdateTime"`
 
 	// Clés étrangères
-	UserId    int `json:"userId" gorm:"not null"`
 	ProjectId int `json:"projectId" gorm:"uniqueIndex:idx_name_project"`
 
 	// Relations
-	User    User    `json:"user" gorm:"foreignKey:UserId;references:Id"`
 	Project Project `json:"project" gorm:"foreignKey:ProjectId;references:Id"`
 }

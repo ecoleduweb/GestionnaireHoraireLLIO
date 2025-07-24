@@ -53,7 +53,6 @@ func CreateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {
 		CreatedAt:   projectDAOAdded.CreatedAt,
 		UpdatedAt:   projectDAOAdded.UpdatedAt,
 		Activities:  []DAOs.Activity{},
-		UserId:      projectDAOAdded.ManagerId,
 	})
 	if err != nil {
 		return nil, err

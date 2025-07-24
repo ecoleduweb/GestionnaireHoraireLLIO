@@ -56,7 +56,7 @@ func TestUpdateOwnRole(t *testing.T) {
 
 	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", doNotDeleteUser.Id), roleRequest, enums.Administrator)
 
-	assertResponse(t, w, http.StatusBadRequest, nil)
+	assertResponse(t, w, http.StatusForbidden, nil)
 }
 
 func TestUpdateUserRoleWithInvalidID(t *testing.T) {
