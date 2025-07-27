@@ -1,5 +1,5 @@
 import type { User, UserInfo } from '../Models/index';
-import { GET, PATCH, POST } from '../ts/server';
+import { DELETE, GET, PATCH, POST } from '../ts/server';
 
 interface UsersResponse {
   users: User[];
@@ -67,6 +67,15 @@ const logOut = async (): Promise<void> => {
   }
 }
 
+const deleteUser = async (userId: number): Promise<void> => {
+  try {
+    const response = await DELETE(`/user/${userId}`);
+    return response;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 export const UserApiService = {
   getAllUsers,
   getAllManagersAdmin,
@@ -74,4 +83,5 @@ export const UserApiService = {
   getUsers,
   updateUserRole,
   logOut,
+  deleteUser,
 };

@@ -28,6 +28,7 @@ var (
 	router              *gin.Engine
 	w                   *httptest.ResponseRecorder
 	doNotDeleteUser     DAOs.User
+	pleaseDeleteUser    DAOs.User
 	doNotDeleteCategory DAOs.Category
 	doNotDeleteProject  DAOs.Project
 	doNotDeleteProject2 DAOs.Project
@@ -73,6 +74,14 @@ func prepareTestData() {
 	}
 	database.DB.Create(&testUser)
 	doNotDeleteUser = testUser
+	testUser2 := DAOs.User{
+		FirstName: "Johnny",
+		LastName:  "Joestar",
+		Email:     "tusk@example.com",
+		Id:        20, // Assurez-vous que l'ID est unique pour le test
+	}
+	database.DB.Create(&testUser2)
+	pleaseDeleteUser = testUser2
 	testProject := DAOs.Project{
 		Id:             1, // Assurez-vous que l'ID est unique pour le test
 		UniqueId:       "Interne-1234",
@@ -108,7 +117,6 @@ func prepareTestData() {
 		Description: "Sample category",
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
-		UserId:      doNotDeleteUser.Id,
 		ProjectId:   doNotDeleteProject.Id,
 	}
 	database.DB.Create(&testCategory)

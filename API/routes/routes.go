@@ -14,6 +14,7 @@ func RegisterRoutes(r *gin.Engine) {
 	userGroup := r.Group("/user", middleware.RoleValidationMiddleware(enums.Employee))
 	{
 		userGroup.GET("/me", controllers.GetUserInfo)
+		userGroup.DELETE("/:id", middleware.RoleValidationMiddleware(enums.Administrator), controllers.DeleteUserById)
 		userGroup.PATCH("/:id/role", middleware.RoleValidationMiddleware(enums.Administrator), controllers.UpdateUserRole)
 	}
 

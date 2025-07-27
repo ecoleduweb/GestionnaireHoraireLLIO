@@ -24,6 +24,19 @@
     }
   }
 
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+    try {
+      await UserApiService.deleteUser(selectedUser.id);
+      users = users.filter(user => user.email !== selectedUser.email);
+      alert('Utilisateur supprimé avec succès');
+    } catch (error) {
+      
+      alert(error);
+    }
+
+  }
+
   onMount(async () => {
     isLoading = true;
     try {
@@ -50,7 +63,7 @@
             <select id="userSelect" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" bind:value={selectedUser}>
               <option value={null}>Choisir un utilisateur</option>
               {#each users as user}
-                <option value={user}>{user.firstName} {user.lastName}</option>
+                <option value={user}>{user.firstName} {user.lastName} | {user.email}</option>
               {/each}
             </select>
           </div>
@@ -69,6 +82,14 @@
               class="bg-[#015e61] hover:bg-[#014446] text-white font-bold py-2 px-4 rounded transition-colors cursor-pointer"
               disabled={!selectedUser || !selectedRole}>
               Confirmer
+            </button>
+            <button
+              onclick={() => {
+                handleDeleteUser();
+              }} 
+              class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition-colors cursor-pointer"
+              disabled={!selectedUser}>
+              Supprimer
             </button>
             <button 
               onclick={() => goto('./calendar')} 

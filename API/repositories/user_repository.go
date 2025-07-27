@@ -10,7 +10,7 @@ func FirstOrCreateUser(user *DAOs.User) (*DAOs.User, error) {
 	return user, DBErrorManager(err)
 }
 
-func GetUserById(id string) (*DAOs.User, error) {
+func GetUserById(id int) (*DAOs.User, error) {
 	var user DAOs.User
 
 	err := database.DB.First(&user, id).Error
@@ -34,4 +34,26 @@ func GetAllUsers() ([]*DAOs.User, error) {
 func UpdateUserRole(user *DAOs.User) (*DAOs.User, error) {
 	err := database.DB.Save(user).Error
 	return user, DBErrorManager(err)
+}
+
+func DeleteUserById(id int) error {
+	err := database.DB.Delete(&DAOs.User{}, id).Error
+	return DBErrorManager(err)
+}
+
+func UserHasActivities(userId int) (bool, error) {
+	var count int64
+	err := database.DB.Model(&DAOs.Activity{}).Where("user_id = ?", userId).Count(&count).Error
+	if err != nil {
+		return false, DBErrorManager(err)
+	}
+	return count > 0, nil
+}
+func UserHasProjects(userId int) (bool, error) {
+	var count int64
+	err := database.DB.Model(&DAOs.Project{}).Where("manager_id = ?", userId).Count(&count).Error
+	if err != nil {
+		return false, DBErrorManager(err)
+	}
+	return count > 0, nil
 }

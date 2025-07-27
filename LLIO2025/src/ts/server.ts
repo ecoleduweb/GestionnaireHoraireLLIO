@@ -19,6 +19,30 @@ const handleResponse = async <T>(response: Response, redirectToLoginOn401 = true
 
         if (response.status === 404) return undefined as T
 
+        try {
+            // Vérifier si la réponse contient du JSON
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                
+                // Si l'API retourne un message d'erreur, l'utiliser
+                if (errorData.error) {
+                    throw new Error(errorData.error);
+                }
+                
+                // Si c'est un autre format JSON, essayer d'autres propriétés communes
+                if (errorData.message) {
+                    throw new Error(errorData.message);
+                }
+            }
+        } catch (jsonError) {
+            // Si c'est notre erreur personnalisée avec le message de l'API, la relancer
+            if (jsonError instanceof Error && jsonError.message !== `Error: ${response.status} - ${response.statusText}`) {
+                throw jsonError;
+            }
+            // Sinon, continuer avec l'erreur générique ci-dessous
+        }
+
         throw new Error(`Error: ${response.status} - ${response.statusText}`)
     }
     return response.json() as Promise<T>

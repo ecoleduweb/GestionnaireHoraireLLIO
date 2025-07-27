@@ -25,19 +25,30 @@ export const userMocks = {
                         "id": 1,
                         "firstName": "Usager",
                         "lastName": "test",
-                        "role": 2
+                        "role": 2,
+                        "email": "usager@email.com"
                     },
                     {
                         "id": 2,
                         "firstName": "JérémieTest",
                         "lastName": "Lapointe",
-                        "role": 1
+                        "role": 1,
+                        "email": "jayboss@email.com"
                     },
                     {
                         "id": 3,
                         "firstName": "Charle-ÉtienneTest",
                         "lastName": "Soucy",
-                        "role": 0
+                        "role": 0,
+                        "email" : "wong@email.com"
+                    },
+                    {
+                        "id": 4,
+                        "firstName": "Quentin",
+                        "lastName": "Lecourt",
+                        "role": 2,
+                        "email": "Ariales@email.com"
+
                     }
                 ]
         }
@@ -109,6 +120,23 @@ export const userMocks = {
                 json: {"message":"Déconnexion réussie"}
         }
     },
+    deleteUserSuccess: {
+        url: '/user/*',
+        method: 'DELETE',
+        response: {
+                status: 200,
+                json: {"message":"Utilisateur supprimé avec succès"}
+        }
+    },
+    deleteUserError: {
+        url: '/user/*',
+        method: 'DELETE',
+        response: {
+                status: 403,
+                json: {"error":"Impossible de supprimer cet utilisateur car il est associé à des projets ou activités."}
+        }
+    },
+
 
 
 } satisfies Record<string, MockConfig>;

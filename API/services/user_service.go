@@ -1,14 +1,14 @@
 package services
 
 import (
+	"llio-api/customs_errors"
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
 	"llio-api/models/enums"
 	"llio-api/repositories"
+	"log"
 
 	"github.com/jinzhu/copier"
-
-	"strconv"
 )
 
 func FirstOrCreateUser(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
@@ -28,7 +28,7 @@ func FirstOrCreateUser(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	return userDTOResponse, err
 }
 
-func GetUserById(id string) (*DTOs.UserDTO, error) {
+func GetUserById(id int) (*DTOs.UserDTO, error) {
 	user, err := repositories.GetUserById(id)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func GetAllUsers(userRoles []enums.UserRole) ([]*DTOs.UserDTO, error) {
 
 func UpdateUserRole(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	// Get the existing user
-	existingUser, err := repositories.GetUserById(strconv.Itoa(userDTO.Id))
+	existingUser, err := repositories.GetUserById(userDTO.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -106,4 +106,67 @@ func UpdateUserRole(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	err = copier.Copy(userDTOResponse, updatedUser)
 
 	return userDTOResponse, err
+}
+
+func DeleteUserById(id int) (*DTOs.UserDTO, error) {
+	userHasActvities, err := UserHasActivities(id)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("User %d has activities: %v", id, userHasActvities)
+	if userHasActvities {
+		//return nil, errors.New("l'utilisateur a des activités associées, suppression impossible")
+		return nil, customs_errors.ErrUserHasActivities
+	}
+	userHasProjects, err := UserHasProjects(id)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("User %d has projects: %v", id, userHasProjects)
+	if userHasProjects {
+		//return nil, errors.New("l'utilisateur a des projets associées, suppression impossible")
+		return nil, customs_errors.ErrUserHasProjects
+	}
+
+	// Check if the user exists
+	userDAO, err := repositories.GetUserById(id)
+	if err != nil {
+		return nil, err
+	}
+	if userDAO == nil {
+		return nil, nil // User not found
+	}
+
+	// Delete the user
+	err = repositories.DeleteUserById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the deleted user
+	userDTO := &DTOs.UserDTO{}
+	err = copier.Copy(userDTO, userDAO)
+	if err != nil {
+		return nil, err
+	}
+	return userDTO, nil
+}
+
+func UserHasActivities(userId int) (bool, error) {
+	// Check if the user has any activities
+	hasActivities, err := repositories.UserHasActivities(userId)
+	if err != nil {
+		return false, err
+	}
+
+	return hasActivities, nil
+}
+
+func UserHasProjects(userId int) (bool, error) {
+	hasProjects, err := repositories.UserHasProjects(userId)
+	if err != nil {
+		return false, err
+	}
+
+	return hasProjects, nil
 }

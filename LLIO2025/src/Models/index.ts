@@ -16,6 +16,7 @@ export interface UserInfo {
     firstName: string;
     lastName: string;
     role : UserRole;
+    email?: string;
 }
 
 export interface User {
