@@ -109,6 +109,7 @@
       projectCategories = [];
       activity.categoryId = null;
     }
+    
   });
 
   // Fonction pour charger les catégories spécifiques à un projet
@@ -116,11 +117,14 @@
     if (!projectId) {
       projectCategories = [];
       return;
-    }
-
+    }//
+    console.log('projectId : ', projectId);
+    //
     try {
       projectCategories = await CategoryApiService.getCategoriesByProject(projectId);
-
+      //
+      console.log('categoryId : ', activity.categoryId);
+      //
       if (activity.categoryId) {
         const categoryExists = projectCategories.some((c) => c.id === activity.categoryId);
 
