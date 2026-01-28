@@ -322,7 +322,7 @@
   <div class="fixed inset-0 z-40 flex justify-start">
     <!-- Overlay semi-transparent avec opacité à 40% comme dans l'original -->
     <div
-      class="absolute inset-0 bg-gray bg-opacity-40 transition-opacity"
+      class="absolute inset-0 bg-gray-950/40 transition-opacity"
       onclick={handleClose}
     ></div>
 
