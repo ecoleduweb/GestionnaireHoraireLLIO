@@ -116,23 +116,23 @@
   dropdownProjects = projects.map((value) => {
     return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
   })
-  dropdownSelectedProjet = dropdownProjects?.find(p => p.value === activity.projectId)
+  dropdownSelectedProjet = dropdownProjects?.find(p => p.value === activity.projectId);
 
   // Effets pour le dropdown de projets
   $effect(() => {
     dropdownProjects = projects.map((value) => {
       return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
     })
-  })
+  });
 
   $effect(() => {
     dropdownSelectedProjet = dropdownProjects?.find(p => p.value === activity.projectId);
-  })
+  });
 
   $effect(() => {
     activity.projectId = dropdownSelectedProjet?.value ?? null;
     setFields('projectId', activity.projectId ?? null);
-  })
+  });
 
   // État pour le dropdown de catégories
   let categoryDropdownOpen = $state(false);
@@ -391,7 +391,6 @@
                 placeholder="Sélectionner un projet"
                 required
               />
-              <input type="hidden" name="projectId" value={activity.projectId ?? ''} />
               {#if $errors.projectId}
                 <span class="text-red-500 text-sm">{$errors.projectId}</span>
               {/if}
