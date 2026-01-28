@@ -139,6 +139,18 @@
       isLoading = false;
     }
   }
+const hasOverlap = (event, allEvents) => {
+  return allEvents.some((other) => {
+    if (other.id === event.id) return false;
+
+    const sameDay =
+      event.start.toDateString() === other.start.toDateString();
+
+    if (!sameDay) return false;
+
+    return event.start < other.end && event.end > other.start;
+  });
+};
 
   onMount(async () => {
     isLoading = true;
@@ -161,6 +173,9 @@
         slotMinTime: activeTimeRange.start,
         slotMaxTime: activeTimeRange.end,
         nowIndicator: true,
+        
+        
+
 
         // Gestion du drag
         editable: true,
@@ -169,7 +184,7 @@
 
         height: 'auto',
         contentHeight: 'auto', // Hauteur automatique
-        slotHeight: 25, // Hauteur réduite des slots (plus compact)
+        slotHeight: 45, // Hauteur réduite des slots (plus compact)
         expandRows: true,
         dayHeaderFormat: headerFormat,
         eventClassNames: getEventClassName,
@@ -188,7 +203,23 @@
           // Appelé à chaque changement de dates ou de vue
           updateViewTitle();
         },
-      };
+        eventDidMount: (info) => {
+          const el = info.el as HTMLElement;
+          const event = info.event;
+
+          const start = event.start;
+          const end = event.end;
+          if (!start || !end) return;
+
+          const durationMin = (end.getTime() - start.getTime()) / 60000;
+
+          if (durationMin <= 15) {
+            el.classList.add('small-event');
+                  
+            
+          }
+        } 
+      }
 
       calendarService.onDateSelect = (info) => {
         editMode = false;
@@ -539,15 +570,24 @@
 
 <style>
   :global(.fc .fc-timegrid-slot) {
-    height: 25px !important;
-    min-height: 25px !important;
-    max-height: 25px !important;
+    height: 45px !important;
+    min-height: 45px !important;
+    max-height: 45px !important;
   }
 
   :global(.fc-timegrid-event) {
-    min-height: 20px !important;
-    max-height: none !important;
-  }
+  margin: 1px !important;
+  padding: 2px 4px !important;
+  font-size: 11px;
+  line-height: 1.2;
+  border-radius: 6px;
+}
+
+/* Supprime les espacements verticaux inutiles */
+:global(.fc-timegrid-col-events) {
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
   :global(.fc-timegrid-slot-label) {
     vertical-align: top !important;
