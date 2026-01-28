@@ -169,7 +169,7 @@
 
         height: 'auto',
         contentHeight: 'auto', // Hauteur automatique
-        slotHeight: 45, // Hauteur réduite des slots (plus compact)
+        
         expandRows: true,
         dayHeaderFormat: headerFormat,
         eventClassNames: getEventClassName,
