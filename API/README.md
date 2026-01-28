@@ -119,8 +119,8 @@ go run main.go
 
 # Mise en place du compte administateur
 
-Par defaut, le compte administrateur est un simple utilisteur.
-Il faut donc modifier son role manuellement dans la base de donnée
+Par défaut, le compte administrateur est un simple utilisteur.
+Il faut donc modifier son rôle manuellement dans la base de données
 
 ```bash
 UPDATE users SET role=2 WHERE id=1;
