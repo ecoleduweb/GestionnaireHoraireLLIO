@@ -139,18 +139,7 @@
       isLoading = false;
     }
   }
-const hasOverlap = (event, allEvents) => {
-  return allEvents.some((other) => {
-    if (other.id === event.id) return false;
 
-    const sameDay =
-      event.start.toDateString() === other.start.toDateString();
-
-    if (!sameDay) return false;
-
-    return event.start < other.end && event.end > other.start;
-  });
-};
 
   onMount(async () => {
     isLoading = true;
