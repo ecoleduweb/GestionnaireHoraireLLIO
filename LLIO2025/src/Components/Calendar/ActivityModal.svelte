@@ -14,6 +14,7 @@
   import '../../style/app.css';
   import { ChevronDown, X, Plus } from 'lucide-svelte';
   import ConfirmationCreateCategory from './ConfirmModal.svelte';
+  import Select from 'svelte-select';
 
   type Props = {
     show: boolean;
@@ -86,6 +87,52 @@
     time.endHours = result.endHours;
     time.endMinutes = result.endMinutes;
   };
+
+  const getTruncatedDisplayText = (uniqueId, name, maxLength = 30) => {
+    const separator = " | ";
+    const availableForName = maxLength - uniqueId.length - separator.length;
+    if (name === undefined || name === null || name.trim() === "") {
+      return uniqueId; // Si le nom est vide, retourner uniquement l'uniqueId
+    }
+
+    if (availableForName <= 0) {
+      // Si l'uniqueId est déjà trop long, on le tronque aussi
+      return uniqueId.substring(0, maxLength - 3) + "...";
+    }
+
+    if (name.length <= availableForName) {
+      return `${uniqueId}${separator}${name}`;
+    }
+
+    const truncatedName = name.substring(0, availableForName - 3) + "...";
+    return `${uniqueId}${separator}${truncatedName}`;
+  };
+
+  // Valeurs pour le dropdown de projets
+  type SelectItem = { value: number; label: string };
+  let dropdownProjects: SelectItem[] | null = $state(null);
+  let dropdownSelectedProjet: SelectItem | null = $state(null);
+
+  dropdownProjects = projects.map((value) => {
+    return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
+  })
+  dropdownSelectedProjet = dropdownProjects?.find(p => p.value === activity.projectId)
+
+  // Effets pour le dropdown de projets
+  $effect(() => {
+    dropdownProjects = projects.map((value) => {
+      return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
+    })
+  })
+
+  $effect(() => {
+    dropdownSelectedProjet = dropdownProjects?.find(p => p.value === activity.projectId);
+  })
+
+  $effect(() => {
+    activity.projectId = dropdownSelectedProjet?.value ?? null;
+    setFields('projectId', activity.projectId ?? null);
+  })
 
   // État pour le dropdown de catégories
   let categoryDropdownOpen = $state(false);
@@ -282,26 +329,6 @@
     }
   };
 
-  const getTruncatedDisplayText = (uniqueId, name, maxLength = 30) => {
-    const separator = " | ";
-    const availableForName = maxLength - uniqueId.length - separator.length;
-    if (name === undefined || name === null || name.trim() === "") {
-      return uniqueId; // Si le nom est vide, retourner uniquement l'uniqueId
-    }
-    
-    if (availableForName <= 0) {
-      // Si l'uniqueId est déjà trop long, on le tronque aussi
-      return uniqueId.substring(0, maxLength - 3) + "...";
-    }
-    
-    if (name.length <= availableForName) {
-      return `${uniqueId}${separator}${name}`;
-    }
-    
-    const truncatedName = name.substring(0, availableForName - 3) + "...";
-    return `${uniqueId}${separator}${truncatedName}`;
-  };
-
   $effect(() => {
   if (activity.projectId && projectCategories.length >= 1) {
     const currentCategoryExists = projectCategories.find(c => c.id === activity.categoryId);
@@ -312,7 +339,7 @@
   }
   });
 
-  const { form, errors } = validateActivityForm(handleSubmit, activity);
+  const { form, errors, setFields } = validateActivityForm(handleSubmit, activity);
 </script>
 
 <svelte:window onclick={handleOutsideClick} />
@@ -357,26 +384,17 @@
                 Projet
                 <span class="text-red-500">*</span>
               </label>
-              <div class="select-container">
-                <select
-                  id="activity-project"
-                  name="projectId"
-                  bind:value={activity.projectId}
-                  required
-                  class="form-select w-full"
-                >
-                  <option value="" disabled selected hidden>Sélectionner un projet...</option>
-                  {#each projects as project}
-                    <option value={project.id} title={project.name}>{getTruncatedDisplayText(project.uniqueId, project.name)}</option>
-                  {/each}
-                </select>
-                <div class="select-icon">
-                  <ChevronDown size={18} />
-                </div>
-                {#if $errors.projectId}
-                  <span class="text-red-500 text-sm">{$errors.projectId}</span>
-                {/if}
-              </div>
+              <Select
+                id="activity-project"
+                items={dropdownProjects}
+                bind:value={dropdownSelectedProjet}
+                placeholder="Sélectionner un projet"
+                required
+              />
+              <input type="hidden" name="projectId" value={activity.projectId ?? ''} />
+              {#if $errors.projectId}
+                <span class="text-red-500 text-sm">{$errors.projectId}</span>
+              {/if}
             </div>
 
             <!-- Sélecteurs d'heure côte à côte -->
