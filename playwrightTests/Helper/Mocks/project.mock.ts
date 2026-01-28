@@ -153,6 +153,7 @@ export const projectMocks = {
           },
           {
             id: 5,
+            uniqueId: "TEST-5",
             name: "AT-789",
             color: "blue",
             lead: "Katell Arnault de la Ménardière",
@@ -183,7 +184,7 @@ export const projectMocks = {
           },
           {
             id: 6,
-            uniqueId: "TEST-5",
+            uniqueId: "TEST-6",
             name: "AT-987",
             color: "pink",
             lead: "Katell Arnault de la Ménardière",
@@ -221,6 +222,7 @@ export const projectMocks = {
           },
           {
             id: 7,
+            uniqueId: "TEST-7",
             name: "FO-789",
             color: "yellow",
             lead: "Katell Arnault de la Ménardière",
@@ -246,6 +248,7 @@ export const projectMocks = {
           },
           {
             id: 8,
+            uniqueId: "TEST-8",
             name: "RA-987",
             color: "red",
             lead: "Steve Joncoux",
