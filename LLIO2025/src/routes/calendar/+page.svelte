@@ -140,7 +140,6 @@
     }
   }
 
-
   onMount(async () => {
     isLoading = true;
     if (calendarEl) {
@@ -163,9 +162,6 @@
         slotMaxTime: activeTimeRange.end,
         nowIndicator: true,
         
-        
-
-
         // Gestion du drag
         editable: true,
         eventDrop: handleEventDropOrResize,
