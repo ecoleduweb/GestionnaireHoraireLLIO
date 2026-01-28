@@ -109,7 +109,6 @@
       projectCategories = [];
       activity.categoryId = null;
     }
-    
   });
 
   // Fonction pour charger les catégories spécifiques à un projet
@@ -117,27 +116,15 @@
     if (!projectId) {
       projectCategories = [];
       return;
-    }//
-    console.log('projectId : ', projectId);
-    //
+    }
     try {
       projectCategories = await CategoryApiService.getCategoriesByProject(projectId);
-      //
-      console.log('categoryId : ', activity.categoryId);
-      //
+      
       if (activity.categoryId) {
         const categoryExists = projectCategories.some((c) => c.id === activity.categoryId);
 
         if (!categoryExists && editMode) {
-          try {
-            const category = await CategoryApiService.getCategoryById(activity.categoryId);
-            if (category) {
-              projectCategories = [...projectCategories, category];
-            }
-          } catch (err) {
-            console.error('Erreur lors de la récupération de la catégorie:', err);
-            activity.categoryId = null;
-          }
+          activity.categoryId = projectCategories[0].id;
         } else if (!categoryExists) {
           activity.categoryId = null;
         }
