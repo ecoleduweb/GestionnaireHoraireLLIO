@@ -29,7 +29,7 @@ test.describe('deleteUser', () => {
     await page.locator('#userSelect').selectOption({ label: 'Charle-ÉtienneTest Soucy | wong@email.com' });
     await page.getByText('Supprimer').click();
     await page.locator('#userSelect').click();
-    expect(page.locator('#userSelect')).not.toContainText('Charle-ÉtienneTest Soucy | wong@email.com');
+    await expect(page.locator('#userSelect')).not.toContainText('Charle-ÉtienneTest Soucy | wong@email.com');
     await page.waitForLoadState('networkidle'); 
     });
 
