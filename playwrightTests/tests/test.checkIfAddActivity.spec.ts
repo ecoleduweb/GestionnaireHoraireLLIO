@@ -32,7 +32,8 @@ test.describe("checkAddActivity", () => {
 
     await page.getByPlaceholder("Nom de l'activité...").fill("asd");
     await page.locator("#activity-description").fill("asd");
-    await page.locator("#activity-project").selectOption("1");
+    await page.getByPlaceholder('Sélectionner un projet').click();
+    await page.getByText(/^Projet sous-sol\b/).first().click();
     await page.locator("#activity-category-search").first().click();
     await page.locator(".category-item").first().click();
     await page.getByText("Créer").click();
@@ -51,7 +52,8 @@ test.describe("checkAddActivity", () => {
     await page.getByText("Nouvelle activité").click();
     await page.waitForTimeout(2000);
 
-    await page.locator("#activity-project").selectOption("1");
+    await page.getByPlaceholder('Sélectionner un projet').click();
+    await page.getByText(/^Projet sous-sol\b/).first().click();
     await page.locator("#activity-category-search").first().click();
     await page.locator(".category-item").first().click()
     await page.getByText("Créer").click();
