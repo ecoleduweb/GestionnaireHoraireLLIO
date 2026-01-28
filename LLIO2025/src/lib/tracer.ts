@@ -6,7 +6,7 @@ import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import { env } from "$env/dynamic/public";
 
 const TRACE_URL = env.PUBLIC_TRACE_URL;
@@ -18,7 +18,7 @@ const exporter = new OTLPTraceExporter({
 });
 
 const provider = new WebTracerProvider({
-    resource: new Resource({
+    resource: resourceFromAttributes({
         [ATTR_SERVICE_NAME]: APPLICATION_NAME,
     }),
     spanProcessors: [new SimpleSpanProcessor(exporter)],
