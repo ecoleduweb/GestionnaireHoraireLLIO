@@ -10,6 +10,7 @@ export const projectMocks = {
         projects: [
           {
             id: 1,
+            uniqueId: "TEST-1",
             name: "AT-123",
             description: "Nommer le projet",
             color: "blue",
@@ -41,6 +42,7 @@ export const projectMocks = {
           },
           {
             id: 2,
+            uniqueId: "TEST-2",
             name: "AT-456",
             description: "Le projet de Marie Amélie",
             color: "pink",
@@ -79,6 +81,7 @@ export const projectMocks = {
           },
           {
             id: 3,
+            uniqueId: "TEST-3",
             name: "FO-115",
             description: "Graphisme 101",
             color: "yellow",
@@ -105,6 +108,7 @@ export const projectMocks = {
           },
           {
             id: 4,
+            uniqueId: "TEST-4",
             name: "RA-224",
             description: "Noisette Steve",
             color: "red",
@@ -184,6 +188,7 @@ export const projectMocks = {
           },
           {
             id: 6,
+            uniqueId: "TEST-5",
             name: "AT-987",
             description: "Le projet de Marie Amélie",
             color: "pink",
