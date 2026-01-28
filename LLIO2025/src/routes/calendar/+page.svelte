@@ -3,7 +3,7 @@
   import { UserApiService } from '../../services/UserApiService';
   import { ProjectApiService } from '../../services/ProjectApiService';
   import { CalendarService as CS } from '../../services/calendar.service';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import ActivityModal from '../../Components/Calendar/ActivityModal.svelte';
   import DashboardLeftPane from '../../Components/Calendar/DashboardLeftPane.svelte';
   import { ActivityApiService } from '../../services/ActivityApiService';
@@ -341,28 +341,23 @@
     loadActivities();
   }
 
-  const setTimeRange = (range) => {
-    activeTimeRange = range;
+  const setTimeRange = async (range) => {
+  activeTimeRange = range;
 
-    if (calendarService?.calendar) {
-      calendarService.calendar.setOption('slotMinTime', range.start);
-      calendarService.calendar.setOption('slotMaxTime', range.end);
-      calendarService.calendar.render();
+  const cal = calendarService?.calendar;
+  if (!cal) return;
 
-      // Modifier directement les styles
-      const tableElement = calendarEl.querySelector('.fc-timegrid-slots table') as HTMLTableElement;
-      if (tableElement) {
-        tableElement.style.height = range.start === '00:00:00' ? '1200px' : '540px';
-      }
+  cal.batchRendering(() => {
+    cal.setOption('slotMinTime', range.start);
+    cal.setOption('slotMaxTime', range.end === '24:00:00' ? '23:59:59' : range.end);
+  });
 
-      // Ajuster la hauteur des cellules
-      const cells = calendarEl.querySelectorAll('.fc-timegrid-slot');
-      const cellHeight = range.start === '00:00:00' ? '20px' : '30px';
-      cells.forEach((cell) => {
-        (cell as HTMLElement).style.height = cellHeight;
-      });
-    }
-  }
+  await tick();
+  requestAnimationFrame(() => {
+    cal.updateSize();
+  });
+};
+
 
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString('fr-FR', {
