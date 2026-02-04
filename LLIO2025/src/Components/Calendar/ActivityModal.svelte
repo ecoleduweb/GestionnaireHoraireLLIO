@@ -14,6 +14,7 @@
   import '../../style/app.css';
   import { ChevronDown, X, Plus } from 'lucide-svelte';
   import ConfirmationCreateCategory from './ConfirmModal.svelte';
+  import SearchSelect from "../Global/SearchSelect.svelte";
 
   type Props = {
     show: boolean;
@@ -279,16 +280,16 @@
     if (name === undefined || name === null || name.trim() === "") {
       return uniqueId; // Si le nom est vide, retourner uniquement l'uniqueId
     }
-    
+
     if (availableForName <= 0) {
       // Si l'uniqueId est déjà trop long, on le tronque aussi
       return uniqueId.substring(0, maxLength - 3) + "...";
     }
-    
+
     if (name.length <= availableForName) {
       return `${uniqueId}${separator}${name}`;
     }
-    
+
     const truncatedName = name.substring(0, availableForName - 3) + "...";
     return `${uniqueId}${separator}${truncatedName}`;
   };
@@ -303,7 +304,7 @@
   }
   });
 
-  const { form, errors } = validateActivityForm(handleSubmit, activity);
+  const { form, errors, setFields } = validateActivityForm(handleSubmit, activity);
 </script>
 
 <svelte:window onclick={handleOutsideClick} />
@@ -392,26 +393,20 @@
                 Projet
                 <span class="text-red-500">*</span>
               </label>
-              <div class="select-container">
-                <select
-                  id="activity-project"
-                  name="projectId"
-                  bind:value={activity.projectId}
-                  required
-                  class="form-select w-full"
-                >
-                  <option value="" disabled selected hidden>Sélectionner un projet...</option>
-                  {#each projects as project}
-                    <option value={project.id} title={project.name}>{getTruncatedDisplayText(project.uniqueId, project.name)}</option>
-                  {/each}
-                </select>
-                <div class="select-icon">
-                  <ChevronDown size={18} />
-                </div>
-                {#if $errors.projectId}
-                  <span class="text-red-500 text-sm">{$errors.projectId}</span>
-                {/if}
-              </div>
+              <SearchSelect
+                id="activity-project"
+                name="projectId"
+                items={projects.map((value) => {
+                  return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
+                })}
+                bind:selectedValue={activity.projectId}
+                placeholder="Sélectionner un projet"
+                setFields={setFields}
+                required
+              />
+              {#if $errors.projectId}
+                <span class="text-red-500 text-sm">{$errors.projectId}</span>
+              {/if}
             </div>
 
             <!-- Sélecteurs d'heure côte à côte -->
