@@ -15,6 +15,7 @@
   import { ChevronDown, X, Plus } from 'lucide-svelte';
   import ConfirmationCreateCategory from './ConfirmModal.svelte';
   import Select from 'svelte-select';
+  import type SelectItem from "$lib/types/SelectItem";
 
   type Props = {
     show: boolean;
@@ -109,29 +110,30 @@
   };
 
   // Valeurs pour le dropdown de projets
-  type SelectItem = { value: number; label: string };
-  let dropdownProjects: SelectItem[] | null = $state(null);
+  let dropdownProjectList: SelectItem[] | null = $state(null);
   let dropdownSelectedProjet: SelectItem | null = $state(null);
 
-  dropdownProjects = projects.map((value) => {
+  dropdownProjectList = projects.map((value) => {
     return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
   })
-  dropdownSelectedProjet = dropdownProjects?.find(p => p.value === activity.projectId);
+  if (activity.projectId){
+    dropdownSelectedProjet = dropdownProjectList?.find(p => p.value === activity.projectId);    
+  }
 
-  // Effets pour le dropdown de projets
-  $effect(() => {
-    dropdownProjects = projects.map((value) => {
-      return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
-    })
-  });
+  /* -- Effet pour gérer la modification du projet sélectionné --
 
-  $effect(() => {
-    dropdownSelectedProjet = dropdownProjects?.find(p => p.value === activity.projectId);
-  });
+        Cet effet va modifier l'ID du projet dans activity, l'objet utilisé par le reste du composant et pour l'envoi.
+        L'ID vient de l'objet de la valeur du Select, qui contient un champ label (visible)
+        ainsi qu'un champ value qui contient ledit ID.
 
+        setFields(), à son tour, donne la nouvelle valeur à Felte (validation du formulaire),
+        puisque ni un champ caché ni mettre le nom et l'ID dans le Select fonctionnait. Si cette
+        méthode n'était pas utilisée, on pourrait soumettre une activité sans projet, ce qui
+        ne doit pas arriver.
+  */
   $effect(() => {
-    activity.projectId = dropdownSelectedProjet?.value ?? null;
-    setFields('projectId', activity.projectId ?? null);
+    activity.projectId = dropdownSelectedProjet?.value;
+    setFields('projectId', activity.projectId);
   });
 
   // État pour le dropdown de catégories
@@ -386,7 +388,7 @@
               </label>
               <Select
                 id="activity-project"
-                items={dropdownProjects}
+                items={dropdownProjectList}
                 bind:value={dropdownSelectedProjet}
                 placeholder="Sélectionner un projet"
                 required
