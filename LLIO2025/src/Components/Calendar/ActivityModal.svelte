@@ -447,44 +447,6 @@
               </div>
             </div>
 
-            <!-- Champ Nom -->
-            <div>
-              <label for="activity-name" class="block text-gray-700 font-medium mb-2">
-                Nom
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <input
-                id="activity-name"
-                name="name"
-                type="text"
-                bind:value={activity.name}
-                placeholder="Nom de l'activité..."
-                class="form-input"
-              />
-              {#if $errors.name}
-                <span class="text-red-500 text-sm">{$errors.name}</span>
-              {/if}
-            </div>
-
-            <!-- Champ Description -->
-            <div>
-              <label for="activity-description" class="block text-gray-700 font-medium mb-2">
-                Description
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <textarea
-                id="activity-description"
-                name="description"
-                bind:value={activity.description}
-                placeholder="Description de l'activité..."
-                rows="3"
-                class="form-input"
-              ></textarea>
-              {#if $errors.description}
-                <span class="text-red-500 text-sm">{$errors.description}</span>
-              {/if}
-            </div>
-
             <!-- Catégorie avec dropdown et recherche intégrée -->
             <div>
               <label for="activity-category-search" class="block text-gray-700 font-medium mb-2">
@@ -582,6 +544,45 @@
                 {/if}
               </div>
             </div>
+
+            <!-- Champ Nom -->
+            <div>
+              <label for="activity-name" class="block text-gray-700 font-medium mb-2">
+                Nom
+                <span class="text-gray-400">(optionnel)</span>
+              </label>
+              <input
+                id="activity-name"
+                name="name"
+                type="text"
+                bind:value={activity.name}
+                placeholder="Nom de l'activité..."
+                class="form-input"
+              />
+              {#if $errors.name}
+                <span class="text-red-500 text-sm">{$errors.name}</span>
+              {/if}
+            </div>
+
+            <!-- Champ Description -->
+            <div>
+              <label for="activity-description" class="block text-gray-700 font-medium mb-2">
+                Description
+                <span class="text-gray-400">(optionnel)</span>
+              </label>
+              <textarea
+                id="activity-description"
+                name="description"
+                bind:value={activity.description}
+                placeholder="Description de l'activité..."
+                rows="3"
+                class="form-input"
+              ></textarea>
+              {#if $errors.description}
+                <span class="text-red-500 text-sm">{$errors.description}</span>
+              {/if}
+            </div>
+
           </div>
 
           <!-- Séparateur et boutons d'action -->
