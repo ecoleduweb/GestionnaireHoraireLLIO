@@ -342,17 +342,17 @@
   }
 
   const setTimeRange = async (range) => {
-  activeTimeRange = range;
+    activeTimeRange = range;
 
-  const cal = calendarService?.calendar;
-  if (!cal) return;
-  cal.batchRendering(() => {
-    cal.setOption('slotMinTime', range.start);
-    cal.setOption('slotMaxTime', range.end === '24:00:00' ? '23:59:59' : range.end);
-  });
+    const cal = calendarService?.calendar;
+    if (!cal) return;
+    cal.batchRendering(() => {
+      cal.setOption('slotMinTime', range.start);
+      cal.setOption('slotMaxTime', range.end === '24:00:00' ? '23:59:59' : range.end);
+    });
     cal.updateSize();
  
-};
+  };
 
 
   const currentDate = new Date();
