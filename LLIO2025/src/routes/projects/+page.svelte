@@ -9,6 +9,7 @@
   import searchIcon from "../../../static/search.svg";
   // État des projets
   let projects = $state<Project[]>([]);
+  let filteredProjects = $state<Project[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let projectFilter = $state('');
@@ -43,9 +44,9 @@
   $effect(() => { // si le search est update, le fonction est rééxecutée 
     const filter = projectFilter.toLowerCase().trim();
 
-    projects = projects.filter(project =>
-    project.name.toLowerCase().includes(filter) ||
-    project.id.toString().includes(filter)
+    filteredProjects = projects.filter(project =>
+      project.name.toLowerCase().includes(filter) ||
+      project.id.toString().includes(filter)
   );
 });
 
@@ -54,7 +55,7 @@
 
 <div class="bg-gray-100">
   {#if currentUser}
-  <ProjectsLeftPane projects={projects} {currentUser} onProjectsRefresh={loadProjects} />
+  <ProjectsLeftPane projects={filteredProjects} {currentUser} onProjectsRefresh={loadProjects} />
   {/if}
   
   <div class="flex flex-col" style="padding-left: 300px;">
@@ -89,7 +90,7 @@
       <p class="text-red-500">{error}</p>
     </div>
   {:else}
-    {#each projects as project}
+    {#each filteredProjects as project}
       <ProjectComponent {project} />
     {/each}
   {/if}
