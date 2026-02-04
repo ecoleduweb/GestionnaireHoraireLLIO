@@ -117,23 +117,14 @@
       projectCategories = [];
       return;
     }
-
     try {
       projectCategories = await CategoryApiService.getCategoriesByProject(projectId);
-
+      
       if (activity.categoryId) {
         const categoryExists = projectCategories.some((c) => c.id === activity.categoryId);
 
         if (!categoryExists && editMode) {
-          try {
-            const category = await CategoryApiService.getCategoryById(activity.categoryId);
-            if (category) {
-              projectCategories = [...projectCategories, category];
-            }
-          } catch (err) {
-            console.error('Erreur lors de la récupération de la catégorie:', err);
-            activity.categoryId = null;
-          }
+          activity.categoryId = projectCategories[0].id;
         } else if (!categoryExists) {
           activity.categoryId = null;
         }
