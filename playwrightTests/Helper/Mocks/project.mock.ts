@@ -344,6 +344,288 @@ export const projectMocks = {
       },
     },
   },
+  deleteProjectSuccess: {
+    url: '/project/*',
+    method: 'DELETE',
+    response: {
+      status: 200,
+      json: {"deleted":true}
+    }
+  },
+  deleteProjectError: {
+        url: '/project/*',
+        method: 'DELETE',
+        response: {
+                status: 403,
+                json: {"error":"Impossible de supprimer cet utilisateur car il est associé à des projets ou activités."}
+        }
+  },
+  getDetailedProjectsSuccessAfterDelete: {
+    url: "/projects/detailed",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        projects: [
+          {
+            id: 2,
+            uniqueId: "TEST-2",
+            name: "AT-456",
+            color: "pink",
+            lead: "Katell Arnault de la Ménardière",
+            isArchived: false,
+            coLeads: ["Marie Amélie Dubé", "Jimmy Paquet-Cormier"],
+            employees: [
+              {
+                name: "Katell Arnault de la Ménardière",
+                categories: [
+                  { name: "Développement", timeSpent: 12, timeEstimated: 15 },
+                ],
+              },
+              {
+                name: "Marie Amélie Dubé",
+                categories: [
+                  { name: "Graphisme", timeSpent: 18, timeEstimated: 20 },
+                ],
+              },
+              {
+                name: "Ariane Dionne-Santerre",
+                categories: [
+                  { name: "Rédaction", timeSpent: 8, timeEstimated: 10 },
+                ],
+              },
+              {
+                name: "Jimmy Paquet-Cormier",
+                categories: [
+                  { name: "Développement", timeSpent: 14, timeEstimated: 15 },
+                ],
+              },
+            ],
+            totalTimeEstimated: 200,
+            totalTimeRemaining: 148,
+            totalTimeSpent: 52,
+          },
+          {
+            id: 3,
+            uniqueId: "TEST-3",
+            name: "FO-115",
+            color: "yellow",
+            lead: "Katell Arnault de la Ménardière",
+            isArchived: false,
+            coLeads: [],
+            employees: [
+              {
+                name: "Katell Arnault de la Ménardière",
+                categories: [
+                  { name: "Gestion", timeSpent: 5, timeEstimated: 5 },
+                ],
+              },
+              {
+                name: "Annie Côté",
+                categories: [
+                  { name: "Graphisme", timeSpent: 22, timeEstimated: 22 },
+                ],
+              },
+            ],
+            totalTimeEstimated: 27,
+            totalTimeRemaining: 0,
+            totalTimeSpent: 27,
+          },
+          {
+            id: 4,
+            uniqueId: "TEST-4",
+            name: "RA-224",
+            color: "red",
+            lead: "Steve Joncoux",
+            isArchived: false,
+            coLeads: [
+              "Katell Arnault de la Ménardière",
+              "Marjolaine Poirier",
+              "Jimmy Paquet-Cormier",
+            ],
+            employees: [
+              {
+                name: "Steve Joncoux",
+                categories: [
+                  { name: "Développement", timeSpent: 16, timeEstimated: 20 },
+                ],
+              },
+              {
+                name: "Katell Arnault de la Ménardière",
+                categories: [
+                  { name: "Gestion", timeSpent: 7, timeEstimated: 10 },
+                ],
+              },
+              {
+                name: "Marjolaine Poirier",
+                categories: [
+                  { name: "Rédaction", timeSpent: 12, timeEstimated: 15 },
+                ],
+              },
+              {
+                name: "Jimmy Paquet-Cormier",
+                categories: [
+                  { name: "Développement", timeSpent: 9, timeEstimated: 12 },
+                ],
+              },
+              {
+                name: "Marie Amélie Dubé",
+                categories: [
+                  { name: "Graphisme", timeSpent: 11, timeEstimated: 10 },
+                ],
+              },
+            ],
+            totalTimeEstimated: 0,
+            totalTimeRemaining: -55,
+            totalTimeSpent: 55,
+          },
+          {
+            id: 5,
+            uniqueId: "TEST-5",
+            name: "AT-789",
+            color: "blue",
+            lead: "Katell Arnault de la Ménardière",
+            isArchived: true,
+            coLeads: ["Jean-François Jasmin"],
+            employees: [
+              {
+                name: "Katell Arnault de la Ménardière",
+                categories: [
+                  { name: "Développement", timeSpent: 30, timeEstimated: 25 },
+                  { name: "Graphisme", timeSpent: 15, timeEstimated: 30 },
+                ],
+              },
+              {
+                name: "Jean-François Jasmin",
+                categories: [
+                  { name: "Développement", timeSpent: 20, timeEstimated: 50 },
+                ],
+              },
+              {
+                name: "Laure Desjardins",
+                categories: [],
+              },
+            ],
+            totalTimeEstimated: 20,
+            totalTimeRemaining: -45,
+            totalTimeSpent: 65,
+          },
+          {
+            id: 6,
+            uniqueId: "TEST-6",
+            name: "AT-987",
+            color: "pink",
+            lead: "Katell Arnault de la Ménardière",
+            isArchived: true,
+            coLeads: ["Marie Amélie Dubé", "Jimmy Paquet-Cormier"],
+            employees: [
+              {
+                name: "Katell Arnault de la Ménardière",
+                categories: [
+                  { name: "Développement", timeSpent: 12, timeEstimated: 15 },
+                ],
+              },
+              {
+                name: "Marie Amélie Dubé",
+                categories: [
+                  { name: "Graphisme", timeSpent: 18, timeEstimated: 20 },
+                ],
+              },
+              {
+                name: "Ariane Dionne-Santerre",
+                categories: [
+                  { name: "Rédaction", timeSpent: 8, timeEstimated: 10 },
+                ],
+              },
+              {
+                name: "Jimmy Paquet-Cormier",
+                categories: [
+                  { name: "Développement", timeSpent: 14, timeEstimated: 15 },
+                ],
+              },
+            ],
+            totalTimeEstimated: 20,
+            totalTimeRemaining: -32,
+            totalTimeSpent: 52,
+          },
+          {
+            id: 7,
+            uniqueId: "TEST-7",
+            name: "FO-789",
+            color: "yellow",
+            lead: "Katell Arnault de la Ménardière",
+            isArchived: true,
+            coLeads: [],
+            employees: [
+              {
+                name: "Katell Arnault de la Ménardière",
+                categories: [
+                  { name: "Gestion", timeSpent: 5, timeEstimated: 8 },
+                ],
+              },
+              {
+                name: "Annie Côté",
+                categories: [
+                  { name: "Graphisme", timeSpent: 22, timeEstimated: 25 },
+                ],
+              },
+            ],
+            totalTimeEstimated: 20,
+            totalTimeRemaining: -7,
+            totalTimeSpent: 27,
+          },
+          {
+            id: 8,
+            uniqueId: "TEST-8",
+            name: "RA-987",
+            color: "red",
+            lead: "Steve Joncoux",
+            isArchived: true,
+            coLeads: [
+              "Katell Arnault de la Ménardière",
+              "Marjolaine Poirier",
+              "Jimmy Paquet-Cormier",
+            ],
+            employees: [
+              {
+                name: "Steve Joncoux",
+                categories: [
+                  { name: "Développement", timeSpent: 16, timeEstimated: 20 },
+                ],
+              },
+              {
+                name: "Katell Arnault de la Ménardière",
+                categories: [
+                  { name: "Gestion", timeSpent: 7, timeEstimated: 10 },
+                ],
+              },
+              {
+                name: "Marjolaine Poirier",
+                categories: [
+                  { name: "Rédaction", timeSpent: 12, timeEstimated: 15 },
+                ],
+              },
+              {
+                name: "Jimmy Paquet-Cormier",
+                categories: [
+                  { name: "Développement", timeSpent: 9, timeEstimated: 12 },
+                ],
+              },
+              {
+                name: "Marie Amélie Dubé",
+                categories: [
+                  { name: "Graphisme", timeSpent: 11, timeEstimated: 10 },
+                ],
+              },
+            ],
+            totalTimeEstimated: 20,
+            totalTimeRemaining: -35,
+            totalTimeSpent: 55,
+          },
+        ],
+      },
+    },
+  },
   getDetailedProjectsByUserSuccess:{
     url: "/projects/me/detailed",
     method: "GET",

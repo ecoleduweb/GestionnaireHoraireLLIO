@@ -82,6 +82,11 @@ func GetProjectById(id string) (*DAOs.Project, error) {
 	return &project, DBErrorManager(err)
 }
 
+func DeleteProjectById(id string) error {
+	err := database.DB.Delete(&DAOs.Project{}, id).Error
+	return DBErrorManager(err)
+}
+
 func UpdateProject(projectDAO *DAOs.Project) (*DAOs.Project, error) {
 	err := database.DB.Updates(projectDAO).Error
 	return projectDAO, DBErrorManager(err)
@@ -93,4 +98,22 @@ func GetProjectsByActivityPerUser(userId int) ([]*DAOs.Project, error) {
 		Where("activities.user_id = ?", userId).
 		Find(&projects).Error
 	return projects, DBErrorManager(err)
+}
+
+func ProjectHasActivities(id string) (bool, error) {
+	var count int64
+	err := database.DB.Model(&DAOs.Activity{}).Where("project_id = ?", id).Count(&count).Error
+	if err != nil {
+		return false, DBErrorManager(err)
+	}
+	return count > 0, nil
+}
+
+func ProjectDeleteCategories(id string) (bool, error) {
+	err := database.DB.Where("project_id = ?", id).Delete(&DAOs.Category{}).Error
+
+	if err != nil {
+		return false, DBErrorManager(err)
+	}
+	return true, nil
 }

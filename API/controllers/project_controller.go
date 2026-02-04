@@ -155,6 +155,18 @@ func UpdateProject(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"updatedProject": updatedProjectDTO})
 }
 
+func DeleteProject(c *gin.Context) {
+	projectIdToDelete := c.Param("id")
+
+	err := services.DeleteProjectById(projectIdToDelete)
+	if err != nil {
+		handleError(c, err, projectSTR)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"deleted": true})
+}
+
 func GetDetailedProjectsByUser(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
 	if !exists {
