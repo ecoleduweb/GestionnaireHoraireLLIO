@@ -36,7 +36,6 @@ test.describe("loadCategoriesByProject", () => {
     // === ÉTAPE 1: Créer une nouvelle activité ===
     // Cliquer sur le bouton "Nouvelle activité"
     await page.getByText("Nouvelle activité").click();
-    await page.waitForTimeout(1000);
 
     // Attendre que le projet sélect se remplisse avec les options
     await page.waitForTimeout(500);
@@ -47,15 +46,12 @@ test.describe("loadCategoriesByProject", () => {
 
     // Sélectionner le premier projet (id=1)
     await projectSelect.selectOption("1");
-    await page.waitForTimeout(800);
 
     // Ouvrir le dropdown des catégories
     await page.locator("#activity-category-search").first().click();
-    await page.waitForTimeout(400);
 
     // Sélectionner la catégorie "Design" qui existe déjà
     await page.click(".category-item:has-text('Design')");
-    await page.waitForTimeout(400);
 
     // Remplir les détails de l'activité
     await page
@@ -65,7 +61,6 @@ test.describe("loadCategoriesByProject", () => {
 
     // Soumettre le formulaire
     await page.getByText("Créer").click();
-    await page.waitForTimeout(1500);
 
     // === ÉTAPE 2: Cliquer sur l'activité pour l'éditer ===
     // Attendre que l'événement apparaisse sur le calendrier
@@ -73,7 +68,6 @@ test.describe("loadCategoriesByProject", () => {
 
     // Cliquer sur l'événement pour ouvrir la modale d'édition
     await page.click(".fc-event");
-    await page.waitForTimeout(800);
 
     // === ÉTAPE 3: Vérifier que "Design" est sélectionné ===
     const selectedCategory = page.locator(".select-value");
@@ -82,12 +76,10 @@ test.describe("loadCategoriesByProject", () => {
     // === ÉTAPE 4: Changer de projet vers le deuxième ===
     const projectSelectEdit = page.locator("#activity-project");
     await projectSelectEdit.selectOption("2");
-    await page.waitForTimeout(800);
 
     // === ÉTAPE 5: Vérifier que "Design" n'existe pas dans le projet 2 ===
     // Ouvrir le dropdown des catégories
     await page.locator("#activity-category-search").first().click();
-    await page.waitForTimeout(400);
 
     // Vérifier que "Design" n'existe pas
     await expect(page.getByText("Design")).not.toBeVisible();
