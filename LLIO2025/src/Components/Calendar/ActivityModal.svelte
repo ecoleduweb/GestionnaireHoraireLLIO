@@ -349,6 +349,50 @@
             e.preventDefault();
           }}
         >
+
+        <!-- Séparateur et boutons d'action -->
+          <div class="mt-auto">
+            
+            <!-- Actions en bas du formulaire -->
+            <div class="flex justify-center gap-5">
+              {#if editMode}
+                <button
+                  type="button"
+                  class="py-3 px-6 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition"
+                  onclick={handleDelete}
+                >
+                  Supprimer
+                </button>
+                <button
+                  type="submit"
+                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'En cours...' : 'Modifier'}
+                </button>
+              {:else}
+                <button
+                  type="button"
+                  class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200"
+                  onclick={handleClose}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'En cours...' : 'Créer'}
+                </button>
+              {/if}
+            </div>
+
+            <!-- Ligne de séparation -->
+            <div class="border-t border-gray-200 my-6"></div>
+
+          </div>
+
           <!-- Champs de formulaire avec espacement vertical uniforme -->
           <div class="space-y-6">
             <!-- Projet -->
@@ -447,45 +491,7 @@
               </div>
             </div>
 
-            <!-- Champ Nom -->
-            <div>
-              <label for="activity-name" class="block text-gray-700 font-medium mb-2">
-                Nom
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <input
-                id="activity-name"
-                name="name"
-                type="text"
-                bind:value={activity.name}
-                placeholder="Nom de l'activité..."
-                class="form-input"
-              />
-              {#if $errors.name}
-                <span class="text-red-500 text-sm">{$errors.name}</span>
-              {/if}
-            </div>
-
-            <!-- Champ Description -->
-            <div>
-              <label for="activity-description" class="block text-gray-700 font-medium mb-2">
-                Description
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <textarea
-                id="activity-description"
-                name="description"
-                bind:value={activity.description}
-                placeholder="Description de l'activité..."
-                rows="3"
-                class="form-input"
-              ></textarea>
-              {#if $errors.description}
-                <span class="text-red-500 text-sm">{$errors.description}</span>
-              {/if}
-            </div>
-
-            <!-- Catégorie avec dropdown et recherche intégrée -->
+          <!-- Catégorie avec dropdown et recherche intégrée -->
             <div>
               <label for="activity-category-search" class="block text-gray-700 font-medium mb-2">
                 Catégorie
@@ -582,47 +588,45 @@
                 {/if}
               </div>
             </div>
-          </div>
 
-          <!-- Séparateur et boutons d'action -->
-          <div class="mt-auto">
-            <!-- Ligne de séparation -->
-            <div class="border-t border-gray-200 my-6"></div>
-
-            <!-- Actions en bas du formulaire -->
-            <div class="flex justify-center gap-5">
-              {#if editMode}
-                <button
-                  type="button"
-                  class="py-3 px-6 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition"
-                  onclick={handleDelete}
-                >
-                  Supprimer
-                </button>
-                <button
-                  type="submit"
-                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'En cours...' : 'Modifier'}
-                </button>
-              {:else}
-                <button
-                  type="button"
-                  class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200"
-                  onclick={handleClose}
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'En cours...' : 'Créer'}
-                </button>
+            <!-- Champ Nom -->
+            <div>
+              <label for="activity-name" class="block text-gray-700 font-medium mb-2">
+                Nom
+                <span class="text-gray-400">(optionnel)</span>
+              </label>
+              <input
+                id="activity-name"
+                name="name"
+                type="text"
+                bind:value={activity.name}
+                placeholder="Nom de l'activité..."
+                class="form-input"
+              />
+              {#if $errors.name}
+                <span class="text-red-500 text-sm">{$errors.name}</span>
               {/if}
             </div>
+
+            <!-- Champ Description -->
+            <div>
+              <label for="activity-description" class="block text-gray-700 font-medium mb-2">
+                Description
+                <span class="text-gray-400">(optionnel)</span>
+              </label>
+              <textarea
+                id="activity-description"
+                name="description"
+                bind:value={activity.description}
+                placeholder="Description de l'activité..."
+                rows="3"
+                class="form-input"
+              ></textarea>
+              {#if $errors.description}
+                <span class="text-red-500 text-sm">{$errors.description}</span>
+              {/if}
+            </div>
+
           </div>
         </form>
       </div>
