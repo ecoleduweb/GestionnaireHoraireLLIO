@@ -349,6 +349,7 @@
     if (!cal) return;
     cal.batchRendering(() => {
       cal.setOption('slotMinTime', range.start);
+      cal.setOption('slotMaxTime', range.end);
     });
     cal.updateSize();
  
