@@ -50,7 +50,7 @@ test.describe('checkProjectsDelete', () => {
 
         await expect(page.getByText('AT-123')).toHaveCount(2);
         await page.waitForTimeout(1000);
-        await page.getByRole('button', { name: 'Supprimer le projet' }).nth(0).click();
+        
         page.on('dialog', async dialog => {
             await expect(dialog.type()).toBe('alert');
 
@@ -58,6 +58,8 @@ test.describe('checkProjectsDelete', () => {
             
             await dialog.dismiss()
         });
+        await page.getByRole('button', { name: 'Supprimer le projet' }).nth(0).click();
+
         await page.getByRole('button', { name: 'Supprimer', exact: true }).click();
         
         await page.waitForTimeout(1000);

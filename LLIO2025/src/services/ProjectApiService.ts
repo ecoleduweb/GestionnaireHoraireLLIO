@@ -42,8 +42,8 @@ const deleteProject = async (projectId: number): Promise<void> => {
     const response = await DELETE(`/project/${projectId}`);
     return response;
   } catch (error) {
-    console.error("Erreur lors de la création du projet:", error);
-    throw new Error("Échec de la mise à jour du projet. Veuillez réessayer.");
+    console.error("Erreur lors de la suppression du projet:", error);
+    throw new Error("Erreur lors de la suppression du projet. Veuillez réessayer.");
   }
 };
 

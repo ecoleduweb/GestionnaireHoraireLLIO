@@ -357,7 +357,7 @@ export const projectMocks = {
         method: 'DELETE',
         response: {
                 status: 403,
-                json: {"error":"Le project a des activités associées, suppression impossible"}
+                json: {"error":"Le projet a des activités associées, suppression impossible"}
         }
   },
   getDetailedProjectsSuccessAfterDelete: {

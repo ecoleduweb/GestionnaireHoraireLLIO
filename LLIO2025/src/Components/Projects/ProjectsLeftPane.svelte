@@ -42,10 +42,13 @@
     showModal = false;
     showModalDelete = false;
     projectToEdit = null;
+    projectToDelete = null;
   }
 
   const handleSuccessDelete = async () => {
-    await ProjectApiService.deleteProject(projectToDelete.id);
+    if (projectToDelete?.id != null) {
+      await ProjectApiService.deleteProject(projectToDelete.id);
+    }
     onProjectsRefresh();
   }
 </script>
