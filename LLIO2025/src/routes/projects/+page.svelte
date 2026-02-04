@@ -12,7 +12,6 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let projectFilter = $state('');
-  let filteredProjects = $state<Project[]>([]);
 
   let currentUser = $state<UserInfo | null>(null);
 
@@ -41,10 +40,10 @@
     loadProjects();
   });
 
- $effect(() => { // si le search est update, le fonction est rééxecutée 
+  $effect(() => { // si le search est update, le fonction est rééxecutée 
     const filter = projectFilter.toLowerCase().trim();
 
-  filteredProjects = projects.filter(project =>
+    projects = projects.filter(project =>
     project.name.toLowerCase().includes(filter) ||
     project.id.toString().includes(filter)
   );
@@ -55,7 +54,7 @@
 
 <div class="bg-gray-100">
   {#if currentUser}
-  <ProjectsLeftPane {filteredProjects} {currentUser} onProjectsRefresh={loadProjects} />
+  <ProjectsLeftPane projects={projects} {currentUser} onProjectsRefresh={loadProjects} />
   {/if}
   
   <div class="flex flex-col" style="padding-left: 300px;">
@@ -90,7 +89,7 @@
       <p class="text-red-500">{error}</p>
     </div>
   {:else}
-    {#each filteredProjects as project}
+    {#each projects as project}
       <ProjectComponent {project} />
     {/each}
   {/if}

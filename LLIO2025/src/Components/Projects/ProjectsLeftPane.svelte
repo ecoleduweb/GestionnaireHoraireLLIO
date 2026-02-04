@@ -10,11 +10,11 @@
 
   type Props = {
     currentUser: UserInfo;
-    filteredProjects : Project[];
+    projects : Project[];
     onProjectsRefresh: () => void;
   };
 
-  let { filteredProjects = [], currentUser, onProjectsRefresh }: Props = $props();
+  let { projects: filteredProjects = [], currentUser, onProjectsRefresh }: Props = $props();
   let isArchivedVisible = $state(false);
   let showModal = $state(false);
   let projectToEdit = $state<Project | null>(null);
