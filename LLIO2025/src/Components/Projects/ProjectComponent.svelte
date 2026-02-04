@@ -38,9 +38,9 @@
         <div class="p-4">
           <div class="flex justify-between items-center">
             <div>
-              <span class="text-xl">{project.name}</span>
+              <span class="text-xl">{project.uniqueId}</span>
               <span class="text-xl text-gray-500 ml-2">|</span>
-              <span class="text-base text-gray-500 ml-2">{project.description}</span>
+              <span class="text-xl">{project.name}</span>
             </div>
           </div>
           <div class="flex mt-1">

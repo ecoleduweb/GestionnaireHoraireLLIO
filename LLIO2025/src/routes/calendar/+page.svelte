@@ -161,7 +161,7 @@
         slotMinTime: activeTimeRange.start,
         slotMaxTime: activeTimeRange.end,
         nowIndicator: true,
-
+        
         // Gestion du drag
         editable: true,
         eventDrop: handleEventDropOrResize,
@@ -169,7 +169,7 @@
 
         height: 'auto',
         contentHeight: 'auto', // Hauteur automatique
-        slotHeight: 25, // Hauteur réduite des slots (plus compact)
+        
         expandRows: true,
         dayHeaderFormat: headerFormat,
         eventClassNames: getEventClassName,
@@ -188,7 +188,8 @@
           // Appelé à chaque changement de dates ou de vue
           updateViewTitle();
         },
-      };
+        
+      }
 
       calendarService.onDateSelect = (info) => {
         editMode = false;
@@ -348,7 +349,6 @@
     if (!cal) return;
     cal.batchRendering(() => {
       cal.setOption('slotMinTime', range.start);
-      cal.setOption('slotMaxTime', range.end === '24:00:00' ? '23:59:59' : range.end);
     });
     cal.updateSize();
  
@@ -530,15 +530,25 @@
 
 <style>
   :global(.fc .fc-timegrid-slot) {
-    height: 25px !important;
-    min-height: 25px !important;
-    max-height: 25px !important;
+    height: 45px !important;/* ceci correspond à la taille d'une case, pour mettre 4 crénaux de 15min dans 1h sans chevauchement, il faut la fixer à 45px */
+    min-height: 45px !important;
+    max-height: 45px !important;
+    
   }
 
   :global(.fc-timegrid-event) {
-    min-height: 20px !important;
-    max-height: none !important;
-  }
+  margin: 1px !important;
+  padding: 2px 4px !important;
+  font-size: 11px;
+  line-height: 1.2;
+  border-radius: 6px;
+}
+
+/* Supprime les espacements verticaux inutiles */
+:global(.fc-timegrid-col-events) {
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
   :global(.fc-timegrid-slot-label) {
     vertical-align: top !important;
