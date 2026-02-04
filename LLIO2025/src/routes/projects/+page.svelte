@@ -64,6 +64,7 @@
     <div class="px-4 pb-4">
       <div class="relative">
         <input
+          data-testid="project-search"
           type="text"
           bind:value={search}
           placeholder="Rechercher un projet..."

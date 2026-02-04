@@ -9,12 +9,12 @@
   import { UserRole } from '$lib/types/enums';
 
   type Props = {
-    projects: Project[];
     currentUser: UserInfo;
+    filteredComponant : Project[];
     onProjectsRefresh: () => void;
   };
 
-  let { projects = [], currentUser, onProjectsRefresh }: Props = $props();
+  let { filteredComponant = [], currentUser, onProjectsRefresh }: Props = $props();
   let isArchivedVisible = $state(false);
   let showModal = $state(false);
   let projectToEdit = $state<Project | null>(null);
@@ -25,7 +25,7 @@
   }
 
   const handleEditProject = (project) =>{
-    projectToEdit = projects.find((x) => x.id === project.id);
+    projectToEdit = filteredComponant.find((x) => x.id === project.id);
     showModal = true;
   }
 
@@ -74,19 +74,19 @@
     </div>
 
     <div class="overflow-y-auto max-h-[calc(100vh-150px)]">
-      {#each projects.filter((x) => !x.isArchived) as project}
+      {#each filteredComponant.filter((x) => !x.isArchived) as project}
         <ProjectItem {project} {currentUser} onEdit={handleEditProject} />
       {/each}
 
       <!-- Projets archivés -->
-      {#if projects.some((x) => x.isArchived)}
+      {#if filteredComponant.some((x) => x.isArchived)}
         <div>
           <button
             class="w-full p-4 flex items-center justify-between text-gray-600 hover:bg-gray-50 cursor-pointer"
             onclick={() => (isArchivedVisible = !isArchivedVisible)}
           >
             <span class="font-medium"
-              >Projets archivés ({projects.filter((x) => x.isArchived).length})</span
+              >Projets archivés ({filteredComponant.filter((x) => x.isArchived).length})</span
             >
             <svg
               class="w-5 h-5 transform transition-transform {isArchivedVisible ? 'rotate-180' : ''}"
@@ -105,7 +105,7 @@
 
           {#if isArchivedVisible}
             <div transition:slide={{ duration: 300, easing: quintOut }}>
-              {#each projects.filter((x) => x.isArchived) as project}
+              {#each filteredComponant.filter((x) => x.isArchived) as project}
                 <ProjectItem {project} {currentUser} onEdit={handleEditProject} />
               {/each}
             </div>
