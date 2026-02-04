@@ -156,12 +156,13 @@
           week: 'Semaine',
           day: 'Jour',
         },
-        slotDuration: '00:30:00', // Durée de chaque intervalle de temps
+        slotDuration: '00:15:00', // Durée de chaque intervalle de temps
+        slotLabelInterval: '01:00', // affichage des labels toutes les heures
         allDaySlot: false,
         slotMinTime: activeTimeRange.start,
         slotMaxTime: activeTimeRange.end,
         nowIndicator: true,
-
+        
         // Gestion du drag
         editable: true,
         eventDrop: handleEventDropOrResize,
@@ -169,7 +170,7 @@
 
         height: 'auto',
         contentHeight: 'auto', // Hauteur automatique
-        slotHeight: 25, // Hauteur réduite des slots (plus compact)
+        
         expandRows: true,
         dayHeaderFormat: headerFormat,
         eventClassNames: getEventClassName,
@@ -188,7 +189,8 @@
           // Appelé à chaque changement de dates ou de vue
           updateViewTitle();
         },
-      };
+        
+      }
 
       calendarService.onDateSelect = (info) => {
         editMode = false;
@@ -341,28 +343,19 @@
     loadActivities();
   }
 
-  const setTimeRange = (range) => {
+  const setTimeRange = async (range) => {
     activeTimeRange = range;
 
-    if (calendarService?.calendar) {
-      calendarService.calendar.setOption('slotMinTime', range.start);
-      calendarService.calendar.setOption('slotMaxTime', range.end);
-      calendarService.calendar.render();
+    const cal = calendarService?.calendar;
+    if (!cal) return;
+    cal.batchRendering(() => {
+      cal.setOption('slotMinTime', range.start);
+      cal.setOption('slotMaxTime', range.end);
+    });
+    cal.updateSize();
+ 
+  };
 
-      // Modifier directement les styles
-      const tableElement = calendarEl.querySelector('.fc-timegrid-slots table') as HTMLTableElement;
-      if (tableElement) {
-        tableElement.style.height = range.start === '00:00:00' ? '1200px' : '540px';
-      }
-
-      // Ajuster la hauteur des cellules
-      const cells = calendarEl.querySelectorAll('.fc-timegrid-slot');
-      const cellHeight = range.start === '00:00:00' ? '20px' : '30px';
-      cells.forEach((cell) => {
-        (cell as HTMLElement).style.height = cellHeight;
-      });
-    }
-  }
 
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString('fr-FR', {
@@ -542,12 +535,22 @@
     height: 25px !important;
     min-height: 25px !important;
     max-height: 25px !important;
+    
   }
 
   :global(.fc-timegrid-event) {
-    min-height: 20px !important;
-    max-height: none !important;
-  }
+  margin: 1px !important;
+  padding: 2px 4px !important;
+  font-size: 11px;
+  line-height: 1.2;
+  border-radius: 6px;
+}
+
+/* Supprime les espacements verticaux inutiles */
+:global(.fc-timegrid-col-events) {
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
   :global(.fc-timegrid-slot-label) {
     vertical-align: top !important;

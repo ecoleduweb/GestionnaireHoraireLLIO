@@ -23,6 +23,10 @@ test.describe('checkProjectsDisplay', () => {
         await expect(page.getByText('AT-456')).toHaveCount(2);
         await expect(page.getByText('FO-115')).toHaveCount(2);
         await expect(page.getByText('RA-224')).toHaveCount(2);        
+        await expect(page.getByText('TEST-1')).toHaveCount(2);
+        await expect(page.getByText('TEST-2')).toHaveCount(2);
+        await expect(page.getByText('TEST-3')).toHaveCount(2);
+        await expect(page.getByText('TEST-4')).toHaveCount(2);  
     });
 
     test('projetsArchivesVisibles', async ({ page }) => {

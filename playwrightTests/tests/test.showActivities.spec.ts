@@ -120,7 +120,7 @@ test.describe('showActivities', () => {
         await page.locator('button:has(.lucide-chevron-right)').click();
         // Vérifie les activités de la semaine
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(1);
+        await expect(activities.length).toBe(1);
     
     });
     test('showActivitiesPreviousMonth', async ({ page }) => {
