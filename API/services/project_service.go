@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"llio-api/customs_errors"
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
@@ -120,41 +121,47 @@ func GetProjectById(id string) (*DTOs.ProjectDTO, error) {
 	return projectDTO, err
 }
 
-func DeleteProjectById(id string) error {
+func DeleteProjectById(id int) (*DTOs.ProjectDTO, error) {
 	// Check if the project exists
-	projectDAO, err := repositories.GetProjectById(id)
+	projectDAO, err := repositories.GetProjectById(fmt.Sprintf("%d", id))
+
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if projectDAO == nil {
-		return nil
+		return nil, nil
 	}
 
 	projectHasActvities, err := repositories.ProjectHasActivities(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if projectHasActvities {
-		log.Printf("Project %s has activities: %v", id, projectHasActvities)
-		return customs_errors.ErrUserHasActivities
+		log.Printf("Project %d has activities: %v", id, projectHasActvities)
+		return nil, customs_errors.ErrUserHasActivities
 	}
 
 	projectHasCategories, err := repositories.ProjectDeleteCategories(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if projectHasCategories {
-		log.Printf("Deleted categories: %v from project: %s", projectHasCategories, id)
+		log.Printf("Deleted categories: %v from project: %d", projectHasCategories, id)
 	}
 
 	// Delete the project
-	err = repositories.DeleteProjectById(id)
-	if err != nil {
-		return err
+	projectDTO := &DTOs.ProjectDTO{}
+	err1 := copier.Copy(projectDTO, projectDAO)
+	err2 := repositories.DeleteProjectById(id)
+	if err1 != nil {
+		return nil, err1
+	}
+	if err2 != nil {
+		return nil, err2
 	}
 
-	return nil
+	return projectDTO, nil
 }
 
 func UpdateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {

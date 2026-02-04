@@ -158,9 +158,21 @@ func UpdateProject(c *gin.Context) {
 func DeleteProject(c *gin.Context) {
 	projectIdToDelete := c.Param("id")
 
-	err := services.DeleteProjectById(projectIdToDelete)
+	// Convert string to int
+	projectIDInt, err := strconv.Atoi(projectIdToDelete)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ID d'utilisateur invalide"})
+		return
+	}
+
+	projectDTO, err := services.DeleteProjectById(projectIDInt)
 	if err != nil {
 		handleError(c, err, projectSTR)
+		return
+	}
+
+	if projectDTO == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Projet non trouvé"})
 		return
 	}
 
