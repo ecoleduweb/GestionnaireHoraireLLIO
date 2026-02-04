@@ -1,6 +1,6 @@
 <script lang="ts">
   import { formatHours } from '../../utils/date';
-  import { Pencil, User } from 'lucide-svelte';
+  import { Pencil, User, Trash2 } from 'lucide-svelte';
   import type { Project, UserInfo } from '../../Models';
   import { UserRole } from '$lib/types/enums';
 
@@ -8,13 +8,19 @@
     project: Project;
     currentUser: UserInfo | null;
     onEdit: (project: Project) => void;
+    onDelete: (project: Project) => void;
   };
 
-  let { project, currentUser, onEdit } = $props();
+  let { project, currentUser, onEdit, onDelete } = $props();
 
   const handleEdit = (event: MouseEvent) =>{
     event.stopPropagation(); // Empêche la propagation du clic aux éléments parents
     onEdit(project);
+  }
+
+  const handleDelete = (event: MouseEvent) => {
+    event.stopPropagation();
+    onDelete(project);
   }
 </script>
 
@@ -36,6 +42,15 @@
           aria-label="Modifier le projet"
         >
           <Pencil size={16} />
+        </button>
+      {/if}
+      {#if currentUser.role == UserRole.Admin}
+        <button
+          class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+          onclick={handleDelete}
+          aria-label="Supprimer le projet"
+        >
+          <Trash2 size={16} />
         </button>
       {/if}
     </div>

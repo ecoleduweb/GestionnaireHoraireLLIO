@@ -31,6 +31,11 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
 
+	case customs_errors.ErrProjectHasActivities:
+		errorMsg := fmt.Sprintf("Le projet a une ou des activités associées, suppression impossible")
+		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
+
 	case customs_errors.ErrUserHasProjects:
 		errorMsg := fmt.Sprintf("L'utilisateur a un ou des projets associées, suppression impossible")
 		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
