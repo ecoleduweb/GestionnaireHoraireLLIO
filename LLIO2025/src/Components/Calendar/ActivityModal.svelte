@@ -14,8 +14,7 @@
   import '../../style/app.css';
   import { ChevronDown, X, Plus } from 'lucide-svelte';
   import ConfirmationCreateCategory from './ConfirmModal.svelte';
-  import Select from 'svelte-select';
-  import type SelectItem from "$lib/types/SelectItem";
+  import SearchSelect from "../Global/SearchSelect.svelte";
 
   type Props = {
     show: boolean;
@@ -108,33 +107,6 @@
     const truncatedName = name.substring(0, availableForName - 3) + "...";
     return `${uniqueId}${separator}${truncatedName}`;
   };
-
-  // Valeurs pour le dropdown de projets
-  let dropdownProjectList: SelectItem[] | null = $state(null);
-  let dropdownSelectedProjet: SelectItem | null = $state(null);
-
-  dropdownProjectList = projects.map((value) => {
-    return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
-  })
-  if (activity.projectId){
-    dropdownSelectedProjet = dropdownProjectList?.find(p => p.value === activity.projectId);    
-  }
-
-  /* -- Effet pour gérer la modification du projet sélectionné --
-
-        Cet effet va modifier l'ID du projet dans activity, l'objet utilisé par le reste du composant et pour l'envoi.
-        L'ID vient de l'objet de la valeur du Select, qui contient un champ label (visible)
-        ainsi qu'un champ value qui contient ledit ID.
-
-        setFields(), à son tour, donne la nouvelle valeur à Felte (validation du formulaire),
-        puisque ni un champ caché ni mettre le nom et l'ID dans le Select fonctionnait. Si cette
-        méthode n'était pas utilisée, on pourrait soumettre une activité sans projet, ce qui
-        ne doit pas arriver.
-  */
-  $effect(() => {
-    activity.projectId = dropdownSelectedProjet?.value;
-    setFields('projectId', activity.projectId);
-  });
 
   // État pour le dropdown de catégories
   let categoryDropdownOpen = $state(false);
@@ -386,11 +358,15 @@
                 Projet
                 <span class="text-red-500">*</span>
               </label>
-              <Select
+              <SearchSelect
                 id="activity-project"
-                items={dropdownProjectList}
-                bind:value={dropdownSelectedProjet}
+                name="projectId"
+                items={projects.map((value) => {
+                  return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
+                })}
+                bind:selectedValue={activity.projectId}
                 placeholder="Sélectionner un projet"
+                setFields={setFields}
                 required
               />
               {#if $errors.projectId}
