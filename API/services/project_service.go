@@ -138,25 +138,27 @@ func DeleteProjectById(id int) (*DTOs.ProjectDTO, error) {
 	}
 	if projectHasActvities {
 		log.Printf("Project %d has activities: %v", id, projectHasActvities)
-		return nil, customs_errors.ErrUserHasActivities
+		return nil, customs_errors.ErrProjectHasActivities
 	}
 
-	projectHasCategories, err := repositories.ProjectDeleteCategories(id)
+	projectCategoriesDeleted, err := repositories.ProjectDeleteCategories(id)
 	if err != nil {
 		return nil, err
 	}
 
-	if projectHasCategories {
-		log.Printf("Deleted categories: %v from project: %d", projectHasCategories, id)
+	if projectCategoriesDeleted {
+		log.Printf("Deleted categories: %v from project: %d", projectCategoriesDeleted, id)
 	}
 
-	// Delete the project
+	//Copy the project
 	projectDTO := &DTOs.ProjectDTO{}
 	err1 := copier.Copy(projectDTO, projectDAO)
-	err2 := repositories.DeleteProjectById(id)
 	if err1 != nil {
 		return nil, err1
 	}
+
+	//Delete the project
+	err2 := repositories.DeleteProjectById(id)
 	if err2 != nil {
 		return nil, err2
 	}

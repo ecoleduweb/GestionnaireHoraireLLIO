@@ -148,8 +148,6 @@
   onClose={handleCloseModal}
 />
 {/if}
-<!--TODO:-->
-<!--Modal Delete et backend-->
 
 
 <style>

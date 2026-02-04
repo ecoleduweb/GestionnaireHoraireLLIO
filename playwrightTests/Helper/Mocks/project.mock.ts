@@ -357,7 +357,7 @@ export const projectMocks = {
         method: 'DELETE',
         response: {
                 status: 403,
-                json: {"error":"Impossible de supprimer cet utilisateur car il est associé à des projets ou activités."}
+                json: {"error":"Le project a des activités associées, suppression impossible"}
         }
   },
   getDetailedProjectsSuccessAfterDelete: {
