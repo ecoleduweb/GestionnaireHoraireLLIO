@@ -3,7 +3,7 @@
   import { UserApiService } from '../../services/UserApiService';
   import { ProjectApiService } from '../../services/ProjectApiService';
   import { CalendarService as CS } from '../../services/calendar.service';
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import ActivityModal from '../../Components/Calendar/ActivityModal.svelte';
   import DashboardLeftPane from '../../Components/Calendar/DashboardLeftPane.svelte';
   import { ActivityApiService } from '../../services/ActivityApiService';
@@ -346,16 +346,12 @@
 
   const cal = calendarService?.calendar;
   if (!cal) return;
-
   cal.batchRendering(() => {
     cal.setOption('slotMinTime', range.start);
     cal.setOption('slotMaxTime', range.end === '24:00:00' ? '23:59:59' : range.end);
   });
-
-  await tick();
-  requestAnimationFrame(() => {
     cal.updateSize();
-  });
+ 
 };
 
 
