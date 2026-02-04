@@ -88,26 +88,6 @@
     time.endMinutes = result.endMinutes;
   };
 
-  const getTruncatedDisplayText = (uniqueId, name, maxLength = 30) => {
-    const separator = " | ";
-    const availableForName = maxLength - uniqueId.length - separator.length;
-    if (name === undefined || name === null || name.trim() === "") {
-      return uniqueId; // Si le nom est vide, retourner uniquement l'uniqueId
-    }
-
-    if (availableForName <= 0) {
-      // Si l'uniqueId est déjà trop long, on le tronque aussi
-      return uniqueId.substring(0, maxLength - 3) + "...";
-    }
-
-    if (name.length <= availableForName) {
-      return `${uniqueId}${separator}${name}`;
-    }
-
-    const truncatedName = name.substring(0, availableForName - 3) + "...";
-    return `${uniqueId}${separator}${truncatedName}`;
-  };
-
   // État pour le dropdown de catégories
   let categoryDropdownOpen = $state(false);
   let searchTerm = $state('');
@@ -301,6 +281,26 @@
       console.error("Erreur lors de l'ajout d'une catégorie", error);
       alert("Erreur lors de l'ajout de la catégorie");
     }
+  };
+
+  const getTruncatedDisplayText = (uniqueId, name, maxLength = 30) => {
+    const separator = " | ";
+    const availableForName = maxLength - uniqueId.length - separator.length;
+    if (name === undefined || name === null || name.trim() === "") {
+      return uniqueId; // Si le nom est vide, retourner uniquement l'uniqueId
+    }
+
+    if (availableForName <= 0) {
+      // Si l'uniqueId est déjà trop long, on le tronque aussi
+      return uniqueId.substring(0, maxLength - 3) + "...";
+    }
+
+    if (name.length <= availableForName) {
+      return `${uniqueId}${separator}${name}`;
+    }
+
+    const truncatedName = name.substring(0, availableForName - 3) + "...";
+    return `${uniqueId}${separator}${truncatedName}`;
   };
 
   $effect(() => {
