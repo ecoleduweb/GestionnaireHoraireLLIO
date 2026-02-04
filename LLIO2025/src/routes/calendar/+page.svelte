@@ -156,7 +156,8 @@
           week: 'Semaine',
           day: 'Jour',
         },
-        slotDuration: '00:30:00', // Durée de chaque intervalle de temps
+        slotDuration: '00:15:00', // Durée de chaque intervalle de temps
+        slotLabelInterval: '01:00', // affichage des labels toutes les heures
         allDaySlot: false,
         slotMinTime: activeTimeRange.start,
         slotMaxTime: activeTimeRange.end,
