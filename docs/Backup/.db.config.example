@@ -1,0 +1,7 @@
+# Configuration de la base de données
+# Ce fichier sera généré/écrasé par le script de déploiement via les secrets GitHub
+DB_USER="root"
+DB_PASS="remplacer_par_password"
+DB_NAME="llio"
+BACKUP_DIR="/var/backups/mariadb"
+RETENTION_DAYS=365
