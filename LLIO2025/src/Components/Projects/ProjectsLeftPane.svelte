@@ -11,8 +11,8 @@
   import ConfirmationModal from '../ConfirmationModal.svelte';
 
   type Props = {
-    projects: Project[];
     currentUser: UserInfo;
+    projects : Project[];
     onProjectsRefresh: () => void;
   };
 

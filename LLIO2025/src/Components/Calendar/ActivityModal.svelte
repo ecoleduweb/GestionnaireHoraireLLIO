@@ -335,7 +335,7 @@
       <!-- Contenu du formulaire - espace vertical ajusté -->
       <div class="p-6 flex-grow">
         <form
-          class="flex flex-col h-full"
+          class="flex flex-col"
           use:form
           onsubmit={(e) => {
             e.preventDefault();
