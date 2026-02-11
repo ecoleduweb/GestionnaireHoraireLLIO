@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"llio-api/models/DTOs"
 	"llio-api/models/enums"
 	"llio-api/services"
@@ -45,6 +46,46 @@ func CreatedProject(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"response": "Le projet a bien été ajouté à la base de données",
 		"project":  projectAdded,
+	})
+}
+
+func AddCoManager(c *gin.Context) {
+	projectId := c.Param("projectId")
+	projectIdInt, err := strconv.Atoi(projectId)
+	if err != nil {
+		handleError(c, err, projectSTR)
+		return
+	}
+
+	userId := c.Param("userId")
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		handleError(c, err, userSTR)
+		return
+	}
+
+	coManagerDTO := DTOs.CoManagerDTO{
+		UserId:    userIdInt,
+		ProjectId: projectIdInt,
+	}
+
+	currentUser, _ := c.Get("current_user")
+
+	currentUserDTO, ok := currentUser.(*DTOs.UserDTO)
+	if !ok {
+		handleError(c, errors.New("erreur interne du serveur"), "authentification")
+		return
+	}
+
+	coManagerAdded, err := services.AddCoManager(&coManagerDTO, currentUserDTO.Id)
+	if err != nil {
+		handleError(c, err, "co-chargé de projet")
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"response":  "Le co-chargé de projet a bien été ajouté à la base de données",
+		"coManager": coManagerAdded,
 	})
 }
 

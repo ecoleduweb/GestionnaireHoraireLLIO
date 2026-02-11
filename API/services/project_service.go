@@ -155,6 +155,23 @@ func formatProjects(projects []*DAOs.Project, userId *int) ([]map[string]any, er
 		categoryMap[cat.Id] = cat
 	}
 
+	projectIds := make([]int, 0, len(projects))
+	for _, project := range projects {
+		projectIds = append(projectIds, project.Id)
+	}
+
+	coManagers, err := repositories.GetCoManagersByProjectIds(projectIds)
+	if err != nil {
+		return nil, err
+	}
+	coManagerMap := make(map[int][]int)
+	for _, coManager := range coManagers {
+		coManagerMap[coManager.ProjectId] = append(
+			coManagerMap[coManager.ProjectId],
+			coManager.UserId,
+		)
+	}
+
 	var result []map[string]any
 	for _, project := range projects {
 		var tempActivities []DAOs.ActivityWithTimeSpent
@@ -177,14 +194,14 @@ func formatProjects(projects []*DAOs.Project, userId *int) ([]map[string]any, er
 			}
 		}
 
-		formattedProject := formatProjectWithActivities(project, activities, userMap, categoryMap)
+		formattedProject := formatProjectWithActivities(project, activities, userMap, categoryMap, coManagerMap[project.Id])
 		result = append(result, formattedProject)
 	}
 
 	return result, nil
 }
 
-func formatProjectWithActivities(project *DAOs.Project, activities []DAOs.Activity, userMap map[int]*DAOs.User, categoryMap map[int]*DAOs.Category) map[string]any {
+func formatProjectWithActivities(project *DAOs.Project, activities []DAOs.Activity, userMap map[int]*DAOs.User, categoryMap map[int]*DAOs.Category, coManagerUserIds []int) map[string]any {
 	employeesMap := make(map[int]map[string]any)
 
 	for _, activity := range activities {
@@ -246,12 +263,24 @@ func formatProjectWithActivities(project *DAOs.Project, activities []DAOs.Activi
 		lead = manager.FirstName + " " + manager.LastName
 	}
 
+	// Get co-managers info
+	coLeads := make([]map[string]any, 0, len(coManagerUserIds))
+	for _, coManagerId := range coManagerUserIds {
+		coManager, exists := userMap[coManagerId]
+		if exists {
+			coLeads = append(coLeads, map[string]any{
+				"id":   coManagerId,
+				"name": coManager.FirstName + " " + coManager.LastName,
+			})
+		}
+	}
+
 	return map[string]any{
 		"id":                 project.Id,
 		"uniqueId":           project.UniqueId,
 		"name":               project.Name,
 		"lead":               lead,
-		"coLeads":            []string{},
+		"coLeads":            coLeads,
 		"employees":          employees,
 		"totalTimeEstimated": project.EstimatedHours,
 		"totalTimeRemaining": float64(project.EstimatedHours) - totalTimeSpent,
