@@ -83,7 +83,11 @@ func GetProjectById(id string) (*DAOs.Project, error) {
 }
 
 func UpdateProject(projectDAO *DAOs.Project) (*DAOs.Project, error) {
-	err := database.DB.Updates(projectDAO).Error
+	// AJOUT : .Select(...) force la mise à jour de ces colonnes, même si la valeur est 0 ou false
+	err := database.DB.Model(projectDAO).
+		Select("ManagerId", "UniqueId", "Name", "Status", "Billable", "UpdatedAt", "EndAt", "EstimatedHours").
+		Updates(projectDAO).Error
+
 	return projectDAO, DBErrorManager(err)
 }
 

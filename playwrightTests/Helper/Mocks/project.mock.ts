@@ -10,8 +10,8 @@ export const projectMocks = {
         projects: [
           {
             id: 1,
+            uniqueId: "TEST-1",
             name: "AT-123",
-            description: "Nommer le projet",
             color: "blue",
             lead: "Katell Arnault de la Ménardière",
             isArchived: false,
@@ -41,8 +41,8 @@ export const projectMocks = {
           },
           {
             id: 2,
+            uniqueId: "TEST-2",
             name: "AT-456",
-            description: "Le projet de Marie Amélie",
             color: "pink",
             lead: "Katell Arnault de la Ménardière",
             isArchived: false,
@@ -79,8 +79,8 @@ export const projectMocks = {
           },
           {
             id: 3,
+            uniqueId: "TEST-3",
             name: "FO-115",
-            description: "Graphisme 101",
             color: "yellow",
             lead: "Katell Arnault de la Ménardière",
             isArchived: false,
@@ -105,8 +105,8 @@ export const projectMocks = {
           },
           {
             id: 4,
+            uniqueId: "TEST-4",
             name: "RA-224",
-            description: "Noisette Steve",
             color: "red",
             lead: "Steve Joncoux",
             isArchived: false,
@@ -153,8 +153,8 @@ export const projectMocks = {
           },
           {
             id: 5,
+            uniqueId: "TEST-5",
             name: "AT-789",
-            description: "Nommer le projet",
             color: "blue",
             lead: "Katell Arnault de la Ménardière",
             isArchived: true,
@@ -184,8 +184,8 @@ export const projectMocks = {
           },
           {
             id: 6,
+            uniqueId: "TEST-6",
             name: "AT-987",
-            description: "Le projet de Marie Amélie",
             color: "pink",
             lead: "Katell Arnault de la Ménardière",
             isArchived: true,
@@ -222,8 +222,8 @@ export const projectMocks = {
           },
           {
             id: 7,
+            uniqueId: "TEST-7",
             name: "FO-789",
-            description: "Graphisme 101",
             color: "yellow",
             lead: "Katell Arnault de la Ménardière",
             isArchived: true,
@@ -248,8 +248,8 @@ export const projectMocks = {
           },
           {
             id: 8,
+            uniqueId: "TEST-8",
             name: "RA-987",
-            description: "Noisette Steve",
             color: "red",
             lead: "Steve Joncoux",
             isArchived: true,
@@ -328,140 +328,177 @@ export const projectMocks = {
     response: {
       status: 201,
       json: {
-          "project": {
-              "id": 6,
-              "managerId": 3,
-              "name": "Jérémie Lapointe",
-              "description": "das",
-              "status": 0,
-              "billable": true,
-              "activities": [],
-              "categories": [],
-              "createdAt": "2025-03-23T15:07:14.991-04:00",
-              "updatedAt": "2025-03-23T15:07:14.991-04:00",
-              "endAt": "0001-01-01T00:00:00Z"
-          },
-          "response": "Le projet a bien été ajouté à la base de données"
+        project: {
+          id: 6,
+          managerId: 3,
+          name: "Jérémie Lapointe",
+          description: "das",
+          status: 0,
+          billable: true,
+          activities: [],
+          categories: [],
+          createdAt: "2025-03-23T15:07:14.991-04:00",
+          updatedAt: "2025-03-23T15:07:14.991-04:00",
+          endAt: "0001-01-01T00:00:00Z",
+        },
+        response: "Le projet a bien été ajouté à la base de données",
       },
     },
   },
-  getDetailedProjectsByUserSuccess:{
+  getDetailedProjectsByUserSuccess: {
     url: "/projects/me/detailed",
     method: "GET",
     response: {
       status: 200,
       json: {
-        "projects": [
-            {
-                "billable": false,
-                "coLeads": [],
-                "createdAt": "2025-06-23T16:43:12-04:00",
-                "employees": [
-                    {
-                        "categories": [
-                            {
-                                "name": "Par défaut",
-                                "timeEstimated": 0,
-                                "timeSpent": 24
-                            }
-                        ],
-                        "name": " "
-                    }
+        projects: [
+          {
+            billable: false,
+            coLeads: [],
+            createdAt: "2025-06-23T16:43:12-04:00",
+            employees: [
+              {
+                categories: [
+                  {
+                    name: "Par défaut",
+                    timeEstimated: 0,
+                    timeSpent: 24,
+                  },
                 ],
-                "id": 11,
-                "isArchived": false,
-                "lead": "Toumani Camara",
-                "managerId": 4,
-                "name": "new commut",
-                "totalTimeEstimated": 24,
-                "totalTimeRemaining": 0,
-                "totalTimeSpent": 24,
-                "uniqueId": "new-1",
-                "updatedAt": "2025-06-30T16:50:03-04:00"
-            },
-            {
-                "billable": true,
-                "coLeads": [],
-                "createdAt": "2025-06-23T16:27:39-04:00",
-                "employees": [
-                    {
-                        "categories": [
-                            {
-                                "name": "Par défaut",
-                                "timeEstimated": 0,
-                                "timeSpent": 1
-                            }
-                        ],
-                        "name": " "
-                    }
+                name: " ",
+              },
+            ],
+            id: 11,
+            isArchived: false,
+            lead: "Toumani Camara",
+            managerId: 4,
+            name: "new commut",
+            totalTimeEstimated: 24,
+            totalTimeRemaining: 0,
+            totalTimeSpent: 24,
+            uniqueId: "new-1",
+            updatedAt: "2025-06-30T16:50:03-04:00",
+          },
+          {
+            billable: true,
+            coLeads: [],
+            createdAt: "2025-06-23T16:27:39-04:00",
+            employees: [
+              {
+                categories: [
+                  {
+                    name: "Par défaut",
+                    timeEstimated: 0,
+                    timeSpent: 1,
+                  },
                 ],
-                "id": 10,
-                "isArchived": false,
-                "lead": "Toumani Camara",
-                "managerId": 4,
-                "name": "projet ! apre smigration ",
-                "totalTimeEstimated": 0,
-                "totalTimeRemaining": -1,
-                "totalTimeSpent": 1,
-                "uniqueId": "migr-2",
-                "updatedAt": "2025-06-23T16:27:39-04:00"
-            },
-            {
-                "billable": false,
-                "coLeads": [],
-                "createdAt": "2025-06-29T17:24:21-04:00",
-                "employees": [
-                    {
-                        "categories": [
-                            {
-                                "name": "Par défaut",
-                                "timeEstimated": 0,
-                                "timeSpent": 2.5
-                            }
-                        ],
-                        "name": " "
-                    }
+                name: " ",
+              },
+            ],
+            id: 10,
+            isArchived: false,
+            lead: "Toumani Camara",
+            managerId: 4,
+            name: "projet ! apre smigration ",
+            totalTimeEstimated: 0,
+            totalTimeRemaining: -1,
+            totalTimeSpent: 1,
+            uniqueId: "migr-2",
+            updatedAt: "2025-06-23T16:27:39-04:00",
+          },
+          {
+            billable: false,
+            coLeads: [],
+            createdAt: "2025-06-29T17:24:21-04:00",
+            employees: [
+              {
+                categories: [
+                  {
+                    name: "Par défaut",
+                    timeEstimated: 0,
+                    timeSpent: 2.5,
+                  },
                 ],
-                "id": 13,
-                "isArchived": false,
-                "lead": "Usager test",
-                "managerId": 1,
-                "name": "le nom !",
-                "totalTimeEstimated": 20,
-                "totalTimeRemaining": 17.5,
-                "totalTimeSpent": 2.5,
-                "uniqueId": "123-mmm",
-                "updatedAt": "2025-06-30T16:38:53-04:00"
-            },
-            {
-                "billable": false,
-                "coLeads": [],
-                "createdAt": "2025-07-01T11:43:49-04:00",
-                "employees": [
-                    {
-                        "categories": [
-                            {
-                                "name": "Par défaut",
-                                "timeEstimated": 0,
-                                "timeSpent": 15
-                            }
-                        ],
-                        "name": " "
-                    }
+                name: " ",
+              },
+            ],
+            id: 13,
+            isArchived: false,
+            lead: "Usager test",
+            managerId: 1,
+            name: "le nom !",
+            totalTimeEstimated: 20,
+            totalTimeRemaining: 17.5,
+            totalTimeSpent: 2.5,
+            uniqueId: "123-mmm",
+            updatedAt: "2025-06-30T16:38:53-04:00",
+          },
+          {
+            billable: false,
+            coLeads: [],
+            createdAt: "2025-07-01T11:43:49-04:00",
+            employees: [
+              {
+                categories: [
+                  {
+                    name: "Par défaut",
+                    timeEstimated: 0,
+                    timeSpent: 15,
+                  },
                 ],
-                "id": 14,
-                "isArchived": false,
-                "lead": "Toumani Camara",
-                "managerId": 4,
-                "name": "10 heures au total go negatif",
-                "totalTimeEstimated": 10,
-                "totalTimeRemaining": -5,
-                "totalTimeSpent": 15,
-                "uniqueId": "10htotal",
-                "updatedAt": "2025-07-01T11:43:49-04:00"
-            }
-        ]
+                name: " ",
+              },
+            ],
+            id: 14,
+            isArchived: false,
+            lead: "Toumani Camara",
+            managerId: 4,
+            name: "10 heures au total go negatif",
+            totalTimeEstimated: 10,
+            totalTimeRemaining: -5,
+            totalTimeSpent: 15,
+            uniqueId: "10htotal",
+            updatedAt: "2025-07-01T11:43:49-04:00",
+          },
+        ],
       },
     },
-  }
+  },
+  getTwoProjectsSuccess: {
+    url: "/projects",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        projects: [
+          {
+            id: 1,
+            managerId: 1,
+            uniqueId: "Projet sous-sol",
+            name: "Nommer le projet",
+            status: 1,
+            billable: false,
+            activities: [],
+            categories: [],
+            createdAt: "2025-03-22T08:00:00",
+            updatedAt: "2025-03-22T08:00:00",
+            end_at: null,
+          },
+          {
+            id: 2,
+            managerId: 1,
+            uniqueId: "Projet grenier",
+            name: "Nommer le projet",
+            status: 1,
+            billable: false,
+            activities: [],
+            categories: [],
+            createdAt: "2025-03-22T08:00:00",
+            updatedAt: "2025-03-22T08:00:00",
+            end_at: null,
+          },
+        ],
+      },
+    },
+  },
 } satisfies Record<string, MockConfig>;

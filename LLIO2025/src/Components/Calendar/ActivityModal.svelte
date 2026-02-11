@@ -14,6 +14,7 @@
   import '../../style/app.css';
   import { ChevronDown, X, Plus } from 'lucide-svelte';
   import ConfirmationCreateCategory from './ConfirmModal.svelte';
+  import SearchSelect from "../Global/SearchSelect.svelte";
 
   type Props = {
     show: boolean;
@@ -117,23 +118,14 @@
       projectCategories = [];
       return;
     }
-
     try {
       projectCategories = await CategoryApiService.getCategoriesByProject(projectId);
-
+      
       if (activity.categoryId) {
         const categoryExists = projectCategories.some((c) => c.id === activity.categoryId);
 
         if (!categoryExists && editMode) {
-          try {
-            const category = await CategoryApiService.getCategoryById(activity.categoryId);
-            if (category) {
-              projectCategories = [...projectCategories, category];
-            }
-          } catch (err) {
-            console.error('Erreur lors de la récupération de la catégorie:', err);
-            activity.categoryId = null;
-          }
+          activity.categoryId = projectCategories[0].id;
         } else if (!categoryExists) {
           activity.categoryId = null;
         }
@@ -288,16 +280,16 @@
     if (name === undefined || name === null || name.trim() === "") {
       return uniqueId; // Si le nom est vide, retourner uniquement l'uniqueId
     }
-    
+
     if (availableForName <= 0) {
       // Si l'uniqueId est déjà trop long, on le tronque aussi
       return uniqueId.substring(0, maxLength - 3) + "...";
     }
-    
+
     if (name.length <= availableForName) {
       return `${uniqueId}${separator}${name}`;
     }
-    
+
     const truncatedName = name.substring(0, availableForName - 3) + "...";
     return `${uniqueId}${separator}${truncatedName}`;
   };
@@ -312,7 +304,7 @@
   }
   });
 
-  const { form, errors } = validateActivityForm(handleSubmit, activity);
+  const { form, errors, setFields } = validateActivityForm(handleSubmit, activity);
 </script>
 
 <svelte:window onclick={handleOutsideClick} />
@@ -322,7 +314,7 @@
   <div class="fixed inset-0 z-40 flex justify-start">
     <!-- Overlay semi-transparent avec opacité à 40% comme dans l'original -->
     <div
-      class="absolute inset-0 bg-gray bg-opacity-40 transition-opacity"
+      class="absolute inset-0 bg-gray-950/40 transition-opacity"
       onclick={handleClose}
     ></div>
 
@@ -349,6 +341,50 @@
             e.preventDefault();
           }}
         >
+
+        <!-- Séparateur et boutons d'action -->
+          <div class="mt-auto">
+            
+            <!-- Actions en bas du formulaire -->
+            <div class="flex justify-center gap-5">
+              {#if editMode}
+                <button
+                  type="button"
+                  class="py-3 px-6 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition"
+                  onclick={handleDelete}
+                >
+                  Supprimer
+                </button>
+                <button
+                  type="submit"
+                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'En cours...' : 'Modifier'}
+                </button>
+              {:else}
+                <button
+                  type="button"
+                  class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200"
+                  onclick={handleClose}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'En cours...' : 'Créer'}
+                </button>
+              {/if}
+            </div>
+
+            <!-- Ligne de séparation -->
+            <div class="border-t border-gray-200 my-6"></div>
+
+          </div>
+
           <!-- Champs de formulaire avec espacement vertical uniforme -->
           <div class="space-y-6">
             <!-- Projet -->
@@ -357,26 +393,20 @@
                 Projet
                 <span class="text-red-500">*</span>
               </label>
-              <div class="select-container">
-                <select
-                  id="activity-project"
-                  name="projectId"
-                  bind:value={activity.projectId}
-                  required
-                  class="form-select w-full"
-                >
-                  <option value="" disabled selected hidden>Sélectionner un projet...</option>
-                  {#each projects as project}
-                    <option value={project.id} title={project.name}>{getTruncatedDisplayText(project.uniqueId, project.name)}</option>
-                  {/each}
-                </select>
-                <div class="select-icon">
-                  <ChevronDown size={18} />
-                </div>
-                {#if $errors.projectId}
-                  <span class="text-red-500 text-sm">{$errors.projectId}</span>
-                {/if}
-              </div>
+              <SearchSelect
+                id="activity-project"
+                name="projectId"
+                items={projects.map((value) => {
+                  return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
+                })}
+                bind:selectedValue={activity.projectId}
+                placeholder="Sélectionner un projet"
+                setFields={setFields}
+                required
+              />
+              {#if $errors.projectId}
+                <span class="text-red-500 text-sm">{$errors.projectId}</span>
+              {/if}
             </div>
 
             <!-- Sélecteurs d'heure côte à côte -->
@@ -447,45 +477,7 @@
               </div>
             </div>
 
-            <!-- Champ Nom -->
-            <div>
-              <label for="activity-name" class="block text-gray-700 font-medium mb-2">
-                Nom
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <input
-                id="activity-name"
-                name="name"
-                type="text"
-                bind:value={activity.name}
-                placeholder="Nom de l'activité..."
-                class="form-input"
-              />
-              {#if $errors.name}
-                <span class="text-red-500 text-sm">{$errors.name}</span>
-              {/if}
-            </div>
-
-            <!-- Champ Description -->
-            <div>
-              <label for="activity-description" class="block text-gray-700 font-medium mb-2">
-                Description
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <textarea
-                id="activity-description"
-                name="description"
-                bind:value={activity.description}
-                placeholder="Description de l'activité..."
-                rows="3"
-                class="form-input"
-              ></textarea>
-              {#if $errors.description}
-                <span class="text-red-500 text-sm">{$errors.description}</span>
-              {/if}
-            </div>
-
-            <!-- Catégorie avec dropdown et recherche intégrée -->
+          <!-- Catégorie avec dropdown et recherche intégrée -->
             <div>
               <label for="activity-category-search" class="block text-gray-700 font-medium mb-2">
                 Catégorie
@@ -582,47 +574,45 @@
                 {/if}
               </div>
             </div>
-          </div>
 
-          <!-- Séparateur et boutons d'action -->
-          <div class="mt-auto">
-            <!-- Ligne de séparation -->
-            <div class="border-t border-gray-200 my-6"></div>
-
-            <!-- Actions en bas du formulaire -->
-            <div class="flex justify-center gap-5">
-              {#if editMode}
-                <button
-                  type="button"
-                  class="py-3 px-6 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition"
-                  onclick={handleDelete}
-                >
-                  Supprimer
-                </button>
-                <button
-                  type="submit"
-                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'En cours...' : 'Modifier'}
-                </button>
-              {:else}
-                <button
-                  type="button"
-                  class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200"
-                  onclick={handleClose}
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'En cours...' : 'Créer'}
-                </button>
+            <!-- Champ Nom -->
+            <div>
+              <label for="activity-name" class="block text-gray-700 font-medium mb-2">
+                Nom
+                <span class="text-gray-400">(optionnel)</span>
+              </label>
+              <input
+                id="activity-name"
+                name="name"
+                type="text"
+                bind:value={activity.name}
+                placeholder="Nom de l'activité..."
+                class="form-input"
+              />
+              {#if $errors.name}
+                <span class="text-red-500 text-sm">{$errors.name}</span>
               {/if}
             </div>
+
+            <!-- Champ Description -->
+            <div>
+              <label for="activity-description" class="block text-gray-700 font-medium mb-2">
+                Description
+                <span class="text-gray-400">(optionnel)</span>
+              </label>
+              <textarea
+                id="activity-description"
+                name="description"
+                bind:value={activity.description}
+                placeholder="Description de l'activité..."
+                rows="3"
+                class="form-input"
+              ></textarea>
+              {#if $errors.description}
+                <span class="text-red-500 text-sm">{$errors.description}</span>
+              {/if}
+            </div>
+
           </div>
         </form>
       </div>
