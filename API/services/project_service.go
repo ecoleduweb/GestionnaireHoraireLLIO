@@ -132,12 +132,12 @@ func DeleteProjectById(id int) error {
 		return customs_errors.ErrProjectNotFound
 	}
 
-	projectHasActvities, err := repositories.ProjectHasActivities(id)
+	projectHasActivities, err := repositories.ProjectHasActivities(id)
 	if err != nil {
 		return err
 	}
-	if projectHasActvities {
-		log.Printf("Project %d has activities: %v", id, projectHasActvities)
+	if projectHasActivities {
+		log.Printf("Project %d has activities: %v", id, projectHasActivities)
 		return customs_errors.ErrProjectHasActivities
 	}
 

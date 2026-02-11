@@ -62,7 +62,7 @@ test.describe('checkProjectsDelete', () => {
 
         await page.getByRole('button', { name: 'Confirmer', exact: true }).click();
         
-        await page.waitForTimeout(1000);
+        await page.waitForEvent('dialog');
 
         await page.waitForLoadState('networkidle'); 
         
