@@ -228,6 +228,7 @@
       try {
         await ActivityApiService.deleteActivity(activity.id);
         onDelete(activity);
+        onClose();
       } catch (error) {
         console.error('Erreur lors de la suppression', error);
       }
