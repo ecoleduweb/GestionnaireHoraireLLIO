@@ -42,10 +42,12 @@ test.describe("loadCategoriesByProject", () => {
 
     // Vérifier que les options de projet sont disponibles
     const projectSelect = page.locator("#activity-project");
+
+    await projectSelect.click();
+
     await projectSelect.waitFor({ state: "visible" });
 
-    // Sélectionner le premier projet (id=1)
-    await projectSelect.selectOption("1");
+    await page.click("text=Projet sous-sol"); 
 
     // Ouvrir le dropdown des catégories
     await page.locator("#activity-category-search").first().click();
@@ -75,7 +77,10 @@ test.describe("loadCategoriesByProject", () => {
 
     // === ÉTAPE 4: Changer de projet vers le deuxième ===
     const projectSelectEdit = page.locator("#activity-project");
-    await projectSelectEdit.selectOption("2");
+
+    await projectSelectEdit.click();
+
+    await page.click("text=Projet grenier"); 
 
     // === ÉTAPE 5: Vérifier que "Design" n'existe pas dans le projet 2 ===
     // Ouvrir le dropdown des catégories
