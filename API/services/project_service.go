@@ -121,49 +121,42 @@ func GetProjectById(id string) (*DTOs.ProjectDTO, error) {
 	return projectDTO, err
 }
 
-func DeleteProjectById(id int) (*DTOs.ProjectDTO, error) {
+func DeleteProjectById(id int) error {
 	// Check if the project exists
 	projectDAO, err := repositories.GetProjectById(fmt.Sprintf("%d", id))
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if projectDAO == nil {
-		return nil, nil
+		return customs_errors.ErrProjectNotFound
 	}
 
 	projectHasActvities, err := repositories.ProjectHasActivities(id)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if projectHasActvities {
 		log.Printf("Project %d has activities: %v", id, projectHasActvities)
-		return nil, customs_errors.ErrProjectHasActivities
+		return customs_errors.ErrProjectHasActivities
 	}
 
 	projectCategoriesDeleted, err := repositories.ProjectDeleteCategories(id)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if projectCategoriesDeleted {
 		log.Printf("Deleted categories: %v from project: %d", projectCategoriesDeleted, id)
 	}
 
-	//Copy the project
-	projectDTO := &DTOs.ProjectDTO{}
-	err1 := copier.Copy(projectDTO, projectDAO)
-	if err1 != nil {
-		return nil, err1
-	}
-
 	//Delete the project
-	err2 := repositories.DeleteProjectById(id)
-	if err2 != nil {
-		return nil, err2
+	errDelete := repositories.DeleteProjectById(id)
+	if errDelete != nil {
+		return errDelete
 	}
 
-	return projectDTO, nil
+	return nil
 }
 
 func UpdateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {

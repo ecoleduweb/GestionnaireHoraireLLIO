@@ -161,18 +161,13 @@ func DeleteProject(c *gin.Context) {
 	// Convert string to int
 	projectIDInt, err := strconv.Atoi(projectIdToDelete)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Cette ID de projet n'existe pas"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Page non trouvé - Erreur de conversion du ID en int"})
 		return
 	}
 
-	projectDTO, err := services.DeleteProjectById(projectIDInt)
+	err = services.DeleteProjectById(projectIDInt)
 	if err != nil {
 		handleError(c, err, projectSTR)
-		return
-	}
-
-	if projectDTO == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Projet non trouvé"})
 		return
 	}
 

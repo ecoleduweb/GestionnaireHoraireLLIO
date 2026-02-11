@@ -7,8 +7,8 @@
   import ProjectModal from './ProjectModal.svelte';
   import type { Project, UserInfo } from '../../Models';
   import { UserRole } from '$lib/types/enums';
-  import ModalDelete from '../ModalDelete.svelte';
   import { ProjectApiService } from '../../services/ProjectApiService';
+  import ConfirmationModal from '../ConfirmationModal.svelte';
 
   type Props = {
     projects: Project[];
@@ -143,7 +143,7 @@
 {/if}
 
 {#if showModalDelete}
-<ModalDelete
+<ConfirmationModal
   modalTitle="Supprimer un projet"
   modalText="Voulez-vous vraiment supprimer le projet {projectToDelete.name} ?"
   errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"

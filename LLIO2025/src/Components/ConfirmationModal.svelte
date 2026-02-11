@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Project } from '../Models/index';
   import { X } from 'lucide-svelte';
 
   type Props = {
@@ -61,7 +60,7 @@
                   class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
                   onclick={handleSubmit}
                 >
-                  Supprimer
+                  Confirmer
                 </button>
             </div>
           </form>

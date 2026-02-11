@@ -29,7 +29,7 @@ test.describe('checkProjectsDelete', () => {
         await expect(page.getByText('AT-123')).toHaveCount(2);
         await page.getByRole('button', { name: 'Supprimer le projet' }).nth(0).click();
         await page.waitForTimeout(1000);
-        await page.getByRole('button', { name: 'Supprimer', exact: true }).click();
+        await page.getByRole('button', { name: 'Confirmer', exact: true }).click();
         await mocker.clearMocks();
         await mocker
             .addMock(projectMocks.getDetailedProjectsSuccessAfterDelete)
@@ -60,7 +60,7 @@ test.describe('checkProjectsDelete', () => {
         });
         await page.getByRole('button', { name: 'Supprimer le projet' }).nth(0).click();
 
-        await page.getByRole('button', { name: 'Supprimer', exact: true }).click();
+        await page.getByRole('button', { name: 'Confirmer', exact: true }).click();
         
         await page.waitForTimeout(1000);
 
