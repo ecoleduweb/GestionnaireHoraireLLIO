@@ -9,8 +9,8 @@
   import { UserRole } from '$lib/types/enums';
 
   type Props = {
-    projects: Project[];
     currentUser: UserInfo;
+    projects : Project[];
     onProjectsRefresh: () => void;
   };
 
