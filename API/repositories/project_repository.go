@@ -82,6 +82,7 @@ func GetProjectById(id string) (*DAOs.Project, error) {
 	return &project, DBErrorManager(err)
 }
 
+// Les categories sont supprimés en casade delete par la DB
 func DeleteProjectById(id int) error {
 	err := database.DB.Delete(&DAOs.Project{}, id).Error
 	return DBErrorManager(err)
@@ -111,13 +112,4 @@ func ProjectHasActivities(id int) (bool, error) {
 		return false, DBErrorManager(err)
 	}
 	return count > 0, nil
-}
-
-func ProjectDeleteCategories(id int) (bool, error) {
-	err := database.DB.Where("project_id = ?", id).Delete(&DAOs.Category{}).Error
-
-	if err != nil {
-		return false, DBErrorManager(err)
-	}
-	return true, nil
 }

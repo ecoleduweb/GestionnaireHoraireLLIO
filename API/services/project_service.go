@@ -141,15 +141,6 @@ func DeleteProjectById(id int) error {
 		return customs_errors.ErrProjectHasActivities
 	}
 
-	projectCategoriesDeleted, err := repositories.ProjectDeleteCategories(id)
-	if err != nil {
-		return err
-	}
-
-	if projectCategoriesDeleted {
-		log.Printf("Deleted categories: %v from project: %d", projectCategoriesDeleted, id)
-	}
-
 	//Delete the project
 	errDelete := repositories.DeleteProjectById(id)
 	if errDelete != nil {
