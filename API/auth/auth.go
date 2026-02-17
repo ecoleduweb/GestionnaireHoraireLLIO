@@ -42,7 +42,7 @@ func AuthWithAzure() {
 	}
 
 	// Configuration de la session
-	store := sessions.NewCookieStore([]byte(sessionsConfig.SessionKey))
+	store := sessions.NewFilesystemStore("", []byte(sessionsConfig.SessionKey))
 	store.MaxAge(sessionsConfig.SessionMaxAge)
 
 	store.Options.Path = "/"
