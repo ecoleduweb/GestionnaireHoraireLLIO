@@ -23,21 +23,21 @@ func applyRecentActivityOrdering(db *gorm.DB) *gorm.DB {
 		Order(`
 			CASE 
 				WHEN last_activities.last_activity IS NOT NULL 
-				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 7 DAY) 
+				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 1 MONTH) 
 				THEN 0 ELSE 1 
 			END
 		`).
 		Order(`
 			CASE 
 				WHEN last_activities.last_activity IS NOT NULL 
-				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 7 DAY) 
+				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 1 MONTH) 
 				THEN last_activities.last_activity 
 			END DESC
 		`).
 		Order(`
 			CASE 
 				WHEN last_activities.last_activity IS NULL 
-				OR last_activities.last_activity <= DATE_SUB(NOW(), INTERVAL 7 DAY) 
+				OR last_activities.last_activity <= DATE_SUB(NOW(), INTERVAL 1 MONTH) 
 				THEN LOWER(projects.name) 
 			END ASC
 		`)
