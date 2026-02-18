@@ -29,7 +29,11 @@
   }
 </style>
 
-<div class="project">
+<div
+  class="project"
+  data-testid="project-item"
+  data-project-name={project.name}
+>
   <!-- Contenu du dashboard -->
   <div class="project-content">
     <div>

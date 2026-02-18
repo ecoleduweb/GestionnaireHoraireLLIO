@@ -1,10 +1,10 @@
 // ProjectApiService.ts
 import { ProjectStatus } from "$lib/types/enums";
 import type { ProjectBase, Project, DetailedProject } from "../Models/index";
-import { GET, POST, PUT } from "../ts/server";
+import { DELETE, GET, POST, PUT } from "../ts/server";
 
-interface ProjectsResponse {
-  projects: Project[];
+interface ProjectDeleteResponse {
+  deleted: boolean;
 }
 
 interface ProjectResponse {
@@ -34,6 +34,16 @@ const updateProject = async (project: ProjectBase): Promise<Project> => {
   } catch (error) {
     console.error("Erreur lors de la création du projet:", error);
     throw new Error("Échec de la mise à jour du projet. Veuillez réessayer.");
+  }
+};
+
+const deleteProject = async (projectId: number): Promise<void> => {
+  try {
+    const response = await DELETE(`/project/${projectId}`);
+    return response;
+  } catch (error) {
+    console.error("Erreur lors de la suppression du projet:", error);
+    throw new Error("Erreur lors de la suppression du projet. Veuillez réessayer.");
   }
 };
 
@@ -90,6 +100,7 @@ const addCoManagerToProject = async(projectId: number, userId: number): Promise<
 export const ProjectApiService = {
   createProject,
   updateProject,
+  deleteProject,
   getProjects,
   getProject,
   getDetailedProjects,
