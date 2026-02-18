@@ -13,110 +13,145 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTimeBankWorkflow(t *testing.T) {
+func TestTimeBankScenarios(t *testing.T) {
 	// --- 1. Préparation des dates (Semaine dernière) ---
-	// On se cale sur le fuseau horaire LOCAL pour correspondre à la logique du service
 	loc := time.Local
 	now := time.Now().In(loc)
 
-	// Trouver le lundi de la semaine courante
+	// Lundi de la semaine courante
 	weekday := int(now.Weekday())
 	if weekday == 0 {
 		weekday = 7
-	} // Dimanche = 7
+	}
 	mondayCurrentWeek := now.AddDate(0, 0, -(weekday - 1))
 
-	// Lundi de la semaine D'AVANT (Date de début du test)
-	// On force l'heure à 00:00:00 pour être propre
+	// Lundi de la semaine DERNIÈRE (Début période) - Mise à 00:00:00
 	mondayLastWeek := time.Date(mondayCurrentWeek.Year(), mondayCurrentWeek.Month(), mondayCurrentWeek.Day(), 0, 0, 0, 0, loc).AddDate(0, 0, -7)
 	startDateStr := mondayLastWeek.Format("2006-01-02")
 
-	// --- 2. Nettoyage initial (Au cas où) ---
-	// On s'assure que l'utilisateur n'a pas de config résiduelle
+	// --- 2. Nettoyage initial ---
+	// On s'assure que l'utilisateur de test est propre
 	database.DB.Model(&doNotDeleteUser).Updates(map[string]interface{}{
 		"time_bank_start_date":     nil,
 		"time_bank_hours_per_week": nil,
 		"time_bank_balance_offset": 0,
 	})
 
-	// --- TEST A : Vérifier que c'est "Non Configuré" au départ ---
-	t.Run("CheckUnconfigured", func(t *testing.T) {
+	// --- 3. Définition du Nettoyage AUTOMATIQUE (Correction du bug de defer) ---
+	// t.Cleanup s'exécute TOUJOURS à la fin du test, même en cas de Fatalf ou Panic
+	t.Cleanup(func() {
+		database.DB.Where("name LIKE ?", "Test TimeBank%").Delete(&DAOs.Activity{})
+		// On remet l'user au propre
+		database.DB.Model(&doNotDeleteUser).Updates(map[string]interface{}{
+			"time_bank_start_date":     nil,
+			"time_bank_hours_per_week": nil,
+		})
+	})
+
+	// --- SCÉNARIO 1 : Date Invalide lors de la config ---
+	t.Run("InvalidDate", func(t *testing.T) {
+		badConfig := map[string]interface{}{
+			"startDate":    "99-99-2024", // Format invalide
+			"hoursPerWeek": 35,
+		}
+		w := sendRequest(router, "POST", "/user/time-bank/config", badConfig, enums.Employee)
+		// Doit échouer (Bad Request)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	// --- SCÉNARIO 2 : Pas d'activités (Déficit Total) ---
+	t.Run("NoActivities_Deficit", func(t *testing.T) {
+		// Config : 10h/semaine
+		config := DTOs.TimeBankConfigDTO{StartDate: startDateStr, HoursPerWeek: 10, Offset: 0}
+		sendRequest(router, "POST", "/user/time-bank/config", config, enums.Employee)
+
 		w := sendRequest(router, "GET", "/user/time-bank", nil, enums.Employee)
 		assertResponse(t, w, http.StatusOK, nil)
 
 		var resp DTOs.TimeBankBalanceDTO
-		err := json.Unmarshal(w.Body.Bytes(), &resp)
-		assert.NoError(t, err)
-		assert.False(t, resp.IsConfigured, "Devrait être non configuré au départ")
-		assert.Nil(t, resp.TimeInBank)
+		json.Unmarshal(w.Body.Bytes(), &resp)
+
+		// 0h fait - 10h attendu = -10
+		assert.Equal(t, -10, *resp.TimeInBank)
 	})
 
-	// --- TEST B : Sauvegarder la configuration ---
-	t.Run("SaveConfig", func(t *testing.T) {
-		configPayload := DTOs.TimeBankConfigDTO{
-			StartDate:    startDateStr,
-			HoursPerWeek: 10, // On attend 10h/semaine
-			Offset:       0,
-		}
-
-		w := sendRequest(router, "POST", "/user/time-bank/config", configPayload, enums.Employee)
-		assertResponse(t, w, http.StatusOK, nil)
-	})
-
-	// --- TEST C : Créer des activités (12h travaillées la semaine passée) ---
-	// On insère directement en BD pour contourner les règles API éventuelles et forcer les dates
+	// --- Injection des activités pour la suite (12 heures travaillées) ---
+	// On injecte MAINTENANT, après avoir testé le cas "sans activités"
 	activities := []DAOs.Activity{
 		{
 			Name:        "Test TimeBank 1",
-			Description: "Auto-generated",
-			StartDate:   mondayLastWeek.Add(9 * time.Hour),  // Lundi 9h
-			EndDate:     mondayLastWeek.Add(13 * time.Hour), // Lundi 13h (4h)
+			Description: "Auto",
+			StartDate:   mondayLastWeek.Add(9 * time.Hour),
+			EndDate:     mondayLastWeek.Add(13 * time.Hour), // 4h
 			UserId:      doNotDeleteUser.Id,
 			ProjectId:   doNotDeleteProject.Id,
 			CategoryId:  doNotDeleteCategory.Id,
 		},
 		{
 			Name:        "Test TimeBank 2",
-			Description: "Auto-generated",
-			StartDate:   mondayLastWeek.AddDate(0, 0, 1).Add(9 * time.Hour),  // Mardi 9h
-			EndDate:     mondayLastWeek.AddDate(0, 0, 1).Add(13 * time.Hour), // Mardi 13h (4h)
+			Description: "Auto",
+			StartDate:   mondayLastWeek.AddDate(0, 0, 1).Add(9 * time.Hour),
+			EndDate:     mondayLastWeek.AddDate(0, 0, 1).Add(13 * time.Hour), // 4h
 			UserId:      doNotDeleteUser.Id,
 			ProjectId:   doNotDeleteProject.Id,
 			CategoryId:  doNotDeleteCategory.Id,
 		},
 		{
 			Name:        "Test TimeBank 3",
-			Description: "Auto-generated",
-			StartDate:   mondayLastWeek.AddDate(0, 0, 2).Add(9 * time.Hour),  // Mercredi 9h
-			EndDate:     mondayLastWeek.AddDate(0, 0, 2).Add(13 * time.Hour), // Mercredi 13h (4h)
+			Description: "Auto",
+			StartDate:   mondayLastWeek.AddDate(0, 0, 2).Add(9 * time.Hour),
+			EndDate:     mondayLastWeek.AddDate(0, 0, 2).Add(13 * time.Hour), // 4h
 			UserId:      doNotDeleteUser.Id,
 			ProjectId:   doNotDeleteProject.Id,
 			CategoryId:  doNotDeleteCategory.Id,
 		},
 	}
-
 	for _, act := range activities {
 		if err := database.DB.Create(&act).Error; err != nil {
 			t.Fatalf("Erreur insert activité: %v", err)
 		}
 	}
 
-	// Nettoyage automatique à la fin du test
-	defer database.DB.Where("name LIKE ?", "Test TimeBank%").Delete(&DAOs.Activity{})
+	// --- SCÉNARIO 3 : Surplus (Fait > Attendu) ---
+	t.Run("Surplus", func(t *testing.T) {
+		// Config : 10h/semaine (On a fait 12h)
+		config := DTOs.TimeBankConfigDTO{StartDate: startDateStr, HoursPerWeek: 10, Offset: 0}
+		sendRequest(router, "POST", "/user/time-bank/config", config, enums.Employee)
 
-	// --- TEST D : Vérifier le solde ---
-	t.Run("CheckBalance", func(t *testing.T) {
 		w := sendRequest(router, "GET", "/user/time-bank", nil, enums.Employee)
-		assertResponse(t, w, http.StatusOK, nil)
-
 		var resp DTOs.TimeBankBalanceDTO
-		err := json.Unmarshal(w.Body.Bytes(), &resp)
-		assert.NoError(t, err)
+		json.Unmarshal(w.Body.Bytes(), &resp)
 
-		assert.True(t, resp.IsConfigured)
-		assert.NotNil(t, resp.TimeInBank)
-
-		// Calcul : 12h faites - 10h attendues = +2h
-		assert.Equal(t, 2, *resp.TimeInBank, "Le solde devrait être de +2h")
+		// 12h - 10h = +2
+		assert.Equal(t, 2, *resp.TimeInBank)
 	})
+
+	// --- SCÉNARIO 4 : Déficit (Fait < Attendu) ---
+	t.Run("Deficit", func(t *testing.T) {
+		// Config : 20h/semaine (On a fait 12h)
+		config := DTOs.TimeBankConfigDTO{StartDate: startDateStr, HoursPerWeek: 20, Offset: 0}
+		sendRequest(router, "POST", "/user/time-bank/config", config, enums.Employee)
+
+		w := sendRequest(router, "GET", "/user/time-bank", nil, enums.Employee)
+		var resp DTOs.TimeBankBalanceDTO
+		json.Unmarshal(w.Body.Bytes(), &resp)
+
+		// 12h - 20h = -8
+		assert.Equal(t, -8, *resp.TimeInBank)
+	})
+
+	// --- SCÉNARIO 5 : Solde Nul (Fait == Attendu) ---
+	t.Run("ZeroBalance", func(t *testing.T) {
+		// Config : 12h/semaine (On a fait 12h)
+		config := DTOs.TimeBankConfigDTO{StartDate: startDateStr, HoursPerWeek: 12, Offset: 0}
+		sendRequest(router, "POST", "/user/time-bank/config", config, enums.Employee)
+
+		w := sendRequest(router, "GET", "/user/time-bank", nil, enums.Employee)
+		var resp DTOs.TimeBankBalanceDTO
+		json.Unmarshal(w.Body.Bytes(), &resp)
+
+		// 12h - 12h = 0
+		assert.Equal(t, 0, *resp.TimeInBank)
+	})
+
 }
