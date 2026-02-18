@@ -1,7 +1,7 @@
 // ProjectApiService.ts
 import { ProjectStatus } from "$lib/types/enums";
 import type { ProjectBase, Project, DetailedProject } from "../Models/index";
-import { DELETE, GET, POST, PUT } from "../ts/server";
+import { GET, POST, PUT, DELETE } from "../ts/server";
 
 interface ProjectDeleteResponse {
   deleted: boolean;
@@ -87,6 +87,15 @@ const getCurrentUserProjects = async(): Promise<DetailedProject[]> => {
   }
 }
 
+const removeCoLead = async(projectId: number, coLeadName: string): Promise<void> => {
+  try {
+    await DELETE(`/project/${projectId}/coLead/${encodeURIComponent(coLeadName)}`);
+  } catch (error) {
+    console.error("Erreur lors de la suppression du co-chargé:", error);
+    throw new Error("Échec de la suppression du co-chargé. Veuillez réessayer.");
+  }
+}
+
 export const ProjectApiService = {
   createProject,
   updateProject,
@@ -94,5 +103,6 @@ export const ProjectApiService = {
   getProjects,
   getProject,
   getDetailedProjects,
-  getCurrentUserProjects
+  getCurrentUserProjects,
+  removeCoLead
 };

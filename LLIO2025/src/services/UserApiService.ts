@@ -1,7 +1,9 @@
+import type { TimeBankConfig , TimeBankResponse } from '$lib/types/type';
 import type { User, UserInfo } from '../Models/index';
 import { DELETE, GET, PATCH, POST } from '../ts/server';
 
-interface UsersResponse {
+
+export interface UsersResponse {
   users: User[];
 }
 
@@ -76,6 +78,36 @@ const deleteUser = async (userId: number): Promise<void> => {
   }
 };
 
+const saveTimeBankConfig = async (config: TimeBankConfig): Promise<TimeBankConfig> => {
+  try {
+    const response = await POST<TimeBankConfig, TimeBankConfig>('/user/time-bank/config', config);
+    return response;
+  } catch (error) {
+    console.error("Erreur lors de la sauvegarde de la configuration du time bank:", error);
+    throw error;
+  }
+};
+
+const getTimeBankConfig = async (): Promise<TimeBankConfig | null> => {
+  try {
+    const response = await GET<TimeBankConfig | null>('/user/time-bank/config');
+    return response;
+  } catch (error) {
+    console.error("Erreur lors de la récupération de la configuration du time bank:", error);
+    throw error;
+  }
+};
+
+const getTimeInBank = async (): Promise<TimeBankResponse> => {
+  try {
+    const response = await GET<TimeBankResponse>('/user/time-bank');
+    return response;
+  } catch (error) {
+    console.error("Erreur lors de la récupération du solde du time bank:", error);
+    throw error;
+  }
+};
+
 export const UserApiService = {
   getAllUsers,
   getAllManagersAdmin,
@@ -84,4 +116,7 @@ export const UserApiService = {
   updateUserRole,
   logOut,
   deleteUser,
+  saveTimeBankConfig,
+  getTimeBankConfig,
+  getTimeInBank,
 };
