@@ -171,7 +171,7 @@
         height: 'auto',
         contentHeight: 'auto', // Hauteur automatique
         
-        expandRows: true,
+        expandRows: false,
         dayHeaderFormat: headerFormat,
         eventClassNames: getEventClassName,
         eventTimeFormat: {
