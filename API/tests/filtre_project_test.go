@@ -8,6 +8,7 @@ import (
 
 	"llio-api/database"
 	"llio-api/models/DAOs"
+	"llio-api/models/DTOs"
 	"llio-api/models/enums"
 
 	"github.com/stretchr/testify/assert"
@@ -15,106 +16,126 @@ import (
 func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	now := time.Now()
 
-	// Créer un user dédié directement en BD
-	testUser := DAOs.User{
-		FirstName: "Filter",
-		LastName:  "Test",
-		Email:     "filter.test@example.com",
-	}
-	database.DB.Where("email = ?", testUser.Email).FirstOrCreate(&testUser)
-	database.DB.Where("email = ?", testUser.Email).First(&testUser)
-	assert.NotZero(t, testUser.Id, "L'Id du user de test doit être non nul")
+	// Récupérer un user existant en BD (lecture seulement, pas de création)
+	var existingUser DAOs.User
+	err := database.DB.First(&existingUser).Error
+	assert.NoError(t, err, "Un user doit exister en BD")
+	assert.NotZero(t, existingUser.Id)
 
-	// Créer le projet "récent" directement en BD
-	recentProject := DAOs.Project{
-		UniqueId:  "Recent-Sort-001",
-		ManagerId: testUser.Id,
-		Name:      "Projet activité récente",
+	// Récupérer une catégorie existante en BD (lecture seulement)
+	var existingCategory DAOs.Category
+	err = database.DB.First(&existingCategory).Error
+	assert.NoError(t, err, "Une catégorie doit exister en BD")
+	assert.NotZero(t, existingCategory.Id)
+
+	// Créer le projet "récent" via API
+	recentProjectBody := DTOs.ProjectDTO{
+		UniqueId:  "Recent-Sort-API-001",
+		ManagerId: existingUser.Id,
+		Name:      "Projet activité récente API",
 		Status:    enums.ProjectStatus(enums.InProgress),
 	}
-	database.DB.Where("unique_id = ?", recentProject.UniqueId).FirstOrCreate(&recentProject)
-	database.DB.Where("unique_id = ?", recentProject.UniqueId).First(&recentProject)
-	assert.NotZero(t, recentProject.Id, "L'Id du projet récent doit être non nul")
+	w := sendRequest(router, "POST", "/project", recentProjectBody, enums.Administrator)
+	assertResponse(t, w, http.StatusCreated, nil)
+	var recentProjectResp struct {
+		Project DAOs.Project `json:"project"`
+	}
+	json.Unmarshal(w.Body.Bytes(), &recentProjectResp)
+	assert.NotZero(t, recentProjectResp.Project.Id)
 
-	// Créer le projet "ancien" directement en BD
-	oldProject := DAOs.Project{
-		UniqueId:  "Old-Sort-001",
-		ManagerId: testUser.Id,
-		Name:      "Projet activité ancienne",
+	// Créer le projet "ancien" via API
+	oldProjectBody := DTOs.ProjectDTO{
+		UniqueId:  "Old-Sort-API-001",
+		ManagerId: existingUser.Id,
+		Name:      "Projet activité ancienne API",
 		Status:    enums.ProjectStatus(enums.InProgress),
 	}
-	database.DB.Where("unique_id = ?", oldProject.UniqueId).FirstOrCreate(&oldProject)
-	database.DB.Where("unique_id = ?", oldProject.UniqueId).First(&oldProject)
-	assert.NotZero(t, oldProject.Id, "L'Id du projet ancien doit être non nul")
-
-	// Catégorie pour le projet récent
-	testCategory := DAOs.Category{
-		Name:        "Categorie Sort Test Recent",
-		Description: "Catégorie pour test de tri",
-		ProjectId:   recentProject.Id,
+	w = sendRequest(router, "POST", "/project", oldProjectBody, enums.Administrator)
+	assertResponse(t, w, http.StatusCreated, nil)
+	var oldProjectResp struct {
+		Project DAOs.Project `json:"project"`
 	}
-	database.DB.Where("name = ? AND project_id = ?", testCategory.Name, testCategory.ProjectId).FirstOrCreate(&testCategory)
-	database.DB.Where("name = ? AND project_id = ?", testCategory.Name, testCategory.ProjectId).First(&testCategory)
-	assert.NotZero(t, testCategory.Id, "L'Id de la catégorie récente doit être non nul")
+	json.Unmarshal(w.Body.Bytes(), &oldProjectResp)
+	assert.NotZero(t, oldProjectResp.Project.Id)
 
-	// Catégorie pour le projet ancien
-	testCategory2 := DAOs.Category{
-		Name:        "Categorie Sort Test Old",
-		Description: "Catégorie pour test de tri",
-		ProjectId:   oldProject.Id,
+	// Créer une catégorie pour le projet récent via API
+	recentCatBody := DTOs.CategoryDTO{
+		Name:        "Cat Sort Recent API",
+		Description: "Categorie test tri recent",
+		ProjectId:   recentProjectResp.Project.Id,
 	}
-	database.DB.Where("name = ? AND project_id = ?", testCategory2.Name, testCategory2.ProjectId).FirstOrCreate(&testCategory2)
-	database.DB.Where("name = ? AND project_id = ?", testCategory2.Name, testCategory2.ProjectId).First(&testCategory2)
-	assert.NotZero(t, testCategory2.Id, "L'Id de la catégorie ancienne doit être non nul")
+	w = sendRequest(router, "POST", "/category", recentCatBody, enums.Administrator)
+	assertResponse(t, w, http.StatusCreated, nil)
+	var recentCatResp struct {
+		Category DAOs.Category `json:"category"`
+	}
+	json.Unmarshal(w.Body.Bytes(), &recentCatResp)
+	assert.NotZero(t, recentCatResp.Category.Id)
 
-	// Activité récente (3 jours) directement en BD
-	recentActivity := DAOs.Activity{
-		Name:        "Activite recente tri",
+	// Créer une catégorie pour le projet ancien via API
+	oldCatBody := DTOs.CategoryDTO{
+		Name:        "Cat Sort Old API",
+		Description: "Categorie test tri ancien",
+		ProjectId:   oldProjectResp.Project.Id,
+	}
+	w = sendRequest(router, "POST", "/category", oldCatBody, enums.Administrator)
+	assertResponse(t, w, http.StatusCreated, nil)
+	var oldCatResp struct {
+		Category DAOs.Category `json:"category"`
+	}
+	json.Unmarshal(w.Body.Bytes(), &oldCatResp)
+	assert.NotZero(t, oldCatResp.Category.Id)
+
+	// Créer activité récente (3 jours) via API
+	recentActivity := DTOs.ActivityDTO{
+		Name:        "Activite recente tri API",
 		Description: "Activité il y a 3 jours",
 		StartDate:   now.Add(-3 * 24 * time.Hour),
 		EndDate:     now.Add(-3*24*time.Hour + 2*time.Hour),
-		UserId:      testUser.Id,
-		ProjectId:   recentProject.Id,
-		CategoryId:  testCategory.Id,
+		UserId:      existingUser.Id,
+		ProjectId:   recentProjectResp.Project.Id,
+		CategoryId:  recentCatResp.Category.Id,
 	}
-	database.DB.Where("name = ? AND project_id = ?", recentActivity.Name, recentActivity.ProjectId).FirstOrCreate(&recentActivity)
+	w = sendRequest(router, "POST", "/activity", recentActivity, enums.Administrator)
+	assertResponse(t, w, http.StatusCreated, nil)
 
-	// Activité ancienne (10 jours) directement en BD
-	oldActivity := DAOs.Activity{
-		Name:        "Activite ancienne tri",
+	// Créer activité ancienne (10 jours) via API
+	oldActivity := DTOs.ActivityDTO{
+		Name:        "Activite ancienne tri API",
 		Description: "Activité il y a 10 jours",
 		StartDate:   now.Add(-10 * 24 * time.Hour),
 		EndDate:     now.Add(-10*24*time.Hour + 2*time.Hour),
-		UserId:      testUser.Id,
-		ProjectId:   oldProject.Id,
-		CategoryId:  testCategory2.Id,
+		UserId:      existingUser.Id,
+		ProjectId:   oldProjectResp.Project.Id,
+		CategoryId:  oldCatResp.Category.Id,
 	}
-	database.DB.Where("name = ? AND project_id = ?", oldActivity.Name, oldActivity.ProjectId).FirstOrCreate(&oldActivity)
+	w = sendRequest(router, "POST", "/activity", oldActivity, enums.Administrator)
+	assertResponse(t, w, http.StatusCreated, nil)
 
-	// Récupérer la liste triée par activité récente
-	w := sendRequest(router, "GET", "/projects?sortBy=recentActivity", nil, enums.Administrator)
+	// GET projets triés par activité récente
+	w = sendRequest(router, "GET", "/projects?sortBy=recentActivity", nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var projectsBody struct {
 		Projects []DAOs.Project `json:"projects"`
 	}
-	err := json.Unmarshal(w.Body.Bytes(), &projectsBody)
+	err = json.Unmarshal(w.Body.Bytes(), &projectsBody)
 	assert.NoError(t, err)
-	assert.True(t, len(projectsBody.Projects) >= 2, "La liste doit contenir au moins 2 projets")
+	assert.True(t, len(projectsBody.Projects) >= 2)
 
-	recentProjectIndex := -1
-	oldProjectIndex := -1
+	recentIndex := -1
+	oldIndex := -1
 	for i, p := range projectsBody.Projects {
-		if p.Id == recentProject.Id {
-			recentProjectIndex = i
+		if p.Id == recentProjectResp.Project.Id {
+			recentIndex = i
 		}
-		if p.Id == oldProject.Id {
-			oldProjectIndex = i
+		if p.Id == oldProjectResp.Project.Id {
+			oldIndex = i
 		}
 	}
 
-	assert.NotEqual(t, -1, recentProjectIndex, "Le projet récent doit être présent dans la liste")
-	assert.NotEqual(t, -1, oldProjectIndex, "Le projet ancien doit être présent dans la liste")
-	assert.Less(t, recentProjectIndex, oldProjectIndex,
-		"Le projet avec une activité récente (3 jours) doit apparaître avant celui avec une activité ancienne (10 jours)")
+	assert.NotEqual(t, -1, recentIndex, "Le projet récent doit être présent")
+	assert.NotEqual(t, -1, oldIndex, "Le projet ancien doit être présent")
+	assert.Less(t, recentIndex, oldIndex,
+		"Le projet avec activité récente (3 jours) doit apparaître avant l'ancien (10 jours)")
 }
