@@ -11,4 +11,5 @@ var (
 	ErrDatabase          = errors.New("erreur de la BD")
 	ErrUserHasActivities = errors.New("l'utilisateur a des activités associées, suppression impossible")
 	ErrUserHasProjects   = errors.New("l'utilisateur a des projets associées, suppression impossible")
+	ErrInvalidRequest    = errors.New("requête invalide")
 )

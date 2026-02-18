@@ -8,34 +8,18 @@ import (
 )
 
 func CalculateTimeBank(userId int, req DTOs.TimeBankRequestDTO) (*DTOs.TimeBankResponseDTO, error) {
-	// 1. Convertir la date de début (string -> time.Time)
 	layout := "2006-01-02"
-	startDateTime, err := time.Parse(layout, req.StartDate)
-	if err != nil {
-		return nil, err
-	}
+	startDateTime, _ := time.Parse(layout, req.StartDate)
 
-	// 2. Définir la date de fin du calcul
-	calcEndDate := time.Now()
+	// Définir la date de fin du calcul (Lundi de la semaine courante à 00:00 UTC)
+	calcEndDate := getLastMonday(time.Now().UTC())
 
-	if req.ExcludeCurrentWeek {
-		// On recule jusqu'au lundi de la semaine courante à 00:00
-		weekday := int(calcEndDate.Weekday())
-		if weekday == 0 {
-			weekday = 7
-		} // Dimanche = 7
-		daysToSubtract := weekday - 1
-		calcEndDate = time.Date(calcEndDate.Year(), calcEndDate.Month(), calcEndDate.Day(), 0, 0, 0, 0, calcEndDate.Location()).AddDate(0, 0, -daysToSubtract)
-	}
-
-	// 3. Récupérer les heures réellement travaillées via le Repository
 	workedSeconds, err := repositories.GetTotalWorkedSeconds(userId, startDateTime, calcEndDate)
 	if err != nil {
 		return nil, err
 	}
 	totalWorkedHours := workedSeconds / 3600.0
 
-	// 4. Calculer les heures théoriques attendues
 	var totalExpectedHours float64 = 0
 
 	// On ne compte que si la date de fin est après la date de début
@@ -50,4 +34,23 @@ func CalculateTimeBank(userId int, req DTOs.TimeBankRequestDTO) (*DTOs.TimeBankR
 	return &DTOs.TimeBankResponseDTO{
 		Balance: int(math.Round(balance)),
 	}, nil
+}
+
+// getLastMonday retourne le lundi de la semaine courante à 00:00:00 UTC
+func getLastMonday(t time.Time) time.Time {
+	// je laisse les commentaires pour expliquer la logique, même si c'est un peu verbeux, car la manipulation des dates est souvent source de confusion et d'erreurs.
+	// En Go, Sunday = 0, Monday = 1, ... Saturday = 6
+	weekday := int(t.Weekday())
+
+	// On veut savoir combien de jours reculer pour tomber sur Lundi (1)
+	// Si on est Lundi (1) -> reculer de 0 jour
+	// Si on est Mardi (2) -> reculer de 1 jour
+	// Si on est Dimanche (0) -> reculer de 6 jours (car c'est la fin de la semaine ISO)
+
+	daysSinceMonday := (weekday + 6) % 7
+
+	lastMonday := t.AddDate(0, 0, -daysSinceMonday)
+
+	// On normalise à 00:00:00 UTC
+	return time.Date(lastMonday.Year(), lastMonday.Month(), lastMonday.Day(), 0, 0, 0, 0, time.UTC)
 }

@@ -36,6 +36,11 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
 
+	case customs_errors.ErrInvalidRequest:
+		errorMsg := fmt.Sprintf("Données invalides pour le(la) %s", subject)
+		log.Printf("ERREUR - Requête invalide: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
+
 	default:
 		errorMsg := fmt.Sprintf("Erreur inconnue lors du traitement du(de la) %s", subject)
 		log.Printf("ERREUR INCONNUE: %s - %v", errorMsg, err)
