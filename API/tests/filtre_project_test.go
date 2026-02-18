@@ -101,18 +101,18 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 
 	
 	oldActivity := DTOs.ActivityDTO{
-    Name:        "Activite ancienne tri API",
-    Description: "Activité il y a 1 mois",
-    StartDate:   now.Add(-33 * 24 * time.Hour),
-    EndDate:     now.Add(-33*24*time.Hour + 2*time.Hour),
-    UserId:      existingUser.Id,
-    ProjectId:   oldProjectResp.Project.Id,
-    CategoryId:  oldCatResp.Category.Id,
+		Name:        "Activite ancienne tri API",
+		Description: "Activité il y a 1 mois",
+		StartDate:   now.Add(-33 * 24 * time.Hour),
+		EndDate:     now.Add(-33*24*time.Hour + 2*time.Hour),
+		UserId:      existingUser.Id,
+		ProjectId:   oldProjectResp.Project.Id,
+		CategoryId:  oldCatResp.Category.Id,
 }
 	w = sendRequest(router, "POST", "/activity", oldActivity, enums.Administrator)
 	assertResponse(t, w, http.StatusCreated, nil)
 
-	// GET projets triés par activité récente
+
 	w = sendRequest(router, "GET", "/projects?sortBy=recentActivity", nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
@@ -137,5 +137,5 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	assert.NotEqual(t, -1, recentIndex, "Le projet récent doit être présent")
 	assert.NotEqual(t, -1, oldIndex, "Le projet ancien doit être présent")
 	assert.Less(t, recentIndex, oldIndex,
-		"Le projet avec activité récente (3 jours) doit apparaître avant l'ancien (10 jours)")
+		"Le projet avec activité récente (3 jours) doit apparaître avant l'ancien (33 jours)")
 }

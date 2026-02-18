@@ -309,7 +309,7 @@
       calendarService.updateEvent(updatedActivity);
       totalHours = calendarService.getTotalHours();
       detailedProjects = await ProjectApiService.getCurrentUserProjects();
-
+      projects = await ProjectApiService.getProjects();
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
       alert("Une erreur est survenue lors de la mise à jour de l'activité.");
