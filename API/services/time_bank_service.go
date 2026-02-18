@@ -21,9 +21,7 @@ func SaveTimeBankConfig(userId int, configDTO DTOs.TimeBankConfigDTO) (*DTOs.Tim
 	}
 
 	_, err := repositories.UpdateUserTimeBankConfig(user)
-	if err != nil {
 
-	}
 	if err != nil {
 		return nil, err
 	}
