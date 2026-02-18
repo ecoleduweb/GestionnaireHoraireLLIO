@@ -3,7 +3,6 @@ package repositories
 import (
 	"llio-api/database"
 	"llio-api/models/DAOs"
-	"log"
 )
 
 func CreateProject(project *DAOs.Project) (*DAOs.Project, error) {
@@ -30,7 +29,6 @@ func GetProjectActivities(projectId int, from string, to string) ([]DAOs.Activit
 	var tempResults []DAOs.ActivityWithTimeSpent
 	var err error
 
-	log.Printf("Test:%v, from:%v, to:%v", projectId, from, to)
 	if from == "" && to == "" {
 		err = database.DB.
 			Select(`
