@@ -3,6 +3,7 @@ package repositories
 import (
 	"llio-api/database"
 	"llio-api/models/DAOs"
+	"log"
 )
 
 func CreateProject(project *DAOs.Project) (*DAOs.Project, error) {
@@ -16,20 +17,59 @@ func GetProjects() ([]*DAOs.Project, error) {
 	return projects, DBErrorManager(err)
 }
 
-func GetProjectActivities(projectId int) ([]DAOs.ActivityWithTimeSpent, error) {
-	var tempResults []DAOs.ActivityWithTimeSpent
+func GetProjectsFromRange(from string, to string) ([]*DAOs.Project, error) {
+	fromWithTime := from + "T00:00:00"
+	toWithTime := to + "T23:59:59"
 
-	err := database.DB.
-		Select(`
+	var projects []*DAOs.Project
+	err := database.DB.Where("End_Date >= ? AND Start_Date <= ?", fromWithTime, toWithTime).Find(&projects).Error
+	return projects, DBErrorManager(err)
+}
+
+func GetProjectActivities(projectId int, from string, to string) ([]DAOs.ActivityWithTimeSpent, error) {
+	var tempResults []DAOs.ActivityWithTimeSpent
+	var err error
+
+	log.Printf("Test:%v, from:%v, to:%v", projectId, from, to)
+	if from == "" && to == "" {
+		err = database.DB.
+			Select(`
             activities.user_id, 
             activities.category_id, 
             activities.project_id, 
             CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
         `).
-		Table("activities").
-		Where("project_id = ?", projectId).
-		Group("user_id, category_id, project_id").
-		Scan(&tempResults).Error
+			Table("activities").
+			Where("project_id = ?", projectId).
+			Group("user_id, category_id, project_id").
+			Scan(&tempResults).Error
+		if err != nil {
+			return nil, DBErrorManager(err)
+		}
+	} else if from != "" && to != "" {
+		fromDate := from
+		toDate := to
+
+		if from == to {
+			toDate = to + " 23:59:59"
+			fromDate = from + " 00:00:00"
+		}
+
+		fromDate = from + "T00:00:00"
+		toDate = to + "T23:59:59"
+
+		err = database.DB.
+			Select(`
+				activities.user_id, 
+				activities.category_id, 
+				activities.project_id, 
+				CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
+			`).
+			Table("activities").
+			Where("project_id = ? AND Start_Date >= ? AND End_Date <= ?", projectId, fromDate, toDate).
+			Group("user_id, category_id, project_id").
+			Scan(&tempResults).Error
+	}
 
 	if err != nil {
 		return nil, DBErrorManager(err)
@@ -38,21 +78,50 @@ func GetProjectActivities(projectId int) ([]DAOs.ActivityWithTimeSpent, error) {
 	return tempResults, err
 }
 
-func GetProjectActivitiesFromUser(projectId int, userId *int) ([]DAOs.ActivityWithTimeSpent, error) {
+func GetProjectActivitiesFromUser(projectId int, userId *int, from string, to string) ([]DAOs.ActivityWithTimeSpent, error) {
 	var tempResults []DAOs.ActivityWithTimeSpent
+	var err error
 
-	err := database.DB.
-		Select(`
-            activities.user_id, 
-            activities.category_id, 
-            activities.project_id, 
-            CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
-        `).
-		Table("activities").
-		Where("project_id = ?", projectId).
-		Where("user_id = ?", userId).
-		Group("user_id, category_id, project_id").
-		Scan(&tempResults).Error
+	if from == "" && to == "" {
+		err = database.DB.
+			Select(`
+				activities.user_id, 
+				activities.category_id, 
+				activities.project_id, 
+				CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
+			`).
+			Table("activities").
+			Where("project_id = ?", projectId).
+			Where("user_id = ?", userId).
+			Group("user_id, category_id, project_id").
+			Scan(&tempResults).Error
+	} else if from != "" && to != "" {
+		fromDate := from
+		toDate := to
+
+		if from == to {
+			toDate = to + " 23:59:59"
+			fromDate = from + " 00:00:00"
+		}
+
+		fromDate = from + "T00:00:00"
+		toDate = to + "T23:59:59"
+
+		err = database.DB.
+			Select(`
+				activities.user_id, 
+				activities.category_id, 
+				activities.project_id, 
+				CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
+			`).
+			Table("activities").
+			Where("project_id = ?", projectId).
+			Where("user_id = ?", userId).
+			Where("Start_Date >= ?", fromDate).
+			Where("End_Date >= ?", toDate).
+			Group("user_id, category_id, project_id").
+			Scan(&tempResults).Error
+	}
 
 	if err != nil {
 		return nil, DBErrorManager(err)
