@@ -3,16 +3,56 @@ package repositories
 import (
 	"llio-api/database"
 	"llio-api/models/DAOs"
+
+	"gorm.io/gorm"
 )
 
 func CreateProject(project *DAOs.Project) (*DAOs.Project, error) {
 	err := database.DB.Create(project).Error
 	return project, DBErrorManager(err)
 }
+func applyRecentActivityOrdering(db *gorm.DB) *gorm.DB {
+	return db.
+		Joins(`
+			LEFT JOIN (
+				SELECT project_id, MAX(start_date) AS last_activity
+				FROM activities
+				GROUP BY project_id
+			) AS last_activities ON last_activities.project_id = projects.id
+		`).
+		Order(`
+			CASE 
+				WHEN last_activities.last_activity IS NOT NULL 
+				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 1 MONTH) 
+				THEN 0 ELSE 1 
+			END
+		`).
+		Order(`
+			CASE 
+				WHEN last_activities.last_activity IS NOT NULL 
+				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 1 MONTH) 
+				THEN last_activities.last_activity 
+			END DESC
+		`).
+		Order(`
+			CASE 
+				WHEN last_activities.last_activity IS NULL 
+				OR last_activities.last_activity <= DATE_SUB(NOW(), INTERVAL 1 MONTH) 
+				THEN LOWER(projects.name) 
+			END ASC
+		`)
+}
 
 func GetProjects() ([]*DAOs.Project, error) {
 	var projects []*DAOs.Project
-	err := database.DB.Find(&projects).Error
+
+	query := database.DB.
+		Table("projects").
+		Select("DISTINCT projects.*")
+
+	query = applyRecentActivityOrdering(query)
+
+	err := query.Find(&projects).Error
 	return projects, DBErrorManager(err)
 }
 
@@ -69,8 +109,10 @@ func GetProjectsByManagerId(id int) ([]*DAOs.Project, error) {
 
 func GetProjectsByUserId(id int) ([]*DAOs.Project, error) {
 	var projects []*DAOs.Project
-	err := database.DB.Distinct("projects.*").Joins("JOIN activities ON activities.project_id = projects.id").
-		Where("activities.user_id = ?", 1).
+	err := database.DB.
+		Distinct("projects.*").
+		Joins("JOIN activities ON activities.project_id = projects.id").
+		Where("activities.user_id = ?", id).
 		Find(&projects).Error
 	return projects, DBErrorManager(err)
 }
@@ -99,11 +141,18 @@ func UpdateProject(projectDAO *DAOs.Project) (*DAOs.Project, error) {
 
 func GetProjectsByActivityPerUser(userId int) ([]*DAOs.Project, error) {
 	var projects []*DAOs.Project
-	err := database.DB.Distinct("projects.*").Joins("JOIN activities ON activities.project_id = projects.id").
-		Where("activities.user_id = ?", userId).
-		Find(&projects).Error
+
+	query := database.DB.
+		Select("DISTINCT projects.*").
+		Joins("JOIN activities ON activities.project_id = projects.id").
+		Where("activities.user_id = ?", userId)
+
+	query = applyRecentActivityOrdering(query)
+
+	err := query.Find(&projects).Error
 	return projects, DBErrorManager(err)
 }
+
 
 func ProjectHasActivities(id int) (bool, error) {
 	var count int64
@@ -113,3 +162,5 @@ func ProjectHasActivities(id int) (bool, error) {
 	}
 	return count > 0, nil
 }
+
+
