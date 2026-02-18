@@ -19,7 +19,7 @@ func TestCreateCategory(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 	}
 
-	w := sendRequest(router, "POST", "/category", category)
+	w := sendRequest(router, "POST", "/category", category, doNotDeleteUser.Id)
 	assertResponse(t, w, http.StatusCreated, nil)
 
 	// Vérification du corps de la réponse
@@ -42,7 +42,7 @@ func TestDoNotCreateCategoryWithSameNameInSameProject(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 	}
 
-	w := sendRequest(router, "POST", "/category", initialCategory)
+	w := sendRequest(router, "POST", "/category", initialCategory, doNotDeleteUser.Id)
 	assertResponse(t, w, http.StatusCreated, nil)
 
 	// Tentative de création d'une catégorie avec le même nom dans le même projet
@@ -52,7 +52,7 @@ func TestDoNotCreateCategoryWithSameNameInSameProject(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 	}
 
-	w = sendRequest(router, "POST", "/category", duplicateCategory)
+	w = sendRequest(router, "POST", "/category", duplicateCategory, doNotDeleteUser.Id)
 	assertResponse(t, w, http.StatusConflict, nil)
 
 }
@@ -65,7 +65,7 @@ func TestCreateCategoryWithSameNameDifferentProjects(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 	}
 
-	w = sendRequest(router, "POST", "/category", firstCategory)
+	w = sendRequest(router, "POST", "/category", firstCategory, doNotDeleteUser.Id)
 	assertResponse(t, w, http.StatusCreated, nil)
 
 	// Création d'une catégorie avec le même nom dans le nouveau projet
@@ -75,7 +75,7 @@ func TestCreateCategoryWithSameNameDifferentProjects(t *testing.T) {
 		ProjectId:   doNotDeleteProject2.Id,
 	}
 
-	w = sendRequest(router, "POST", "/category", secondCategory)
+	w = sendRequest(router, "POST", "/category", secondCategory, doNotDeleteUser.Id)
 	assertResponse(t, w, http.StatusCreated, nil)
 
 	// Vérification du corps de la réponse
@@ -98,7 +98,7 @@ func TestDoNotCreateCategoryWithInvalidName(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 	}
 
-	w := sendRequest(router, "POST", "/category", category)
+	w := sendRequest(router, "POST", "/category", category, doNotDeleteUser.Id)
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "name", Message: "Le champ name est invalide ou manquant"},
 	}
@@ -113,7 +113,7 @@ func TestDoNotCreateCategoryWithoutName(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 	}
 
-	w := sendRequest(router, "POST", "/category", category)
+	w := sendRequest(router, "POST", "/category", category, doNotDeleteUser.Id)
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "name", Message: "Le champ name est invalide ou manquant"},
 	}
@@ -128,7 +128,7 @@ func TestDoNotCreateCategoryWithoutDescription(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 	}
 
-	w := sendRequest(router, "POST", "/category", category)
+	w := sendRequest(router, "POST", "/category", category, doNotDeleteUser.Id)
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "description", Message: "Le champ description est invalide ou manquant"},
 	}
@@ -142,7 +142,7 @@ func TestDoNotCreateCategoryWithoutProject(t *testing.T) {
 		Description: "Description",
 	}
 
-	w := sendRequest(router, "POST", "/category", category)
+	w := sendRequest(router, "POST", "/category", category, doNotDeleteUser.Id)
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "projectId", Message: "Le champ projectId est invalide ou manquant"},
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetDetailedProjectsByUser(t *testing.T) {
-	w := sendRequest(router, "GET", "/projects/me/detailed", nil, enums.Employee)
+	w := sendRequest(router, "GET", "/projects/me/detailed", nil, doNotDeleteUser.Id, enums.Employee)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse
@@ -32,7 +32,7 @@ func TestGetDetailedProjectsByUser(t *testing.T) {
 }
 
 func TestGetDetailedProjectsByUser_AsAdmin(t *testing.T) {
-	w := sendRequest(router, "GET", "/projects/me/detailed", nil, enums.Administrator)
+	w := sendRequest(router, "GET", "/projects/me/detailed", nil, doNotDeleteUser.Id, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse
@@ -50,7 +50,7 @@ func TestGetDetailedProjectsByUser_EmptyProjects(t *testing.T) {
 	// Ce test nécessiterait un utilisateur sans projets assignés
 	// ou un mock du service pour retourner nil
 	// Exemple avec un utilisateur qui n'a pas de projets :
-	w := sendRequest(router, "GET", "/projects/me/detailed", nil, enums.Employee)
+	w := sendRequest(router, "GET", "/projects/me/detailed", nil, doNotDeleteUser.Id, enums.Employee)
 
 	// Si le service retourne nil/empty, on devrait avoir une liste vide
 	if w.Code == http.StatusOK {

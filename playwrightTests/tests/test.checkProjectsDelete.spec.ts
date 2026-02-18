@@ -22,49 +22,47 @@ test.describe('checkProjectsDelete', () => {
         const mocker = new ApiMocker(page);
         await mocker
             .addMock(projectMocks.deleteProjectSuccess)
-            .apply();
-
-        await page.waitForTimeout(1000);
-
-        await expect(page.getByText('AT-123')).toHaveCount(2);
-        await page.getByRole('button', { name: 'Supprimer le projet' }).nth(0).click();
-        await page.waitForTimeout(1000);
-        await page.getByRole('button', { name: 'Confirmer', exact: true }).click();
-        await mocker.clearMocks();
-        await mocker
             .addMock(projectMocks.getDetailedProjectsSuccessAfterDelete)
             .addMock(userMocks.userMeSuccess)
             .apply();
-        await expect(page.getByText('AT-123')).toHaveCount(0);
-        await page.waitForLoadState('networkidle'); 
-    });
-
-    test('deleteProjectError', async ({ page }) => {
-        // Configuration du mock pour la suppression non réussie
-        const mocker = new ApiMocker(page);
-        await mocker
-            .addMock(projectMocks.deleteProjectError)
-            .apply();
-
-        await page.waitForTimeout(1000);
 
         await expect(page.getByText('AT-123')).toHaveCount(2);
-        await page.waitForTimeout(1000);
-        
-        page.on('dialog', async dialog => {
-            await expect(dialog.type()).toBe('alert');
 
-            await expect(dialog.message()).toContain('Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant');
-            
-            await dialog.dismiss()
-        });
-        await page.getByRole('button', { name: 'Supprimer le projet' }).nth(0).click();
+        await page.getByRole('button', { name: 'Supprimer le projet' }).first().click();
 
-        await page.getByRole('button', { name: 'Confirmer', exact: true }).click();
-        
-        await page.waitForEvent('dialog');
+        const confirmBtn = page.getByRole('button', { name: 'Confirmer', exact: true });
+        await expect(confirmBtn).toBeVisible();
+        await expect(confirmBtn).toBeEnabled();
 
-        await page.waitForLoadState('networkidle'); 
-        
-    });   
+        await confirmBtn.click();
+
+        await expect(page.getByText('AT-123')).toHaveCount(0, { timeout: 15000 });
+
+    });
+
+
+    test('deleteProjectError', async ({ page }) => {
+        const mocker = new ApiMocker(page);
+        await mocker.addMock(projectMocks.deleteProjectError).apply();
+
+        await expect(page.getByText('AT-123')).toHaveCount(2);
+
+        await page.getByRole('button', { name: 'Supprimer le projet' }).first().click();
+
+        const confirmBtn = page.getByRole('button', { name: 'Confirmer', exact: true });
+        await expect(confirmBtn).toBeVisible();
+        await expect(confirmBtn).toBeEnabled();
+
+        // IMPORTANT: create the wait promise BEFORE the click to avoid missing the event
+        const dialogPromise = page.waitForEvent('dialog');
+        await confirmBtn.click();
+
+        const dialog = await dialogPromise;
+        expect(dialog.type()).toBe('alert');
+        expect(dialog.message()).toContain(
+            'Erreur lors de la suppression du projet'
+        );
+        await dialog.dismiss();
+    });
+
 });

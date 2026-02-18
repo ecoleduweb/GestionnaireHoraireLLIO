@@ -26,7 +26,7 @@ func TestCreateActivity(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w = sendRequest(router, "POST", "/activity", activity)
+	w = sendRequest(router, "POST", "/activity", activity, doNotDeleteUser.Id)
 	assertResponse(t, w, http.StatusCreated, nil)
 
 	// Vérification du corps de la réponse
@@ -63,7 +63,7 @@ func TestDoNotCreateActivityWithEndDateBeforeStartDate(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w = sendRequest(router, "POST", "/activity", activity)
+	w = sendRequest(router, "POST", "/activity", activity, doNotDeleteUser.Id)
 
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "startDate", Message: "La date de début doit être avant la date de fin"},
@@ -83,7 +83,7 @@ func TestCreateActivityWithoutNameAndDescription(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w = sendRequest(router, "POST", "/activity", activity)
+	w = sendRequest(router, "POST", "/activity", activity, doNotDeleteUser.Id)
 
 	assertResponse(t, w, http.StatusCreated, nil)
 }
@@ -100,7 +100,7 @@ func TestDoNotCreateActivityWithLenghtNameOver50(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 		CategoryId:  doNotDeleteCategory.Id,
 	}
-	w = sendRequest(router, "POST", "/activity", activity)
+	w = sendRequest(router, "POST", "/activity", activity, doNotDeleteUser.Id)
 
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "name", Message: "Le champ name est invalide ou manquant"},
@@ -118,7 +118,7 @@ func TestDoNotCreateActivityWithoutDates(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w = sendRequest(router, "POST", "/activity", activity)
+	w = sendRequest(router, "POST", "/activity", activity, doNotDeleteUser.Id)
 
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "startDate", Message: "Le champ startDate est invalide ou manquant"},
@@ -139,7 +139,7 @@ func TestDoNotCreateActivityWithInvalidStartDate(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w = sendRequest(router, "POST", "/activity", activity)
+	w = sendRequest(router, "POST", "/activity", activity, doNotDeleteUser.Id)
 
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "startDate", Message: "Le champ startDate est invalide ou manquant"},
@@ -159,7 +159,7 @@ func TestDoNotCreateActivityWithInvalidEndDate(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w = sendRequest(router, "POST", "/activity", activity)
+	w = sendRequest(router, "POST", "/activity", activity, doNotDeleteUser.Id)
 
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "endDate", Message: "Le champ endDate est invalide ou manquant"},
