@@ -57,3 +57,11 @@ func UserHasProjects(userId int) (bool, error) {
 	}
 	return count > 0, nil
 }
+
+func UpdateUserTimeBankConfig(user *DAOs.User) (*DAOs.User, error) {
+	err := database.DB.Model(user).
+		Select("TimeBankStartDate", "TimeBankHoursPerWeek", "TimeBankBalanceOffset").
+		Updates(user).Error
+
+	return user, DBErrorManager(err)
+}

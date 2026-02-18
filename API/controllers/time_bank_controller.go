@@ -4,40 +4,65 @@ import (
 	"llio-api/models/DTOs"
 	"llio-api/services"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-func CalculateTimeBank(c *gin.Context) {
+var timeBankSubject = "banque d'heures"
 
+// GET /user/time-bank
+func GetTimeBankBalance(c *gin.Context) {
 	user, shouldReturn := getUserFromContext(c)
 	if shouldReturn {
 		return
 	}
 
-	var requestDTO DTOs.TimeBankRequestDTO
-	if err := c.ShouldBindJSON(&requestDTO); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Données invalides : startDate et hoursPerWeek sont requis"})
-		return
-	}
-
-	messageErrsJSON := services.VerifyJSON(c, &requestDTO)
-	if len(messageErrsJSON) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": messageErrsJSON})
-		return
-	}
-
-	if _, err := time.Parse("2006-01-02", requestDTO.StartDate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Format de date invalide (attendu: YYYY-MM-DD)"})
-		return
-	}
-
-	response, err := services.CalculateTimeBank(user.Id, requestDTO)
+	balance, err := services.GetTimeBankBalance(user.Id)
 	if err != nil {
-		handleError(c, err, "erreur lors du calcul de banque d'heures")
+		handleError(c, err, timeBankSubject)
 		return
 	}
 
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, balance)
+}
+
+// GET /user/time-bank/config
+func GetTimeBankConfig(c *gin.Context) {
+	user, shouldReturn := getUserFromContext(c)
+	if shouldReturn {
+		return
+	}
+
+	config, err := services.GetTimeBankConfig(user.Id)
+	if err != nil {
+		handleError(c, err, timeBankSubject)
+		return
+	}
+
+	// Si pas de config, on renvoie null explicitement (code 200)
+	c.JSON(http.StatusOK, config)
+}
+
+// POST /user/time-bank/config
+func SaveTimeBankConfig(c *gin.Context) {
+	user, shouldReturn := getUserFromContext(c)
+	if shouldReturn {
+		return
+	}
+
+	var dto DTOs.TimeBankConfigDTO
+	// Validation automatique (datetime=2006-01-02)
+	msgErrs := services.VerifyJSON(c, &dto)
+	if len(msgErrs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgErrs})
+		return
+	}
+
+	savedConfig, err := services.SaveTimeBankConfig(user.Id, dto)
+	if err != nil {
+		handleError(c, err, timeBankSubject)
+		return
+	}
+
+	c.JSON(http.StatusOK, savedConfig)
 }
