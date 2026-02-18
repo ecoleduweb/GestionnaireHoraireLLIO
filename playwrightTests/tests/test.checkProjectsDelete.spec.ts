@@ -40,12 +40,10 @@ test.describe('checkProjectsDelete', () => {
 
     });
 
+
     test('deleteProjectError', async ({ page }) => {
-        // Configuration du mock pour la suppression non réussie
         const mocker = new ApiMocker(page);
-        await mocker
-            .addMock(projectMocks.deleteProjectError)
-            .apply();
+        await mocker.addMock(projectMocks.deleteProjectError).apply();
 
         await expect(page.getByText('AT-123')).toHaveCount(2);
 
@@ -55,6 +53,7 @@ test.describe('checkProjectsDelete', () => {
         await expect(confirmBtn).toBeVisible();
         await expect(confirmBtn).toBeEnabled();
 
+        // IMPORTANT: create the wait promise BEFORE the click to avoid missing the event
         const dialogPromise = page.waitForEvent('dialog');
         await confirmBtn.click();
 
@@ -64,5 +63,6 @@ test.describe('checkProjectsDelete', () => {
             'Erreur lors de la suppression du projet'
         );
         await dialog.dismiss();
-    });   
+    });
+
 });

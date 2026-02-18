@@ -28,6 +28,7 @@ var (
 	router              *gin.Engine
 	w                   *httptest.ResponseRecorder
 	doNotDeleteUser     DAOs.User
+	doNotDeleteUser2    DAOs.User
 	pleaseDeleteUser    DAOs.User
 	pleaseDeleteProject DAOs.Project
 	doNotDeleteCategory DAOs.Category
@@ -72,6 +73,7 @@ func prepareTestData() {
 		FirstName: "John",
 		LastName:  "Doe",
 		Email:     "john.doe@example.com",
+		Role:      enums.Administrator,
 	}
 	database.DB.Create(&testUser)
 	doNotDeleteUser = testUser
@@ -83,6 +85,15 @@ func prepareTestData() {
 	}
 	database.DB.Create(&testUser2)
 	pleaseDeleteUser = testUser2
+	testUser3 := DAOs.User{
+		Id:        3,
+		FirstName: "Jane",
+		LastName:  "Doe",
+		Email:     "jane.doe@example.com",
+		Role:      enums.ProjectManager,
+	}
+	database.DB.Create(&testUser3)
+	doNotDeleteUser2 = testUser3
 	testProject := DAOs.Project{
 		Id:             1, // Assurez-vous que l'ID est unique pour le test
 		UniqueId:       "Interne-1234",
@@ -256,5 +267,6 @@ func drop_all_tables() {
 	database.DB.Exec("DROP TABLE IF EXISTS projects")
 	database.DB.Exec("DROP TABLE IF EXISTS categories")
 	database.DB.Exec("DROP TABLE IF EXISTS activities")
+	database.DB.Exec("DROP TABLE IF EXISTS co_managers")
 	database.DB.Exec("SET FOREIGN_KEY_CHECKS = 1")
 }
