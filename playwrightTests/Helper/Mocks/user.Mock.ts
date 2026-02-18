@@ -133,7 +133,7 @@ export const userMocks = {
         method: 'DELETE',
         response: {
                 status: 403,
-                json: {"error":"Impossible de supprimer cet utilisateur car il est associé à des projets ou activités."}
+                json: {"error":"L'utilisateur a une ou des activités associées, suppression impossible"}
         }
     },
    

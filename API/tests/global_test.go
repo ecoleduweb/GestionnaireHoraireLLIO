@@ -29,6 +29,7 @@ var (
 	w                   *httptest.ResponseRecorder
 	doNotDeleteUser     DAOs.User
 	pleaseDeleteUser    DAOs.User
+	pleaseDeleteProject DAOs.Project
 	doNotDeleteCategory DAOs.Category
 	doNotDeleteProject  DAOs.Project
 	doNotDeleteProject2 DAOs.Project
@@ -95,6 +96,7 @@ func prepareTestData() {
 	}
 	database.DB.Create(&testProject)
 	doNotDeleteProject = testProject
+
 	testProject2 := DAOs.Project{
 		Id:             2, // Assurez-vous que l'ID est unique pour le test
 		UniqueId:       "Externe-6789",
@@ -108,6 +110,20 @@ func prepareTestData() {
 	}
 	database.DB.Create(&testProject2)
 	doNotDeleteProject2 = testProject2
+
+	testProject3 := DAOs.Project{
+		Id:             3, // Assurez-vous que l'ID est unique pour le test
+		UniqueId:       "Interne-4444",
+		Name:           "Sample yes",
+		ManagerId:      doNotDeleteUser.Id,
+		Status:         enums.ProjectStatus(enums.InProgress),
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+		EndAt:          time.Now(),
+		EstimatedHours: 10, // Ajout d'une valeur pour EstimatedHours
+	}
+	database.DB.Create(&testProject3)
+	pleaseDeleteProject = testProject3
 
 	log.Println("doNotDeleteProject2:", doNotDeleteProject2)
 	log.Println("doNotDeleteProject:", doNotDeleteProject)
