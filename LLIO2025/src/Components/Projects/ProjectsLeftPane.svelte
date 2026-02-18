@@ -7,6 +7,8 @@
   import ProjectModal from './ProjectModal.svelte';
   import type { Project, UserInfo } from '../../Models';
   import { UserRole } from '$lib/types/enums';
+  import { ProjectApiService } from '../../services/ProjectApiService';
+  import ConfirmationModal from '../ConfirmationModal.svelte';
 
   type Props = {
     currentUser: UserInfo;
@@ -17,7 +19,9 @@
   let { projects = [], currentUser, onProjectsRefresh }: Props = $props();
   let isArchivedVisible = $state(false);
   let showModal = $state(false);
+  let showModalDelete = $state(false);
   let projectToEdit = $state<Project | null>(null);
+  let projectToDelete = $state<Project | null>(null);
     
   const handleNewProject = () =>{
     projectToEdit = null;
@@ -29,9 +33,23 @@
     showModal = true;
   }
 
+  const handleDeleteProject = (project) => {
+    projectToDelete = projects.find((x) => x.id === project.id);
+    showModalDelete = true;
+  }
+
   const handleCloseModal = () =>{
     showModal = false;
+    showModalDelete = false;
     projectToEdit = null;
+    projectToDelete = null;
+  }
+
+  const handleSuccessDelete = async () => {
+    if (projectToDelete?.id != null) {
+      await ProjectApiService.deleteProject(projectToDelete.id);
+    }
+    onProjectsRefresh();
   }
 </script>
 
@@ -75,7 +93,7 @@
 
     <div class="overflow-y-auto max-h-[calc(100vh-150px)]">
       {#each projects.filter((x) => !x.isArchived) as project}
-        <ProjectItem {project} {currentUser} onEdit={handleEditProject} />
+        <ProjectItem {project} {currentUser} onEdit={handleEditProject} onDelete={handleDeleteProject} />
       {/each}
 
       <!-- Projets archivés -->
@@ -106,7 +124,7 @@
           {#if isArchivedVisible}
             <div transition:slide={{ duration: 300, easing: quintOut }}>
               {#each projects.filter((x) => x.isArchived) as project}
-                <ProjectItem {project} {currentUser} onEdit={handleEditProject} />
+                <ProjectItem {project} {currentUser} onEdit={handleEditProject} onDelete={handleDeleteProject} />
               {/each}
             </div>
           {/if}
@@ -123,6 +141,17 @@
   onClose={handleCloseModal}
 />
 {/if}
+
+{#if showModalDelete}
+<ConfirmationModal
+  modalTitle="Supprimer un projet"
+  modalText="Voulez-vous vraiment supprimer le projet {projectToDelete.name} ?"
+  errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"
+  onSuccess={handleSuccessDelete}
+  onClose={handleCloseModal}
+/>
+{/if}
+
 
 <style>
   .dashboard-panel {

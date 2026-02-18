@@ -118,7 +118,12 @@ func GetProjectById(id string) (*DAOs.Project, error) {
 	return &project, DBErrorManager(err)
 }
 
-// UpdateProject met à jour un projet
+// Les categories sont supprimés en casade delete par la DB
+func DeleteProjectById(id int) error {
+	err := database.DB.Delete(&DAOs.Project{}, id).Error
+	return DBErrorManager(err)
+}
+
 func UpdateProject(projectDAO *DAOs.Project) (*DAOs.Project, error) {
 	err := database.DB.Model(projectDAO).
 		Select("ManagerId", "UniqueId", "Name", "Status", "Billable", "UpdatedAt", "EndAt", "EstimatedHours").
@@ -164,4 +169,13 @@ func GetProjectsByActivityPerUser(userId int) ([]*DAOs.Project, error) {
 		Find(&projects).Error
 
 	return projects, DBErrorManager(err)
+}
+
+func ProjectHasActivities(id int) (bool, error) {
+	var count int64
+	err := database.DB.Model(&DAOs.Activity{}).Where("project_id = ?", id).Count(&count).Error
+	if err != nil {
+		return false, DBErrorManager(err)
+	}
+	return count > 0, nil
 }
