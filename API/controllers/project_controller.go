@@ -70,14 +70,13 @@ func AddCoManager(c *gin.Context) {
 	}
 
 	currentUser, _ := c.Get("current_user")
-
 	currentUserDTO, ok := currentUser.(*DTOs.UserDTO)
 	if !ok {
-		handleError(c, errors.New("erreur interne du serveur"), "authentification")
+		handleError(c, errors.New("erreur interne du serveur"), "co-chargé de projet")
 		return
 	}
 
-	coManagerAdded, err := services.AddCoManager(&coManagerDTO, currentUserDTO.Id)
+	coManagerAdded, err := services.AddCoManager(&coManagerDTO, currentUserDTO)
 	if err != nil {
 		handleError(c, err, "co-chargé de projet")
 		return

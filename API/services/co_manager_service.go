@@ -10,27 +10,7 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-func VerifyAddCoManagerJSON(coManagerDTO *DTOs.CoManagerDTO) []DTOs.FieldErrorDTO {
-	var errors []DTOs.FieldErrorDTO
-
-	if coManagerDTO.UserId == 0 {
-		errors = append(errors, DTOs.FieldErrorDTO{
-			Field:   "userId",
-			Message: "Le champ userId est invalide ou manquant",
-		})
-	}
-
-	if coManagerDTO.ProjectId == 0 {
-		errors = append(errors, DTOs.FieldErrorDTO{
-			Field:   "projectId",
-			Message: "Le champ projectId est invalide ou manquant",
-		})
-	}
-
-	return errors
-}
-
-func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, authorId int) (*DTOs.CoManagerDTO, error) {
+func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.CoManagerDTO, error) {
 	project, err := GetProjectById(strconv.Itoa(coManagerDTO.ProjectId))
 	if err != nil {
 		return nil, err
@@ -49,14 +29,16 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, authorId int) (*DTOs.CoManage
 		return nil, customs_errors.ErrUserIsManager
 	}
 
-	if project.ManagerId != authorId {
-		isCoManager, err := CheckIfUserIsCoManager(authorId, project.Id)
-		if err != nil {
-			return nil, err
-		}
+	if author.Role < 2 {
+		if project.ManagerId != author.Id {
+			isCoManager, err := CheckIfUserIsCoManager(author.Id, project.Id)
+			if err != nil {
+				return nil, err
+			}
 
-		if !isCoManager {
-			return nil, customs_errors.ErrUserForbidden
+			if !isCoManager {
+				return nil, customs_errors.ErrUserForbidden
+			}
 		}
 	}
 
