@@ -77,11 +77,22 @@ const getCurrentUserProjects = async(): Promise<DetailedProject[]> => {
   }
 }
 
+const addCoManagerToProject = async(projectId: number, userId: number): Promise<void> => {
+  try {
+    await POST(`/project/${projectId}/coManager/${userId}`, {});
+    return;
+  } catch (error) {
+    console.error("Erreur lors de l'ajout du co-chargé au projet:", error);
+    throw new Error("Erreur à l'ajout du co-chargé : " + error.message)
+  }
+}
+
 export const ProjectApiService = {
   createProject,
   updateProject,
   getProjects,
   getProject,
   getDetailedProjects,
-  getCurrentUserProjects
+  getCurrentUserProjects,
+  addCoManagerToProject
 };

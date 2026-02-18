@@ -4,7 +4,7 @@
   import { quintOut } from 'svelte/easing';
   import { formatHours } from '../../utils/date';
 
-  let { project } = $props();
+  let { project, onClickAddCoManager } = $props();
   let isDetailsVisible = $state([]);
 
   const calculateRemainingTime = (timeSpent: number, timeEstimated: number): number =>{
@@ -60,6 +60,7 @@
               {/each}
               <button
                 class="mt-2 inline-flex items-center bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs"
+                onclick={onClickAddCoManager}
               >
                 <Plus class="w-3 h-3" />
               </button>
