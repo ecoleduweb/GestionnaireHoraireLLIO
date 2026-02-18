@@ -3,18 +3,16 @@ package repositories
 import (
 	"llio-api/database"
 	"llio-api/models/DAOs"
+
+	"gorm.io/gorm"
 )
 
 func CreateProject(project *DAOs.Project) (*DAOs.Project, error) {
 	err := database.DB.Create(project).Error
 	return project, DBErrorManager(err)
 }
-
-func GetProjects() ([]*DAOs.Project, error) {
-	var projects []*DAOs.Project
-	err := database.DB.
-		Table("projects").
-		Select("DISTINCT projects.*").
+func applyRecentActivityOrdering(db *gorm.DB) *gorm.DB {
+	return db.
 		Joins(`
 			LEFT JOIN (
 				SELECT project_id, MAX(start_date) AS last_activity
@@ -42,9 +40,19 @@ func GetProjects() ([]*DAOs.Project, error) {
 				OR last_activities.last_activity <= DATE_SUB(NOW(), INTERVAL 7 DAY) 
 				THEN LOWER(projects.name) 
 			END ASC
-		`).
-		Find(&projects).Error
+		`)
+}
 
+func GetProjects() ([]*DAOs.Project, error) {
+	var projects []*DAOs.Project
+
+	query := database.DB.
+		Table("projects").
+		Select("DISTINCT projects.*")
+
+	query = applyRecentActivityOrdering(query)
+
+	err := query.Find(&projects).Error
 	return projects, DBErrorManager(err)
 }
 
@@ -133,41 +141,18 @@ func UpdateProject(projectDAO *DAOs.Project) (*DAOs.Project, error) {
 
 func GetProjectsByActivityPerUser(userId int) ([]*DAOs.Project, error) {
 	var projects []*DAOs.Project
-	err := database.DB.
+
+	query := database.DB.
 		Select("DISTINCT projects.*").
 		Joins("JOIN activities ON activities.project_id = projects.id").
-		Joins(`
-			LEFT JOIN (
-				SELECT project_id, MAX(start_date) AS last_activity
-				FROM activities
-				GROUP BY project_id
-			) AS last_activities ON last_activities.project_id = projects.id
-		`).
-		Where("activities.user_id = ?", userId).
-		Order(`
-			CASE 
-				WHEN last_activities.last_activity IS NOT NULL 
-				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 7 DAY) 
-				THEN 0 ELSE 1 
-			END
-		`).
-		Order(`
-			CASE 
-				WHEN last_activities.last_activity IS NOT NULL 
-				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 7 DAY) 
-				THEN last_activities.last_activity 
-			END DESC
-		`).
-		Order(`
-			CASE 
-				WHEN last_activities.last_activity IS NULL 
-				OR last_activities.last_activity <= DATE_SUB(NOW(), INTERVAL 7 DAY) 
-				THEN LOWER(projects.name) 
-			END ASC
-		`).
-		Find(&projects).Error
+		Where("activities.user_id = ?", userId)
+
+	query = applyRecentActivityOrdering(query)
+
+	err := query.Find(&projects).Error
 	return projects, DBErrorManager(err)
 }
+
 
 func ProjectHasActivities(id int) (bool, error) {
 	var count int64
