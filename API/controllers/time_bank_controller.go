@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var timeBankSubject = "banque d'heures"
+const timeBankSubject = "banque d'heures"
 
 // GET /user/time-bank
 func GetTimeBankBalance(c *gin.Context) {

@@ -19,9 +19,9 @@ func RegisterRoutes(r *gin.Engine) {
 	}
 	timeBankGroup := userGroup.Group("/time-bank")
 	{
-		timeBankGroup.GET("", controllers.GetTimeBankBalance)
-		timeBankGroup.GET("/config", controllers.GetTimeBankConfig)
-		timeBankGroup.POST("/config", controllers.SaveTimeBankConfig)
+		timeBankGroup.GET("", controllers.GetTimeBankBalance)         // Le solde
+		timeBankGroup.GET("/config", controllers.GetTimeBankConfig)   // Lire config
+		timeBankGroup.POST("/config", controllers.SaveTimeBankConfig) // Sauvegarder config
 	}
 
 	usersGroup := r.Group("/users", middleware.RoleValidationMiddleware(enums.ProjectManager))
