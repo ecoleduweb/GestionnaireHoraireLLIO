@@ -16,19 +16,19 @@ import (
 func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	now := time.Now()
 
-	// Récupérer un user existant en BD (lecture seulement, pas de création)
+	
 	var existingUser DAOs.User
 	err := database.DB.First(&existingUser).Error
 	assert.NoError(t, err, "Un user doit exister en BD")
 	assert.NotZero(t, existingUser.Id)
 
-	// Récupérer une catégorie existante en BD (lecture seulement)
+	
 	var existingCategory DAOs.Category
 	err = database.DB.First(&existingCategory).Error
 	assert.NoError(t, err, "Une catégorie doit exister en BD")
 	assert.NotZero(t, existingCategory.Id)
 
-	// Créer le projet "récent" via API
+	
 	recentProjectBody := DTOs.ProjectDTO{
 		UniqueId:  "Recent-Sort-API-001",
 		ManagerId: existingUser.Id,
@@ -43,7 +43,7 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	json.Unmarshal(w.Body.Bytes(), &recentProjectResp)
 	assert.NotZero(t, recentProjectResp.Project.Id)
 
-	// Créer le projet "ancien" via API
+	
 	oldProjectBody := DTOs.ProjectDTO{
 		UniqueId:  "Old-Sort-API-001",
 		ManagerId: existingUser.Id,
@@ -58,7 +58,7 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	json.Unmarshal(w.Body.Bytes(), &oldProjectResp)
 	assert.NotZero(t, oldProjectResp.Project.Id)
 
-	// Créer une catégorie pour le projet récent via API
+	
 	recentCatBody := DTOs.CategoryDTO{
 		Name:        "Cat Sort Recent API",
 		Description: "Categorie test tri recent",
@@ -72,7 +72,7 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	json.Unmarshal(w.Body.Bytes(), &recentCatResp)
 	assert.NotZero(t, recentCatResp.Category.Id)
 
-	// Créer une catégorie pour le projet ancien via API
+	
 	oldCatBody := DTOs.CategoryDTO{
 		Name:        "Cat Sort Old API",
 		Description: "Categorie test tri ancien",
@@ -86,7 +86,7 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	json.Unmarshal(w.Body.Bytes(), &oldCatResp)
 	assert.NotZero(t, oldCatResp.Category.Id)
 
-	// Créer activité récente (3 jours) via API
+	
 	recentActivity := DTOs.ActivityDTO{
 		Name:        "Activite recente tri API",
 		Description: "Activité il y a 3 jours",
@@ -99,16 +99,16 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	w = sendRequest(router, "POST", "/activity", recentActivity, enums.Administrator)
 	assertResponse(t, w, http.StatusCreated, nil)
 
-	// Créer activité ancienne (10 jours) via API
+	
 	oldActivity := DTOs.ActivityDTO{
-		Name:        "Activite ancienne tri API",
-		Description: "Activité il y a 10 jours",
-		StartDate:   now.Add(-10 * 24 * time.Hour),
-		EndDate:     now.Add(-10*24*time.Hour + 2*time.Hour),
-		UserId:      existingUser.Id,
-		ProjectId:   oldProjectResp.Project.Id,
-		CategoryId:  oldCatResp.Category.Id,
-	}
+    Name:        "Activite ancienne tri API",
+    Description: "Activité il y a 1 mois",
+    StartDate:   now.Add(-33 * 24 * time.Hour),
+    EndDate:     now.Add(-33*24*time.Hour + 2*time.Hour),
+    UserId:      existingUser.Id,
+    ProjectId:   oldProjectResp.Project.Id,
+    CategoryId:  oldCatResp.Category.Id,
+}
 	w = sendRequest(router, "POST", "/activity", oldActivity, enums.Administrator)
 	assertResponse(t, w, http.StatusCreated, nil)
 
