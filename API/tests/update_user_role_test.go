@@ -24,7 +24,7 @@ func TestUpdateUserRoleAsProjectManager(t *testing.T) {
 		"role": &newRole,
 	}
 
-	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", testUser.Id), roleRequest, enums.ProjectManager)
+	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", testUser.Id), roleRequest, doNotDeleteUser.Id, enums.ProjectManager)
 
 	assertResponse(t, w, http.StatusForbidden, nil)
 }
@@ -43,7 +43,7 @@ func TestUpdateUserRoleAsEmployee(t *testing.T) {
 		"role": &newRole,
 	}
 
-	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", testUser.Id), roleRequest, enums.Employee)
+	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", testUser.Id), roleRequest, doNotDeleteUser.Id, enums.Employee)
 
 	assertResponse(t, w, http.StatusForbidden, nil)
 }
@@ -54,7 +54,7 @@ func TestUpdateOwnRole(t *testing.T) {
 		"role": &newRole,
 	}
 
-	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", doNotDeleteUser.Id), roleRequest, enums.Administrator)
+	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", doNotDeleteUser.Id), roleRequest, doNotDeleteUser.Id, enums.Administrator)
 
 	assertResponse(t, w, http.StatusForbidden, nil)
 }
@@ -65,7 +65,7 @@ func TestUpdateUserRoleWithInvalidID(t *testing.T) {
 		"role": &newRole,
 	}
 
-	w := sendRequest(router, "PATCH", "/user/invalid/role", roleRequest, enums.Administrator)
+	w := sendRequest(router, "PATCH", "/user/invalid/role", roleRequest, doNotDeleteUser.Id, enums.Administrator)
 
 	assertResponse(t, w, http.StatusBadRequest, nil)
 }
@@ -79,7 +79,7 @@ func TestUpdateUserRoleWithNonExistentUser(t *testing.T) {
 
 	// Send request with non-existent user ID
 	nonExistentID := 99999
-	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", nonExistentID), roleRequest, enums.Administrator)
+	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", nonExistentID), roleRequest, doNotDeleteUser.Id, enums.Administrator)
 
 	// Assert response
 	assertResponse(t, w, http.StatusNotFound, nil)
@@ -102,7 +102,7 @@ func TestUpdateUserRoleWithInvalidRole(t *testing.T) {
 	}
 
 	// Send request
-	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", testUser.Id), roleRequest, enums.Administrator)
+	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", testUser.Id), roleRequest, doNotDeleteUser.Id, enums.Administrator)
 
 	// Assert response
 	assertResponse(t, w, http.StatusBadRequest, nil)
@@ -122,7 +122,7 @@ func TestUpdateUserRoleMissingRoleField(t *testing.T) {
 	emptyRequest := map[string]interface{}{}
 
 	// Send request
-	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", testUser.Id), emptyRequest, enums.Administrator)
+	w := sendRequest(router, "PATCH", fmt.Sprintf("/user/%d/role", testUser.Id), emptyRequest, doNotDeleteUser.Id, enums.Administrator)
 
 	// Assert response
 	assertResponse(t, w, http.StatusBadRequest, nil)

@@ -41,9 +41,9 @@ var accessToken string
 
 // Create and set JWT token for tests
 
-func createAndSetAccessToken(role enums.UserRole) {
+func createAndSetAccessToken(role enums.UserRole, userId int) {
 	// Create a JWT token for the test user
-	token, err := services.CreateJWTToken(doNotDeleteUser.Id, doNotDeleteUser.Email, doNotDeleteUser.FirstName, doNotDeleteUser.LastName, time.Now().Add(time.Hour), role)
+	token, err := services.CreateJWTToken(userId, doNotDeleteUser.Email, doNotDeleteUser.FirstName, doNotDeleteUser.LastName, time.Now().Add(time.Hour), role)
 	if err != nil {
 		log.Fatalf("Failed to create JWT token: %v", err)
 	}
@@ -199,7 +199,7 @@ func setupTestRouter() (*gin.Engine, *httptest.ResponseRecorder) {
 
 // sendRequest envoie une requête HTTP au routeur de test
 // pour créer une requête http avec un role administrateur, on ajoute le role voulu à la fin : sendRequest(router, "POST", "/activity", activity, enums.Employee)
-func sendRequest(router *gin.Engine, method, url string, body interface{}, userRole ...enums.UserRole) *httptest.ResponseRecorder {
+func sendRequest(router *gin.Engine, method, url string, body interface{}, userId int, userRole ...enums.UserRole) *httptest.ResponseRecorder {
 	var req *http.Request
 	// If accessToken exists, we need to add it to the request cookies
 	// This will be used in non-authenticated helper functions
@@ -213,9 +213,9 @@ func sendRequest(router *gin.Engine, method, url string, body interface{}, userR
 	}
 
 	if (userRole != nil) && len(userRole) > 0 {
-		createAndSetAccessToken(userRole[0])
+		createAndSetAccessToken(userRole[0], userId)
 	} else {
-		createAndSetAccessToken(enums.Employee)
+		createAndSetAccessToken(enums.Employee, userId)
 	}
 
 	cookie := &http.Cookie{

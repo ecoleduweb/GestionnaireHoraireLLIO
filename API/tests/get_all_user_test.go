@@ -11,19 +11,19 @@ import (
 )
 
 func TestGetAllUsers(t *testing.T) {
-	w := sendRequest(router, "GET", "/users", nil, enums.ProjectManager)
+	w := sendRequest(router, "GET", "/users", nil, doNotDeleteUser.Id, enums.ProjectManager)
 	assertResponse(t, w, http.StatusOK, nil)
 	assert.NotNil(t, w.Body)
 }
 
 func TestGetAllUsersBySingleRole(t *testing.T) {
-	w := sendRequest(router, "GET", "/users?role=1", nil, enums.ProjectManager)
+	w := sendRequest(router, "GET", "/users?role=1", nil, doNotDeleteUser.Id, enums.ProjectManager)
 	assertResponse(t, w, http.StatusOK, nil)
 	assert.NotNil(t, w.Body)
 }
 
 func TestGetAllUsersByMultipleRoles(t *testing.T) {
-	w := sendRequest(router, "GET", "/users?role=1&role=2", nil, enums.ProjectManager)
+	w := sendRequest(router, "GET", "/users?role=1&role=2", nil, doNotDeleteUser.Id, enums.ProjectManager)
 	assertResponse(t, w, http.StatusOK, nil)
 	assert.NotNil(t, w.Body)
 }
@@ -49,6 +49,6 @@ func TestGetAllUsersWithInvalidToken(t *testing.T) {
 }
 
 func TestGetAllUsersWithoutPermission(t *testing.T) {
-	w := sendRequest(router, "GET", "/users", nil, enums.Employee)
+	w := sendRequest(router, "GET", "/users", nil, doNotDeleteUser.Id, enums.Employee)
 	assertResponse(t, w, http.StatusForbidden, nil)
 }
