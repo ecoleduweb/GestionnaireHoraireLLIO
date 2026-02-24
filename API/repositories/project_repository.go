@@ -14,30 +14,34 @@ func CreateProject(project *DAOs.Project) (*DAOs.Project, error) {
 func applyRecentActivityOrdering(db *gorm.DB) *gorm.DB {
 	return db.
 		Joins(`
+		
 			LEFT JOIN (
-				SELECT project_id, MAX(start_date) AS last_activity
+				SELECT project_id, MAX(start_date) AS latest_started_activity
 				FROM activities
 				GROUP BY project_id
 			) AS last_activities ON last_activities.project_id = projects.id
 		`).
+		// permet de faire un premier tri des activitées selon celles qui datent de moins de 1mois
 		Order(`
 			CASE 
-				WHEN last_activities.last_activity IS NOT NULL 
-				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 1 MONTH) 
+				WHEN last_activities.latest_started_activity IS NOT NULL 
+				AND last_activities.latest_started_activity > DATE_SUB(NOW(), INTERVAL 1 MONTH) 
 				THEN 0 ELSE 1 
 			END
 		`).
+		// Prend les activitées de moins de 1 mois et les trient par date 
 		Order(`
 			CASE 
-				WHEN last_activities.last_activity IS NOT NULL 
-				AND last_activities.last_activity > DATE_SUB(NOW(), INTERVAL 1 MONTH) 
-				THEN last_activities.last_activity 
+				WHEN last_activities.latest_started_activity IS NOT NULL 
+				AND last_activities.latest_started_activity > DATE_SUB(NOW(), INTERVAL 1 MONTH) 
+				THEN last_activities.latest_started_activity 
 			END DESC
 		`).
+		// Trie le reste des activitées par odre alphabétique 
 		Order(`
 			CASE 
-				WHEN last_activities.last_activity IS NULL 
-				OR last_activities.last_activity <= DATE_SUB(NOW(), INTERVAL 1 MONTH) 
+				WHEN last_activities.latest_started_activity IS NULL 
+				OR last_activities.latest_started_activity <= DATE_SUB(NOW(), INTERVAL 1 MONTH) 
 				THEN LOWER(projects.name) 
 			END ASC
 		`)
