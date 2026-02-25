@@ -83,30 +83,30 @@ func GetProjects() ([]*DTOs.ProjectDTO, error) {
 	return projectsDTO, nil
 }
 
-func GetDetailedProjects() ([]map[string]any, error) {
+func GetDetailedProjects(from string, to string) ([]map[string]any, error) {
 	projects, err := repositories.GetProjects()
 	if err != nil {
 		return nil, err
 	}
 
-	return formatProjects(projects, nil)
+	return formatProjects(projects, nil, from, to)
 }
 
-func GetDetailedProjectsByManagerId(id int) ([]map[string]any, error) {
+func GetDetailedProjectsByManagerId(id int, from string, to string) ([]map[string]any, error) {
 	projects, err := repositories.GetProjectsByManagerId(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return formatProjects(projects, nil)
+	return formatProjects(projects, nil, from, to)
 }
 
-func GetDetailedProjectsByUserId(id int) ([]map[string]any, error) {
+func GetDetailedProjectsByUserId(id int, from string, to string) ([]map[string]any, error) {
 	projects, err := repositories.GetProjectsByActivityPerUser(id)
 	if err != nil {
 		return nil, err
 	}
-	return formatProjects(projects, &id)
+	return formatProjects(projects, &id, from, to)
 }
 
 func GetProjectById(id string) (*DTOs.ProjectDTO, error) {
@@ -168,7 +168,7 @@ func UpdateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {
 	return projectDTOResponse, err
 }
 
-func formatProjects(projects []*DAOs.Project, userId *int) ([]map[string]any, error) {
+func formatProjects(projects []*DAOs.Project, userId *int, from string, to string) ([]map[string]any, error) {
 	users, err := repositories.GetAllUsers()
 	if err != nil {
 		return nil, err
@@ -191,9 +191,9 @@ func formatProjects(projects []*DAOs.Project, userId *int) ([]map[string]any, er
 	for _, project := range projects {
 		var tempActivities []DAOs.ActivityWithTimeSpent
 		if userId != nil {
-			tempActivities, err = repositories.GetProjectActivitiesFromUser(project.Id, userId)
+			tempActivities, err = repositories.GetProjectActivitiesFromUser(project.Id, userId, from, to)
 		} else {
-			tempActivities, err = repositories.GetProjectActivities(project.Id)
+			tempActivities, err = repositories.GetProjectActivities(project.Id, from, to)
 		}
 		if err != nil {
 			return nil, err
