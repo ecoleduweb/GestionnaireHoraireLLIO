@@ -136,7 +136,9 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	var thirdProjectResp struct {
 		Project DAOs.Project `json:"project"`
 	}
-	json.Unmarshal(w.Body.Bytes(), &thirdProjectResp)
+	err = json.Unmarshal(w.Body.Bytes(), &thirdProjectResp)
+	assert.NoError(t, err)
+	assert.NotZero(t, thirdProjectResp.Project.Id)
 
 	thirdCatBody := DTOs.CategoryDTO{
 		Name:        "Cat Third",
@@ -145,11 +147,14 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	}
 
 	w = sendRequest(router, "POST", "/category", thirdCatBody, enums.Administrator)
+	assertResponse(t, w, http.StatusCreated, nil)
 
 	var thirdCatResp struct {
 		Category DAOs.Category `json:"category"`
 	}
-	json.Unmarshal(w.Body.Bytes(), &thirdCatResp)
+	err = json.Unmarshal(w.Body.Bytes(), &thirdCatResp)
+	assert.NoError(t, err)
+	assert.NotZero(t, thirdCatResp.Category.Id)
 
 	// activité très récente user2
 	thirdActivity := DTOs.ActivityDTO{
