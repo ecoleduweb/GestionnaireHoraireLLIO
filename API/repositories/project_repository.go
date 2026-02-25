@@ -16,15 +16,6 @@ func GetProjects() ([]*DAOs.Project, error) {
 	return projects, DBErrorManager(err)
 }
 
-func GetProjectsFromRange(from string, to string) ([]*DAOs.Project, error) {
-	fromWithTime := from + "T00:00:00"
-	toWithTime := to + "T23:59:59"
-
-	var projects []*DAOs.Project
-	err := database.DB.Where("End_Date >= ? AND Start_Date <= ?", fromWithTime, toWithTime).Find(&projects).Error
-	return projects, DBErrorManager(err)
-}
-
 func GetProjectActivities(projectId int, from string, to string) ([]DAOs.ActivityWithTimeSpent, error) {
 	var tempResults []DAOs.ActivityWithTimeSpent
 	var err error
@@ -113,10 +104,8 @@ func GetProjectActivitiesFromUser(projectId int, userId *int, from string, to st
 				CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
 			`).
 			Table("activities").
-			Where("project_id = ?", projectId).
+			Where("project_id = ? AND Start_Date >= ? AND End_Date <= ?", projectId, fromDate, toDate).
 			Where("user_id = ?", userId).
-			Where("Start_Date >= ?", fromDate).
-			Where("End_Date >= ?", toDate).
 			Group("user_id, category_id, project_id").
 			Scan(&tempResults).Error
 	}
