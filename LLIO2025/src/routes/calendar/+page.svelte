@@ -124,6 +124,29 @@
       alert('Une erreur est survenue lors du chargement des activités.');
     }
   }
+  const refreshDashboardData = async () => {
+  if (!calendarService) return;
+
+  try {
+    //permet de recupérer le total d'heures
+    totalHours = calendarService.getTotalHours();
+
+    // Permet de faire 2 appels en mêmes temps 
+    const [userProjects, allProjects] = await Promise.all([
+      //permet de recupérer permet de recupérer les projets du panneau gauche avec les heures
+      ProjectApiService.getCurrentUserProjects(),
+      //permet de recupérer tout les projets disponibles,
+      //utilisé ici pour faire un reload pour changer l'odre des projets en fonction de la date de leur dernière ativité
+      ProjectApiService.getProjects()
+    ]);
+
+    detailedProjects = userProjects;
+    projects = allProjects;
+
+  } catch (error) {
+    console.error("Erreur lors du refresh des données:", error);
+  }
+};
 
   const loadProjects = async () =>{
     try {
@@ -238,6 +261,8 @@
     isLoading = false;
   });
 
+
+
   const setView = (viewName: string) => {
     if (calendarService) {
       calendarService.setView(viewName);
@@ -255,9 +280,7 @@
       end: activityData.endDate,
       extendedProps: { ...activityData },
     });
-    totalHours = calendarService.getTotalHours();
-    detailedProjects = await ProjectApiService.getCurrentUserProjects();
-    projects = await ProjectApiService.getProjects();
+    await refreshDashboardData();
   }
 
   const handleActivityUpdate = async (activity: Activity) =>{
@@ -273,9 +296,7 @@
       activity.endDate = getDateOrDefault(activity.endDate, defaultEndDate);
 
       const updatedActivity = await ActivityApiService.updateActivity(activity);
-      calendarService.updateEvent(updatedActivity);
-      totalHours = calendarService.getTotalHours();
-      detailedProjects = await ProjectApiService.getCurrentUserProjects();
+      await refreshDashboardData();
       projects = await ProjectApiService.getProjects();
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
@@ -290,9 +311,7 @@
     try {
       await ActivityApiService.deleteActivity(activity.id);
       calendarService.deleteActivity(activity.id.toString());
-      totalHours = calendarService.getTotalHours();
-      detailedProjects = await ProjectApiService.getCurrentUserProjects();
-      projects = await ProjectApiService.getProjects();
+      await refreshDashboardData();
     } catch (error) {
       console.error("Erreur lors de la suppression de l'activité", error);
       throw error;
@@ -307,9 +326,7 @@
       const updatedActivity = await ActivityApiService.updateActivity(activity);
 
       calendarService.updateEvent(updatedActivity);
-      totalHours = calendarService.getTotalHours();
-      detailedProjects = await ProjectApiService.getCurrentUserProjects();
-      projects = await ProjectApiService.getProjects();
+      await refreshDashboardData();
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
       alert("Une erreur est survenue lors de la mise à jour de l'activité.");
