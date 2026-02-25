@@ -4,7 +4,7 @@
   import { quintOut } from 'svelte/easing';
   import { formatHours } from '../../utils/date';
 
-  let { project, onClickAddCoManager } = $props();
+  let { project, onClickAddCoManager = () => {} }: { project: any; onClickAddCoManager?: () => void } = $props();
   let isDetailsVisible = $state([]);
 
   const calculateRemainingTime = (timeSpent: number, timeEstimated: number): number =>{

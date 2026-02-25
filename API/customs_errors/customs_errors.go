@@ -14,6 +14,7 @@ var (
 	ErrUserForbidden        = errors.New("accès refusé")
 	ErrUserIsManager        = errors.New("l'utilisateur est le chargé du projet")
 	ErrUserRoleBelowManager = errors.New("l'utilisateur doit avoir le rôle de chargé de projet ou supérieur pour devenir co-chargé de projet")
+	ErrUserAlreadyCoManager = errors.New("l'utilisateur est déjà co-chargé de ce projet")
 	ErrProjectHasActivities = errors.New("Le projet a des activités associées, suppression impossible")
 	ErrProjectNotFound      = errors.New("Projet non trouvé - Projet inexistant")
 )

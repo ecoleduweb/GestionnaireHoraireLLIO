@@ -548,7 +548,7 @@ export const projectMocks = {
     },
   },
   createCoManagerSuccess: {
-    url: "/project/1/coManager/3",
+    url: "/project/2/coManager/2",
     method: "POST",
     response: {
       status: 201,

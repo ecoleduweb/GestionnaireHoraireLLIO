@@ -16,12 +16,12 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 		return nil, err
 	}
 
-	coManagerFromDB, err := GetUserById(coManagerDTO.UserId)
+	targetUser, err := GetUserById(coManagerDTO.UserId)
 	if err != nil {
 		return nil, err
 	}
 
-	if coManagerFromDB.Role < 1 {
+	if targetUser.Role < 1 {
 		return nil, customs_errors.ErrUserRoleBelowManager
 	}
 
@@ -31,7 +31,7 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 
 	if author.Role < 2 {
 		if project.ManagerId != author.Id {
-			isCoManager, err := CheckIfUserIsCoManager(author.Id, project.Id)
+			isCoManager, err := repositories.IsUserCoManager(project.Id, author.Id)
 			if err != nil {
 				return nil, err
 			}
@@ -48,6 +48,14 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 		return nil, err
 	}
 
+	alreadyCoManager, err := repositories.IsUserCoManager(coManagerDAO.ProjectId, coManagerDAO.UserId)
+	if err != nil {
+		return nil, err
+	}
+	if alreadyCoManager {
+		return nil, customs_errors.ErrUserAlreadyCoManager
+	}
+
 	coManagerAdded, err := repositories.AddCoManagerToProject(coManagerDAO)
 	if err != nil {
 		return nil, err
@@ -56,12 +64,4 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 	coManagerDTOResponse := &DTOs.CoManagerDTO{}
 	err = copier.Copy(coManagerDTOResponse, coManagerAdded)
 	return coManagerDTOResponse, err
-}
-
-func CheckIfUserIsCoManager(userId int, projectId int) (bool, error) {
-	_, err := GetProjectById(strconv.Itoa(projectId))
-	if err != nil {
-		return false, err
-	}
-	return repositories.IsUserCoManager(projectId, userId)
 }

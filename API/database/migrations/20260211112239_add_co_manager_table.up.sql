@@ -1,7 +1,7 @@
 -- Migration Up
 CREATE TABLE IF NOT EXISTS co_managers (
-   project_id BIGINT(20) UNSIGNED NOT NULL,
-   user_id    BIGINT(20) UNSIGNED NOT NULL,
+   project_id BIGINT UNSIGNED NOT NULL,
+   user_id    BIGINT UNSIGNED NOT NULL,
 
    PRIMARY KEY (project_id, user_id),
 

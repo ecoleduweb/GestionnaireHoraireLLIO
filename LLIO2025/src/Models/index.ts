@@ -86,6 +86,6 @@ export interface DetailedProject extends Project {
 }
 
 export interface CoLead {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 }

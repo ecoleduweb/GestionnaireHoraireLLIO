@@ -25,16 +25,17 @@ import (
 
 // variables globales utilisées pour led tests
 var (
-	router              *gin.Engine
-	w                   *httptest.ResponseRecorder
-	doNotDeleteUser     DAOs.User
-	doNotDeleteUser2    DAOs.User
-	pleaseDeleteUser    DAOs.User
-	pleaseDeleteProject DAOs.Project
-	doNotDeleteCategory DAOs.Category
-	doNotDeleteProject  DAOs.Project
-	doNotDeleteProject2 DAOs.Project
-	doNotDeleteActivity DAOs.Activity
+	router               *gin.Engine
+	w                    *httptest.ResponseRecorder
+	doNotDeleteUser      DAOs.User
+	doNotDeleteUser2     DAOs.User
+	pleaseDeleteUser     DAOs.User
+	pleaseDeleteProject  DAOs.Project
+	doNotDeleteCategory  DAOs.Category
+	doNotDeleteProject   DAOs.Project
+	doNotDeleteProject2  DAOs.Project
+	doNotDeleteActivity  DAOs.Activity
+	doNotDeleteCoManager DAOs.CoManager
 )
 
 // Global JWT token for authentication in tests
@@ -160,6 +161,13 @@ func prepareTestData() {
 	}
 	database.DB.Create(&testActivity)
 	doNotDeleteActivity = testActivity
+
+	testCoManager := DAOs.CoManager{
+		UserId:    doNotDeleteUser2.Id,
+		ProjectId: doNotDeleteProject2.Id,
+	}
+	database.DB.Create(&testCoManager)
+	doNotDeleteCoManager = testCoManager
 }
 
 // Change de répertoir pour trouver le .env

@@ -7,16 +7,11 @@ import (
 
 func GetCoManagersByProjectIds(projectIds []int) ([]*DAOs.CoManager, error) {
 	var coManagers []*DAOs.CoManager
+	if len(projectIds) == 0 {
+		return coManagers, nil
+	}
 	err := database.DB.
 		Where("project_id IN (?)", projectIds).
-		Find(&coManagers).Error
-	return coManagers, DBErrorManager(err)
-}
-
-func GetCoManagersByProjectId(projectId int) ([]*DAOs.CoManager, error) {
-	var coManagers []*DAOs.CoManager
-	err := database.DB.
-		Where("project_id = ?", projectId).
 		Find(&coManagers).Error
 	return coManagers, DBErrorManager(err)
 }

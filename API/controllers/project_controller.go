@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"llio-api/models/DTOs"
 	"llio-api/models/enums"
 	"llio-api/services"
@@ -69,12 +68,13 @@ func AddCoManager(c *gin.Context) {
 		ProjectId: projectIdInt,
 	}
 
-	currentUser, _ := c.Get("current_user")
-	currentUserDTO, ok := currentUser.(*DTOs.UserDTO)
-	if !ok {
-		handleError(c, errors.New("erreur interne du serveur"), "co-chargé de projet")
+	currentUser, exists := c.Get("current_user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
 		return
 	}
+
+	currentUserDTO := currentUser.(*DTOs.UserDTO)
 
 	coManagerAdded, err := services.AddCoManager(&coManagerDTO, currentUserDTO)
 	if err != nil {

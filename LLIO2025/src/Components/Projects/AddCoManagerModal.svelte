@@ -34,7 +34,7 @@
         Sélectionnez un utilisateur pour devenir co-chargé de projet de {projectName}
       </p>
 
-      <div class="flex gap-3">
+      <div class="flex gap-3 mb-6">
         <label for="userId" class="block text-gray-700">Utilisateur</label>
         <select name="userId" id="userId" bind:value={valueSelected}>
           <option value="" disabled hidden>{ users.length === 0 ? "Aucun utilisateur disponible à l'ajout" : "Choisir un utilisateur" }</option>

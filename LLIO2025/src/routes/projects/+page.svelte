@@ -26,11 +26,13 @@
   let selectedProject = $state<DetailedProject | null>(null);
   let users = $state<User[]>([]);
   let usersToDisplay = $derived<User[]>(
-    users.filter(u =>
-      selectedProject.managerId != u.id
-      &&
-      selectedProject.coLeads.findIndex(cl => cl.id === u.id) === -1
-    )
+    selectedProject == null
+      ? []
+      : users.filter(u =>
+          selectedProject.managerId != u.id
+          &&
+          selectedProject.coLeads.findIndex(cl => cl.id === u.id) === -1
+        )
   )
 
   const handleAddCoManagerModalOpen = async (projectId: number) => {
@@ -74,11 +76,13 @@
       isLoading = true;
       error = null;
       const response = await ProjectApiService.getDetailedProjects();
-      selectedProject = response.find(p => p.id === projectId);
+      selectedProject = response.find(p => p.id === projectId) ?? null;
+      if (selectedProject == null) {
+        console.log("Project not found");
+      }
     } catch (err) {
       console.error('Erreur lors de la récupération des projets détaillés :', err);
       error = "Impossible de charger les projets détaillés. Veuillez réessayer plus tard.";
-      users = [];
     } finally {
       isLoading = false;
     }
@@ -91,11 +95,13 @@
       await ProjectApiService.addCoManagerToProject(selectedProjectId, selectedUserNumber);
     } catch (e) {
       console.error('Erreur lors de l\'ajout du co-chargé de projet :', e);
-      alert(e.message);
+      alert(e instanceof Error ? e.message : 'Erreur inconnue');
     } finally {
       isLoading = false;
       showAddCoManagerModal = false;
-      selectedProject = selectedProjectId = selectedUser = users = null;
+      selectedProject = selectedProjectId = null;
+      selectedUser = "";
+      users = [];
       await loadProjects();
     }
   }
@@ -107,8 +113,7 @@
         console.error('Erreur lors du chargement des informations utilisateur:', error);
         alert('Impossible de charger les informations utilisateur.');
       }
-    await loadProjects();
-    await loadUsers();
+    await Promise.all([loadProjects(), loadUsers()]);
   });
 
   $effect(() => { // si le search est update, le fonction est rééxecutée 
