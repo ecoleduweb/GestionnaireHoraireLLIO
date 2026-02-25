@@ -65,8 +65,8 @@ func CreateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {
 	return projectDTOResponse, err
 }
 
-func GetProjects() ([]*DTOs.ProjectDTO, error) {
-	projects, err := repositories.GetProjects()
+func GetProjects(userId int) ([]*DTOs.ProjectDTO, error) {
+	projects, err := repositories.GetProjects(userId)
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +83,8 @@ func GetProjects() ([]*DTOs.ProjectDTO, error) {
 	return projectsDTO, nil
 }
 
-func GetDetailedProjects() ([]map[string]any, error) {
-	projects, err := repositories.GetProjects()
+func GetDetailedProjects(userId int) ([]map[string]any, error) {
+	projects, err := repositories.GetProjects(userId)
 	if err != nil {
 		return nil, err
 	}

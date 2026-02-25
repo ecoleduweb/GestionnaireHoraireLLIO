@@ -11,16 +11,17 @@ func CreateProject(project *DAOs.Project) (*DAOs.Project, error) {
 	err := database.DB.Create(project).Error
 	return project, DBErrorManager(err)
 }
-func applyRecentActivityOrdering(db *gorm.DB) *gorm.DB {
+func applyRecentActivityOrdering(db *gorm.DB,userId int) *gorm.DB {
 	return db.
 		Joins(`
 		
 			LEFT JOIN (
 				SELECT project_id, MAX(start_date) AS latest_started_activity
 				FROM activities
+				WHERE user_id = ?
 				GROUP BY project_id
 			) AS last_activities ON last_activities.project_id = projects.id
-		`).
+		`, userId).
 		// permet de faire un premier tri des activitées selon celles qui datent de moins de 1mois
 		Order(`
 			CASE 
@@ -47,14 +48,14 @@ func applyRecentActivityOrdering(db *gorm.DB) *gorm.DB {
 		`)
 }
 
-func GetProjects() ([]*DAOs.Project, error) {
+func GetProjects(userId int) ([]*DAOs.Project, error) {
 	var projects []*DAOs.Project
 
 	query := database.DB.
 		Table("projects").
 		Select("DISTINCT projects.*")
 
-	query = applyRecentActivityOrdering(query)
+	query = applyRecentActivityOrdering(query, userId)
 
 	err := query.Find(&projects).Error
 	return projects, DBErrorManager(err)
@@ -142,7 +143,7 @@ func GetProjectsByActivityPerUser(userId int) ([]*DAOs.Project, error) {
 		Joins("JOIN activities ON activities.project_id = projects.id").
 		Where("activities.user_id = ?", userId)
 
-	query = applyRecentActivityOrdering(query)
+	query = applyRecentActivityOrdering(query, userId)
 
 	err := query.Find(&projects).Error
 	return projects, DBErrorManager(err)
