@@ -150,12 +150,33 @@ func DeleteProjectById(id int) error {
 	return nil
 }
 
-func UpdateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {
+func UpdateProject(projectDTO *DTOs.ProjectDTO, author *DTOs.UserDTO) (*DTOs.ProjectDTO, error) {
 
 	projectDAO := &DAOs.Project{}
 	err := copier.Copy(projectDAO, projectDTO)
 	if err != nil {
 		return nil, err
+	}
+
+	// Ici, on vérifie les permissions pour que seulement les personnes
+	// suivantes puissent ajouter un co-chargé de projet :
+	//
+	// - Tous les administrateurs
+	// - Tout chargé de projet étant chargé ou co-chargé de ce projet en spécifique.
+	//
+	// Toutes les autres personnes (utilisateur régulier ou chargé de projet non-attribué)
+	//	ne peuvent pas modifier les co-chargés du projet
+	if author.Role < enums.Administrator {
+		if projectDTO.ManagerId != author.Id {
+			isCoManager, err := repositories.IsUserCoManager(projectDTO.Id, author.Id)
+			if err != nil {
+				return nil, err
+			}
+
+			if !isCoManager {
+				return nil, customs_errors.ErrUserForbidden
+			}
+		}
 	}
 
 	projectDAOUpdated, err := repositories.UpdateProject(projectDAO)

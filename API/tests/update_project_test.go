@@ -133,3 +133,37 @@ func TestDoNotUpdateProjectWithInconsistentDates(t *testing.T) {
 	}
 	assertResponse(t, w, http.StatusBadRequest, expectedErrors)
 }
+
+func TestDoNotUpdateProjectAsEmployee(t *testing.T) {
+	endDate := time.Now().Add(25 * 24 * time.Hour)
+
+	updatedProject := DTOs.ProjectDTO{
+		Id:        doNotDeleteProject2.Id,
+		ManagerId: doNotDeleteUser.Id,
+		UniqueId:  doNotDeleteProject2.UniqueId,
+		Name:      doNotDeleteProject2.Name,
+		Status:    doNotDeleteProject2.Status,
+		EndAt:     endDate,
+	}
+
+	w := sendRequest(router, "PUT", "/project", updatedProject, nil, enums.Employee)
+	assertResponse(t, w, http.StatusForbidden, nil)
+	assert.NotNil(t, w.Body)
+}
+
+func TestDoNotUpdateProjectAsNotCoManager(t *testing.T) {
+	endDate := time.Now().Add(25 * 24 * time.Hour)
+
+	updatedProject := DTOs.ProjectDTO{
+		Id:        doNotDeleteProject2.Id,
+		ManagerId: doNotDeleteUser.Id,
+		UniqueId:  doNotDeleteProject2.UniqueId,
+		Name:      doNotDeleteProject2.Name,
+		Status:    doNotDeleteProject2.Status,
+		EndAt:     endDate,
+	}
+
+	w := sendRequest(router, "PUT", "/project", updatedProject, &doNotDeleteUser3.Id, enums.ProjectManager)
+	assertResponse(t, w, http.StatusForbidden, nil)
+	assert.NotNil(t, w.Body)
+}

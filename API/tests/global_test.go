@@ -29,6 +29,7 @@ var (
 	w                    *httptest.ResponseRecorder
 	doNotDeleteUser      DAOs.User
 	doNotDeleteUser2     DAOs.User
+	doNotDeleteUser3     DAOs.User
 	pleaseDeleteUser     DAOs.User
 	pleaseDeleteProject  DAOs.Project
 	doNotDeleteCategory  DAOs.Category
@@ -95,6 +96,15 @@ func prepareTestData() {
 	}
 	database.DB.Create(&testUser3)
 	doNotDeleteUser2 = testUser3
+	testUser4 := DAOs.User{
+		Id:        4,
+		FirstName: "Jane",
+		LastName:  "Doe",
+		Email:     "jane.doe@example.com",
+		Role:      enums.ProjectManager,
+	}
+	database.DB.Create(&testUser4)
+	doNotDeleteUser3 = testUser4
 	testProject := DAOs.Project{
 		Id:             1, // Assurez-vous que l'ID est unique pour le test
 		UniqueId:       "Interne-1234",

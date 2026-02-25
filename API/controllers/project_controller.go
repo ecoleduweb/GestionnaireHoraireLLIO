@@ -177,6 +177,14 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
+	currentUser, exists := c.Get("current_user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+
+	currentUserDTO := currentUser.(*DTOs.UserDTO)
+
 	id := strconv.Itoa(projectToUpdate.Id)
 	_, err := services.GetProjectById(id)
 	if err != nil {
@@ -190,7 +198,7 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
-	updatedProjectDTO, err := services.UpdateProject(&projectToUpdate)
+	updatedProjectDTO, err := services.UpdateProject(&projectToUpdate, currentUserDTO)
 	if err != nil {
 		handleError(c, err, projectSTR)
 		return
