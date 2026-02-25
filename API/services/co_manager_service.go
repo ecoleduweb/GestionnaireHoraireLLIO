@@ -4,6 +4,7 @@ import (
 	"llio-api/customs_errors"
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
+	"llio-api/models/enums"
 	"llio-api/repositories"
 	"strconv"
 
@@ -21,7 +22,7 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 		return nil, err
 	}
 
-	if targetUser.Role < 1 {
+	if targetUser.Role < enums.ProjectManager {
 		return nil, customs_errors.ErrUserRoleBelowManager
 	}
 
@@ -29,7 +30,15 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 		return nil, customs_errors.ErrUserIsManager
 	}
 
-	if author.Role < 2 {
+	// Ici, on vérifie les permissions pour que seulement les personnes
+	// suivantes puissent ajouter un co-chargé de projet :
+	//
+	// - Tous les administrateurs
+	// - Tout chargé de projet étant chargé ou co-chargé de ce projet en spécifique.
+	//
+	// Toutes les autres personnes (utilisateur régulier ou chargé de projet non-attribué)
+	//	ne peuvent pas modifier les co-chargés du projet
+	if author.Role < enums.Administrator {
 		if project.ManagerId != author.Id {
 			isCoManager, err := repositories.IsUserCoManager(project.Id, author.Id)
 			if err != nil {

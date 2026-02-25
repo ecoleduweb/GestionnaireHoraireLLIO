@@ -1,29 +1,29 @@
 <script lang="ts">
   // Propriétés du composant
-  import type { User } from '../../Models';
+  import type {DetailedProject, User} from '../../Models';
 
   type Props = {
     show: boolean;
-    projectName: string;
+    project: DetailedProject;
     users: User[];
-    valueSelected: string;
-    onAdd: () => void;
+    onAdd: (userId : number, projectId : number) => void;
     onCancel: () => void;
   };
 
   let {
     show,
-    projectName,
+    project,
     users,
-    valueSelected = $bindable(""),
     onAdd,
     onCancel,
   }: Props = $props();
+
+  let valueSelected : string = $state("");
+  let valueSelectedInt : number = $derived(parseInt(valueSelected, 10));
 </script>
 
 {#if show}
   <div class="fixed inset-0 z-50 flex items-center justify-center">
-    <!-- Overlay semi-transparent avec la nouvelle syntaxe de Tailwind v4 -->
     <div class="absolute inset-0 bg-gray-800/50 transition-opacity" onclick={onCancel}></div>
 
     <!-- Modal -->
@@ -31,7 +31,7 @@
       <h3 class="text-lg font-medium text-gray-900 mb-4">Ajouter un co-chargé</h3>
 
       <p class="text-gray-600 mb-6">
-        Sélectionnez un utilisateur pour devenir co-chargé de projet de {projectName}
+        Sélectionnez un utilisateur pour devenir co-chargé de projet de {project.name}
       </p>
 
       <div class="flex gap-3 mb-6">
@@ -60,7 +60,7 @@
           font-medium hover:bg-[#014446] transition
           disabled:bg-gray-300 disabled:text-gray-500
           disabled:cursor-not-allowed disabled:hover:bg-gray-300"
-          onclick={onAdd}
+          onclick={() => onAdd(valueSelectedInt, project.id)}
           disabled={!valueSelected}
         >
           Ajouter

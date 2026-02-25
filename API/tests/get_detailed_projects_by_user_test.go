@@ -70,7 +70,7 @@ func TestGetDetailedProjectsByUser_EmptyProjects(t *testing.T) {
 }
 
 func TestGetDetailedProjectsByUserWithTime_AsAdmin_NoTimeSpent(t *testing.T) {
-	w := sendRequest(router, "GET", "/projects/detailed?from=2010-1-1&to=2010-1-1", nil, enums.Administrator)
+	w := sendRequest(router, "GET", "/projects/detailed?from=2010-1-1&to=2010-1-1", nil, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse
@@ -94,7 +94,7 @@ func TestGetDetailedProjectsByUserWithTime_AsAdmin_NoTimeSpent(t *testing.T) {
 
 func TestGetDetailedProjectsByUserWithTime_AsAdmin_TimeSpent(t *testing.T) {
 	year, month, day := time.Now().Date()
-	w := sendRequest(router, "GET", "/projects/detailed?from="+fmt.Sprintf("%v-%v-%v", year, int(month), day)+"&to="+fmt.Sprintf("%v-%v-%v", year, int(month), day), nil, enums.Administrator)
+	w := sendRequest(router, "GET", "/projects/detailed?from="+fmt.Sprintf("%v-%v-%v", year, int(month), day)+"&to="+fmt.Sprintf("%v-%v-%v", year, int(month), day), nil, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse
@@ -118,7 +118,7 @@ func TestGetDetailedProjectsByUserWithTime_AsAdmin_TimeSpent(t *testing.T) {
 
 func TestGetDetailedProjectsByUserWithTime_AsAdminWithoutTo_TimeSpent(t *testing.T) {
 	year, month, day := time.Now().Date()
-	w := sendRequest(router, "GET", "/projects/detailed?to="+fmt.Sprintf("%v-%v-%v", year, int(month), day), nil, enums.Administrator)
+	w := sendRequest(router, "GET", "/projects/detailed?to="+fmt.Sprintf("%v-%v-%v", year, int(month), day), nil, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse
@@ -141,7 +141,7 @@ func TestGetDetailedProjectsByUserWithTime_AsAdminWithoutTo_TimeSpent(t *testing
 }
 
 func TestGetDetailedProjectsByUserWithTime_EmptyProjects(t *testing.T) {
-	w := sendRequest(router, "GET", "/projects/me/detailed?from=2010-1-1&to=2010-1-1", nil, enums.Employee)
+	w := sendRequest(router, "GET", "/projects/me/detailed?from=2010-1-1&to=2010-1-1", nil, nil, enums.Employee)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse
@@ -167,7 +167,7 @@ func TestGetDetailedProjectsByUserWithTime_EmptyProjects(t *testing.T) {
 
 func TestGetDetailedProjectsByUserWithTime_TimeSpent(t *testing.T) {
 	year, month, day := time.Now().Date()
-	w := sendRequest(router, "GET", "/projects/me/detailed?from="+fmt.Sprintf("%v-%v-%v", year, int(month), day)+"&to="+fmt.Sprintf("%v-%v-%v", year, int(month), day), nil, enums.Employee)
+	w := sendRequest(router, "GET", "/projects/me/detailed?from="+fmt.Sprintf("%v-%v-%v", year, int(month), day)+"&to="+fmt.Sprintf("%v-%v-%v", year, int(month), day), nil, nil, enums.Employee)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse
@@ -192,7 +192,7 @@ func TestGetDetailedProjectsByUserWithTime_TimeSpent(t *testing.T) {
 
 func TestGetDetailedProjectsByUserWithTimeWithoutTo_TimeSpent(t *testing.T) {
 	year, month, day := time.Now().Date()
-	w := sendRequest(router, "GET", "/projects/me/detailed?from="+fmt.Sprintf("%v-%v-%v", year, int(month), day), nil, enums.Employee)
+	w := sendRequest(router, "GET", "/projects/me/detailed?from="+fmt.Sprintf("%v-%v-%v", year, int(month), day), nil, nil, enums.Employee)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse

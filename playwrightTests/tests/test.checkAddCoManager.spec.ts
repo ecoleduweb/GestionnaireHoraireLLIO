@@ -118,6 +118,9 @@ test.describe('Vérification de l\'ajout de co-chargés de projet', () => {
             ])
             .apply()
 
+        await page.reload();
+        await page.waitForLoadState('networkidle');
+
         await expect(page.getByText('AT-123')).toHaveCount(2);
         const firstProject = page.getByTestId('project-item').first();
         await firstProject.locator('button').filter({ has: page.locator('svg') }).first().click();
