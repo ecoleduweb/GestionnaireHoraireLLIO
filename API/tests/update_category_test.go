@@ -19,7 +19,7 @@ func TestUpdateCategory(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 	}
 
-	w := sendRequest(router, "POST", "/category", category, doNotDeleteUser.Id)
+	w := sendRequest(router, "POST", "/category", category, nil)
 	assertResponse(t, w, http.StatusCreated, nil)
 
 	// Vérification du corps de la réponse
@@ -37,7 +37,7 @@ func TestUpdateCategory(t *testing.T) {
 		Description: "Description de test",
 	}
 
-	w = sendRequest(router, "PUT", "/category", categoryToUpdate, doNotDeleteUser.Id)
+	w = sendRequest(router, "PUT", "/category", categoryToUpdate, nil)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var updateResponseBody struct {
@@ -57,6 +57,6 @@ func TestUpdateCategoryWithInvalidId(t *testing.T) {
 		ProjectId:   doNotDeleteProject.Id,
 	}
 
-	w := sendRequest(router, "PUT", "/category", category, doNotDeleteUser.Id)
+	w := sendRequest(router, "PUT", "/category", category, nil)
 	assertResponse(t, w, http.StatusNotFound, nil)
 }

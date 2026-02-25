@@ -22,7 +22,7 @@ func TestCreateProject(t *testing.T) {
 		Status:    enums.ProjectStatus(enums.InProgress),
 	}
 
-	w := sendRequest(router, "POST", "/project", project, doNotDeleteUser.Id, enums.Administrator)
+	w := sendRequest(router, "POST", "/project", project, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusCreated, nil)
 
 	var responseBody struct {
@@ -44,7 +44,7 @@ func TestDoNotCreateProjectWithoutUniqueId(t *testing.T) {
 		Status:    enums.ProjectStatus(enums.InProgress),
 	}
 
-	w := sendRequest(router, "POST", "/project", project, doNotDeleteUser.Id, enums.Administrator)
+	w := sendRequest(router, "POST", "/project", project, nil, enums.Administrator)
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "uniqueId", Message: "Le champ uniqueId est invalide ou manquant"},
 	}
@@ -59,7 +59,7 @@ func TestDoNotCreateProjectWithInvalidUniqueId(t *testing.T) {
 		Status:    enums.ProjectStatus(enums.InProgress),
 	}
 
-	w := sendRequest(router, "POST", "/project", project, doNotDeleteUser.Id, enums.Administrator)
+	w := sendRequest(router, "POST", "/project", project, nil, enums.Administrator)
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "uniqueId", Message: "Le champ uniqueId est invalide ou manquant"},
 	}
@@ -78,7 +78,7 @@ func TestDoNotCreateProjectWithInconsistentDates(t *testing.T) {
 		EndAt:     now.Add(-24 * time.Hour), // Un jour avant CreatedAt
 	}
 
-	w := sendRequest(router, "POST", "/project", project, doNotDeleteUser.Id, enums.Administrator)
+	w := sendRequest(router, "POST", "/project", project, nil, enums.Administrator)
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "endAt", Message: "La date de fin doit être après la date de création"},
 	}
@@ -99,7 +99,7 @@ func TestCreateProjectWithConsistentDates(t *testing.T) {
 		EndAt:     now.Add(7 * 24 * time.Hour), // Une semaine plus tard
 	}
 
-	w := sendRequest(router, "POST", "/project", project, doNotDeleteUser.Id, enums.Administrator)
+	w := sendRequest(router, "POST", "/project", project, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusCreated, nil)
 
 	var responseBody struct {

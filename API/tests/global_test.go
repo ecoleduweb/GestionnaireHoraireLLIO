@@ -210,7 +210,7 @@ func setupTestRouter() (*gin.Engine, *httptest.ResponseRecorder) {
 
 // sendRequest envoie une requête HTTP au routeur de test
 // pour créer une requête http avec un role administrateur, on ajoute le role voulu à la fin : sendRequest(router, "POST", "/activity", activity, enums.Employee)
-func sendRequest(router *gin.Engine, method, url string, body interface{}, userId int, userRole ...enums.UserRole) *httptest.ResponseRecorder {
+func sendRequest(router *gin.Engine, method, url string, body interface{}, userId *int, userRole ...enums.UserRole) *httptest.ResponseRecorder {
 	var req *http.Request
 	// If accessToken exists, we need to add it to the request cookies
 	// This will be used in non-authenticated helper functions
@@ -223,10 +223,17 @@ func sendRequest(router *gin.Engine, method, url string, body interface{}, userI
 		req, _ = http.NewRequest(method, url, bytes.NewBuffer(jsonValue))
 	}
 
-	if (userRole != nil) && len(userRole) > 0 {
-		createAndSetAccessToken(userRole[0], userId)
+	var finalUserId int
+	if userId != nil {
+		finalUserId = *userId
 	} else {
-		createAndSetAccessToken(enums.Employee, userId)
+		finalUserId = doNotDeleteUser.Id
+	}
+
+	if (userRole != nil) && len(userRole) > 0 {
+		createAndSetAccessToken(userRole[0], finalUserId)
+	} else {
+		createAndSetAccessToken(enums.Employee, finalUserId)
 	}
 
 	cookie := &http.Cookie{

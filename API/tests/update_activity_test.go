@@ -25,7 +25,7 @@ func TestUpdateActivity(t *testing.T) {
 	}
 
 	// Création de l'acitivité
-	createW := sendRequest(router, "POST", "/activity", initialActivity, doNotDeleteUser.Id)
+	createW := sendRequest(router, "POST", "/activity", initialActivity, nil)
 	assertResponse(t, createW, http.StatusCreated, nil)
 
 	var createResponseBody struct {
@@ -47,7 +47,7 @@ func TestUpdateActivity(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w := sendRequest(router, "PUT", "/activity", updateActivity, doNotDeleteUser.Id)
+	w := sendRequest(router, "PUT", "/activity", updateActivity, nil)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var updateResponseBody struct {
@@ -72,6 +72,6 @@ func TestUpdateActivityWithInvalidId(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w := sendRequest(router, "PUT", "/activity", updateActivity, doNotDeleteUser.Id)
+	w := sendRequest(router, "PUT", "/activity", updateActivity, nil)
 	assertResponse(t, w, http.StatusNotFound, nil)
 }

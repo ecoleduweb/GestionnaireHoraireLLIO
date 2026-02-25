@@ -14,7 +14,7 @@ import (
 
 func TestGetProjectById(t *testing.T) {
 	url := fmt.Sprintf("/project/%d", doNotDeleteProject.Id)
-	w := sendRequest(router, "GET", url, nil, doNotDeleteUser.Id)
+	w := sendRequest(router, "GET", url, nil, nil)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var responseBody struct {
@@ -28,17 +28,17 @@ func TestGetProjectById(t *testing.T) {
 }
 
 func TestGetProjectWithInvalidId(t *testing.T) {
-	w := sendRequest(router, "GET", "/project/999999", nil, doNotDeleteUser.Id)
+	w := sendRequest(router, "GET", "/project/999999", nil, nil)
 	assertResponse(t, w, http.StatusNotFound, nil)
 }
 
 func TestGetProjectWithNonNumericId(t *testing.T) {
-	w := sendRequest(router, "GET", "/project/invalid", nil, doNotDeleteUser.Id)
+	w := sendRequest(router, "GET", "/project/invalid", nil, nil)
 	assertResponse(t, w, http.StatusInternalServerError, nil)
 }
 
 func TestGetAllProjects(t *testing.T) {
-	w := sendRequest(router, "GET", "/projects", nil, doNotDeleteUser.Id, enums.Administrator)
+	w := sendRequest(router, "GET", "/projects", nil, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse
@@ -65,7 +65,7 @@ func TestGetAllProjects(t *testing.T) {
 }
 
 func TestGetAllProjects_AsEmployee(t *testing.T) {
-	w := sendRequest(router, "GET", "/projects", nil, doNotDeleteUser.Id, enums.Employee)
+	w := sendRequest(router, "GET", "/projects", nil, nil, enums.Employee)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	// Vérification du corps de la réponse
