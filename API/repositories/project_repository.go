@@ -1,8 +1,11 @@
 package repositories
 
 import (
+	"fmt"
 	"llio-api/database"
 	"llio-api/models/DAOs"
+
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -61,18 +64,51 @@ func GetProjects(userId int) ([]*DAOs.Project, error) {
 	return projects, DBErrorManager(err)
 }
 
-func GetProjectActivities(projectId int) ([]DAOs.ActivityWithTimeSpent, error) {
-	var tempResults []DAOs.ActivityWithTimeSpent
+func fixFromAndToTime(from string, to string) (string, string) {
+	year, month, day := time.Now().Date()
 
-	err := database.DB.
+	toDate := ""
+	fromDate := ""
+
+	//Dates par défaut
+	if to != "" {
+		toDate = to
+	} else {
+		toDate = fmt.Sprintf("%v-%v-%v", year, int(month), day)
+	}
+
+	if from != "" {
+		fromDate = from
+	} else {
+		fromDate = "2000-01-01" //Banane
+	}
+
+	if fromDate == toDate {
+		toDate = toDate + " 23:59:59"
+		fromDate = fromDate + " 00:00:00"
+	}
+
+	fromDate = fromDate + "T00:00:00"
+	toDate = toDate + "T23:59:59"
+
+	return fromDate, toDate
+}
+
+func GetProjectActivities(projectId int, from string, to string) ([]DAOs.ActivityWithTimeSpent, error) {
+	var tempResults []DAOs.ActivityWithTimeSpent
+	var err error
+
+	fromDate, toDate := fixFromAndToTime(from, to)
+
+	err = database.DB.
 		Select(`
-            activities.user_id, 
-            activities.category_id, 
-            activities.project_id, 
-            CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
-        `).
+			activities.user_id, 
+			activities.category_id, 
+			activities.project_id, 
+			CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
+		`).
 		Table("activities").
-		Where("project_id = ?", projectId).
+		Where("project_id = ? AND Start_Date >= ? AND End_Date <= ?", projectId, fromDate, toDate).
 		Group("user_id, category_id, project_id").
 		Scan(&tempResults).Error
 
@@ -83,18 +119,21 @@ func GetProjectActivities(projectId int) ([]DAOs.ActivityWithTimeSpent, error) {
 	return tempResults, err
 }
 
-func GetProjectActivitiesFromUser(projectId int, userId *int) ([]DAOs.ActivityWithTimeSpent, error) {
+func GetProjectActivitiesFromUser(projectId int, userId *int, from string, to string) ([]DAOs.ActivityWithTimeSpent, error) {
 	var tempResults []DAOs.ActivityWithTimeSpent
+	var err error
 
-	err := database.DB.
+	fromDate, toDate := fixFromAndToTime(from, to)
+
+	err = database.DB.
 		Select(`
-            activities.user_id, 
-            activities.category_id, 
-            activities.project_id, 
-            CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
-        `).
+			activities.user_id, 
+			activities.category_id, 
+			activities.project_id, 
+			CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
+		`).
 		Table("activities").
-		Where("project_id = ?", projectId).
+		Where("project_id = ? AND Start_Date >= ? AND End_Date <= ?", projectId, fromDate, toDate).
 		Where("user_id = ?", userId).
 		Group("user_id, category_id, project_id").
 		Scan(&tempResults).Error
@@ -111,7 +150,6 @@ func GetProjectsByManagerId(id int) ([]*DAOs.Project, error) {
 	err := database.DB.Find(&projects, "manager_id = ?", id).Error
 	return projects, DBErrorManager(err)
 }
-
 
 func GetProjectById(id string) (*DAOs.Project, error) {
 	var project DAOs.Project

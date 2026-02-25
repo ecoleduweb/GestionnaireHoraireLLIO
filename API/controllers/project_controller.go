@@ -62,6 +62,10 @@ func GetProjectById(c *gin.Context) {
 
 func GetDetailedProjects(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
+
+	from := c.DefaultQuery("from", "")
+	to := c.DefaultQuery("to", "")
+
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
 		return
@@ -79,11 +83,11 @@ func GetDetailedProjects(c *gin.Context) {
 
 	switch user.Role {
 	case enums.Administrator:
-		projects, err = services.GetDetailedProjects(user.Id)
+		projects, err = services.GetDetailedProjects(from, to, user.Id)
 	case enums.ProjectManager:
-		projects, err = services.GetDetailedProjectsByManagerId(user.Id)
+		projects, err = services.GetDetailedProjectsByManagerId(user.Id, from, to)
 	case enums.Employee:
-		projects, err = services.GetDetailedProjectsByUserId(user.Id)
+		projects, err = services.GetDetailedProjectsByUserId(user.Id, from, to)
 	}
 
 	if err != nil {
@@ -187,6 +191,10 @@ func DeleteProject(c *gin.Context) {
 
 func GetDetailedProjectsByUser(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
+
+	from := c.DefaultQuery("from", "")
+	to := c.DefaultQuery("to", "")
+
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
 		return
@@ -199,7 +207,7 @@ func GetDetailedProjectsByUser(c *gin.Context) {
 		return
 	}
 
-	projects, err := services.GetDetailedProjectsByUserId(user.Id)
+	projects, err := services.GetDetailedProjectsByUserId(user.Id, from, to)
 	if err != nil {
 		handleError(c, err, projectSTR)
 		return
