@@ -17,4 +17,5 @@ var (
 	ErrUserAlreadyCoManager = errors.New("l'utilisateur est déjà co-chargé de ce projet")
 	ErrProjectHasActivities = errors.New("Le projet a des activités associées, suppression impossible")
 	ErrProjectNotFound      = errors.New("Projet non trouvé - Projet inexistant")
+	ErrCantGetProjects      = errors.New("Erreur - Impossible de récupérer les projets")
 )
