@@ -171,7 +171,7 @@
         height: 'auto',
         contentHeight: 'auto', // Hauteur automatique
         
-        expandRows: true,
+        expandRows: false,
         dayHeaderFormat: headerFormat,
         eventClassNames: getEventClassName,
         eventTimeFormat: {
@@ -532,9 +532,9 @@
 
 <style>
   :global(.fc .fc-timegrid-slot) {
-    height: 45px !important;/* ceci correspond à la taille d'une case, pour mettre 4 crénaux de 15min dans 1h sans chevauchement, il faut la fixer à 45px */
-    min-height: 45px !important;
-    max-height: 45px !important;
+    height: 25px !important;
+    min-height: 25px !important;
+    max-height: 25px !important;
     
   }
 

@@ -1,10 +1,13 @@
 package services
 
 import (
+	"fmt"
+	"llio-api/customs_errors"
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
 	"llio-api/models/enums"
 	"llio-api/repositories"
+	"log"
 
 	"github.com/jinzhu/copier"
 )
@@ -116,6 +119,35 @@ func GetProjectById(id string) (*DTOs.ProjectDTO, error) {
 	err = copier.Copy(projectDTO, project)
 
 	return projectDTO, err
+}
+
+func DeleteProjectById(id int) error {
+	// Check if the project exists
+	projectDAO, err := repositories.GetProjectById(fmt.Sprintf("%d", id))
+
+	if err != nil {
+		return err
+	}
+	if projectDAO == nil {
+		return customs_errors.ErrProjectNotFound
+	}
+
+	projectHasActivities, err := repositories.ProjectHasActivities(id)
+	if err != nil {
+		return err
+	}
+	if projectHasActivities {
+		log.Printf("Project %d has activities: %v", id, projectHasActivities)
+		return customs_errors.ErrProjectHasActivities
+	}
+
+	//Delete the project
+	errDelete := repositories.DeleteProjectById(id)
+	if errDelete != nil {
+		return errDelete
+	}
+
+	return nil
 }
 
 func UpdateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {
