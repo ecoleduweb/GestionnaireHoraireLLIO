@@ -37,7 +37,7 @@ func applyRecentActivityOrdering(db *gorm.DB) *gorm.DB {
 				THEN last_activities.latest_started_activity 
 			END DESC
 		`).
-		// Trie le reste des activitées par odre alphabétique 
+		// Trie le reste des activitées par ordre alphabétique 
 		Order(`
 			CASE 
 				WHEN last_activities.latest_started_activity IS NULL 

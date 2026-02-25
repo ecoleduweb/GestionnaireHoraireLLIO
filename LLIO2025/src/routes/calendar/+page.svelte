@@ -136,7 +136,7 @@
       //permet de recupérer permet de recupérer les projets du panneau gauche avec les heures
       ProjectApiService.getCurrentUserProjects(),
       //permet de recupérer tout les projets disponibles,
-      //utilisé ici pour faire un reload pour changer l'odre des projets en fonction de la date de leur dernière ativité
+      //utilisé ici pour faire un reload pour changer l'ordre des projets en fonction de la date de leur dernière ativité
       ProjectApiService.getProjects()
     ]);
 
@@ -297,7 +297,6 @@
 
       const updatedActivity = await ActivityApiService.updateActivity(activity);
       await refreshDashboardData();
-      projects = await ProjectApiService.getProjects();
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
 
