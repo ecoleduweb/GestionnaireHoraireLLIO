@@ -1,8 +1,10 @@
 package repositories
 
 import (
+	"fmt"
 	"llio-api/database"
 	"llio-api/models/DAOs"
+	"time"
 )
 
 func CreateProject(project *DAOs.Project) (*DAOs.Project, error) {
@@ -17,8 +19,23 @@ func GetProjects() ([]*DAOs.Project, error) {
 }
 
 func fixFromAndToTime(from string, to string) (string, string) {
-	toDate := to
-	fromDate := from
+	year, month, day := time.Now().Date()
+
+	toDate := ""
+	fromDate := ""
+
+	//Dates par défaut
+	if to != "" {
+		toDate = to
+	} else {
+		toDate = fmt.Sprintf("%v-%v-%v", year, int(month), day)
+	}
+
+	if from != "" {
+		fromDate = from
+	} else {
+		fromDate = "2000-01-01" //Banane
+	}
 
 	if fromDate == toDate {
 		toDate = toDate + " 23:59:59"
