@@ -14,7 +14,7 @@ test.describe('deleteUser', () => {
       .apply();
 
     // Naviguer vers la page de gestion des utilisateurs
-    await page.goto('/users'); // Ajustez l'URL selon votre routing
+    await page.goto('/administrator'); // Ajustez l'URL selon votre routing
   });
 
   test('deleteUserSuccess', async ({ page }) => {
@@ -25,6 +25,7 @@ test.describe('deleteUser', () => {
       .apply();
 
     await page.waitForTimeout(1000); // Attendre que le sélecteur soit interactif 
+    await page.locator('#user-button').click();
     await page.locator('#userSelect').click();
     await page.locator('#userSelect').selectOption({ label: 'Charle-ÉtienneTest Soucy | wong@email.com' });
     await page.getByText('Supprimer').click();
@@ -42,6 +43,7 @@ test.describe('deleteUser', () => {
       .apply();
 
     await page.waitForTimeout(1000); // Attendre que le sélecteur soit interactif
+    await page.locator('#user-button').click();
     await page.locator('#userSelect').click();
     await page.locator('#userSelect').selectOption({ label: 'Charle-ÉtienneTest Soucy | wong@email.com' });
     await page.getByRole('button', { name: 'Supprimer' }).click();
