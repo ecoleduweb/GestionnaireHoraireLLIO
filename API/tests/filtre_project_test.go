@@ -137,5 +137,5 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	assert.NotEqual(t, -1, recentIndex, "Le projet récent doit être présent")
 	assert.NotEqual(t, -1, oldIndex, "Le projet ancien doit être présent")
 	assert.Less(t, recentIndex, oldIndex,
-		"Le projet avec activité récente (3 jours) doit apparaître avant l'ancien (33 jours)")
+		"Le projet avec activité récente (3 jours) doit apparaître avant l'ancien (~33 jours)")
 }
