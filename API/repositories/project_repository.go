@@ -64,6 +64,7 @@ func GetProjects() ([]*DAOs.Project, error) {
 }
 
 func fixFromAndToTime(from string, to string) (string, string) {
+	//Le AddDate ajoute 10 ans.
 	year, month, day := time.Now().AddDate(10, 0, 0).Date()
 
 	toDate := ""
