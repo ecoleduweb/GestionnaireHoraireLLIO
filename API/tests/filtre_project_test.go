@@ -22,6 +22,16 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	assert.NoError(t, err, "Un user doit exister en BD")
 	assert.NotZero(t, existingUser.Id)
 
+	secondUser := DAOs.User{
+	FirstName: "User",
+	LastName:  "Two",
+	Email:     "user2@test.com",
+	}
+
+	err = database.DB.Create(&secondUser).Error
+	assert.NoError(t, err)
+	assert.NotZero(t, secondUser.Id)
+
 	
 	var existingCategory DAOs.Category
 	err = database.DB.First(&existingCategory).Error
@@ -112,6 +122,48 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	w = sendRequest(router, "POST", "/activity", oldActivity, enums.Administrator)
 	assertResponse(t, w, http.StatusCreated, nil)
 
+		// --- Ajouter un 3e projet ---
+	thirdProjectBody := DTOs.ProjectDTO{
+		UniqueId:  "Third-Sort-API-001",
+		ManagerId: secondUser.Id,
+		Name:      "Projet user2",
+		Status:    enums.ProjectStatus(enums.InProgress),
+	}
+
+	w = sendRequest(router, "POST", "/project", thirdProjectBody, enums.Administrator)
+	assertResponse(t, w, http.StatusCreated, nil)
+
+	var thirdProjectResp struct {
+		Project DAOs.Project `json:"project"`
+	}
+	json.Unmarshal(w.Body.Bytes(), &thirdProjectResp)
+
+	thirdCatBody := DTOs.CategoryDTO{
+		Name:        "Cat Third",
+		Description: "Cat Third",
+		ProjectId:   thirdProjectResp.Project.Id,
+	}
+
+	w = sendRequest(router, "POST", "/category", thirdCatBody, enums.Administrator)
+
+	var thirdCatResp struct {
+		Category DAOs.Category `json:"category"`
+	}
+	json.Unmarshal(w.Body.Bytes(), &thirdCatResp)
+
+	// activité très récente user2
+	thirdActivity := DTOs.ActivityDTO{
+		Name:        "Activite user2 ultra recente",
+		Description: "Now",
+		StartDate:   now.Add(-30 * time.Minute),
+		EndDate:     now,
+		UserId:      secondUser.Id,
+		ProjectId:   thirdProjectResp.Project.Id,
+		CategoryId:  thirdCatResp.Category.Id,
+	}
+
+	w = sendRequest(router, "POST", "/activity", thirdActivity, enums.Administrator)
+	assertResponse(t, w, http.StatusCreated, nil)
 
 	w = sendRequest(router, "GET", "/projects?sortBy=recentActivity", nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
@@ -123,19 +175,25 @@ func TestGetProjectsSortedByRecentActivity(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, len(projectsBody.Projects) >= 2)
 
+	// Vérifier les positions dans la liste globale
 	recentIndex := -1
 	oldIndex := -1
+
 	for i, p := range projectsBody.Projects {
+
 		if p.Id == recentProjectResp.Project.Id {
 			recentIndex = i
 		}
+
 		if p.Id == oldProjectResp.Project.Id {
 			oldIndex = i
 		}
 	}
 
-	assert.NotEqual(t, -1, recentIndex, "Le projet récent doit être présent")
-	assert.NotEqual(t, -1, oldIndex, "Le projet ancien doit être présent")
+	assert.NotEqual(t, -1, recentIndex)
+	assert.NotEqual(t, -1, oldIndex)
+
+	// Tri pour l'utilisateur connecté seulement
 	assert.Less(t, recentIndex, oldIndex,
-		"Le projet avec activité récente (3 jours) doit apparaître avant l'ancien (~33 jours)")
-}
+		"Le tri doit rester correct pour l'utilisateur connecté même avec un autre utilisateur ayant une activité récente")
+	}

@@ -18,7 +18,7 @@ func applyRecentActivityOrdering(db *gorm.DB,userId int) *gorm.DB {
 			LEFT JOIN (
 				SELECT project_id, MAX(start_date) AS latest_started_activity
 				FROM activities
-				WHERE user_id = ?
+				WHERE user_id = ? -- le Where ici est fait après avoir recupérer tout les projets, donc il n'impacte pas la récupération de tout les projets.
 				GROUP BY project_id
 			) AS last_activities ON last_activities.project_id = projects.id
 		`, userId).
