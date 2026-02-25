@@ -33,5 +33,8 @@ func IsUserCoManager(projectId int, userId int) (bool, error) {
 		Where("project_id = ? AND user_id = ?", projectId, userId).
 		Count(&count).Error
 
-	return count > 0, DBErrorManager(err)
+	if err != nil {
+		return false, DBErrorManager(err)
+	}
+	return count > 0, nil
 }

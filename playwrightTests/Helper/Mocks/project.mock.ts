@@ -548,14 +548,14 @@ export const projectMocks = {
     },
   },
   createCoManagerSuccess: {
-    url: "/project/2/coManager/2",
+    url: "/project/1/coManager/3",
     method: "POST",
     response: {
       status: 201,
       json: {
         "coManager": {
-          "userId": 2,
-              "projectId": 2
+          "userId": 1,
+              "projectId": 3
         },
           "response": "Le co-chargé de projet a bien été ajouté à la base de données"
       }

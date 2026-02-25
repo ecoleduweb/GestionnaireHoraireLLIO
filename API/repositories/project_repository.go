@@ -149,9 +149,9 @@ func GetProjectsByManagerId(userId int) ([]*DAOs.Project, error) {
 
 	err := database.DB.
 		Table("projects").
-		Select("projects.*").
+		Select("DISTINCT projects.*").
 		Joins(`
-			LEFT JOIN llio.co_managers cm
+			LEFT JOIN co_managers cm
 				ON projects.id = cm.project_id
 				AND cm.user_id = ?
 		`, userId).
