@@ -76,7 +76,7 @@
         {/if}
       </div>
 
-      {#if currentUser.role == UserRole.Admin || currentUser.role == UserRole.ProjectManager} 
+      {#if currentUser.role === UserRole.Admin || currentUser.role === UserRole.ProjectManager} 
         <button
           type="button"
           id="new-project-button"

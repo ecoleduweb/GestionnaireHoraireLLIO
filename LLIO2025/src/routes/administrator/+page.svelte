@@ -14,9 +14,11 @@
     isLoading = true;    
     // Charger les informations utilisateur
     try {
-         currentUser = await UserApiService.getUserInfo();
+      currentUser = await UserApiService.getUserInfo();
     } catch (error) {
-        console.error('Erreur lors du chargement des informations utilisateur:', error);
+      console.error('Erreur lors du chargement des informations utilisateur:', error);
+    } finally {
+      isLoading = false;
     }
   });
 
@@ -56,7 +58,7 @@
     <div class="dashboard-item-button flex-col justify-center-safe content-center">
       <div class="mt-4">
         <button 
-          onclick={() => showUsersModal ? showUsersModal = false : showUsersModal = true }
+          onclick={() => showUsersModal = !showUsersModal }
           id="user-button"
           type="button" 
           class="w-full py-2 px-4 text-sm font-medium transition-colors bg-[#e6f0f0] text-[#005e61] rounded-md hover:bg-[#d0e6e6] flex items-center justify-center cursor-pointer"

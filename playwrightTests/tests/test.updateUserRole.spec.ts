@@ -12,7 +12,7 @@ test.describe('updateUserRole', () => {
         ])
             .apply();
         await page.clock.install({ time: new Date('2025-03-22T08:00:00') });
-        await page.goto('http://localhost:5002/administrator');
+        await page.goto('/administrator');
         await page.waitForLoadState('networkidle');
     });
 
