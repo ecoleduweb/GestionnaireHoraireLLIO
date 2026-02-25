@@ -20,7 +20,7 @@ func GetProjectActivities(projectId int, from string, to string) ([]DAOs.Activit
 	var tempResults []DAOs.ActivityWithTimeSpent
 	var err error
 
-	if from == "" && to == "" {
+	if from == "" || to == "" {
 		err = database.DB.
 			Select(`
             activities.user_id, 
@@ -71,7 +71,7 @@ func GetProjectActivitiesFromUser(projectId int, userId *int, from string, to st
 	var tempResults []DAOs.ActivityWithTimeSpent
 	var err error
 
-	if from == "" && to == "" {
+	if from == "" || to == "" {
 		err = database.DB.
 			Select(`
 				activities.user_id, 
