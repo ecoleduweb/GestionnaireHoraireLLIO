@@ -111,15 +111,6 @@ func GetProjectsByManagerId(id int) ([]*DAOs.Project, error) {
 	return projects, DBErrorManager(err)
 }
 
-func GetProjectsByUserId(id int) ([]*DAOs.Project, error) {
-	var projects []*DAOs.Project
-	err := database.DB.
-		Distinct("projects.*").
-		Joins("JOIN activities ON activities.project_id = projects.id").
-		Where("activities.user_id = ?", id).
-		Find(&projects).Error
-	return projects, DBErrorManager(err)
-}
 
 func GetProjectById(id string) (*DAOs.Project, error) {
 	var project DAOs.Project
