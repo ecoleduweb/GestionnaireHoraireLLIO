@@ -16,49 +16,38 @@ func GetProjects() ([]*DAOs.Project, error) {
 	return projects, DBErrorManager(err)
 }
 
+func fixFromAndToTime(from string, to string) (string, string) {
+	toDate := to
+	fromDate := from
+
+	if fromDate == toDate {
+		toDate = toDate + " 23:59:59"
+		fromDate = fromDate + " 00:00:00"
+	}
+
+	fromDate = fromDate + "T00:00:00"
+	toDate = toDate + "T23:59:59"
+
+	return fromDate, toDate
+}
+
 func GetProjectActivities(projectId int, from string, to string) ([]DAOs.ActivityWithTimeSpent, error) {
 	var tempResults []DAOs.ActivityWithTimeSpent
 	var err error
 
-	if from == "" || to == "" {
-		err = database.DB.
-			Select(`
-            activities.user_id, 
-            activities.category_id, 
-            activities.project_id, 
-            CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
-        `).
-			Table("activities").
-			Where("project_id = ?", projectId).
-			Group("user_id, category_id, project_id").
-			Scan(&tempResults).Error
-		if err != nil {
-			return nil, DBErrorManager(err)
-		}
-	} else if from != "" && to != "" {
-		fromDate := from
-		toDate := to
+	fromDate, toDate := fixFromAndToTime(from, to)
 
-		if from == to {
-			toDate = to + " 23:59:59"
-			fromDate = from + " 00:00:00"
-		}
-
-		fromDate = from + "T00:00:00"
-		toDate = to + "T23:59:59"
-
-		err = database.DB.
-			Select(`
-				activities.user_id, 
-				activities.category_id, 
-				activities.project_id, 
-				CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
-			`).
-			Table("activities").
-			Where("project_id = ? AND Start_Date >= ? AND End_Date <= ?", projectId, fromDate, toDate).
-			Group("user_id, category_id, project_id").
-			Scan(&tempResults).Error
-	}
+	err = database.DB.
+		Select(`
+			activities.user_id, 
+			activities.category_id, 
+			activities.project_id, 
+			CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
+		`).
+		Table("activities").
+		Where("project_id = ? AND Start_Date >= ? AND End_Date <= ?", projectId, fromDate, toDate).
+		Group("user_id, category_id, project_id").
+		Scan(&tempResults).Error
 
 	if err != nil {
 		return nil, DBErrorManager(err)
@@ -71,44 +60,20 @@ func GetProjectActivitiesFromUser(projectId int, userId *int, from string, to st
 	var tempResults []DAOs.ActivityWithTimeSpent
 	var err error
 
-	if from == "" || to == "" {
-		err = database.DB.
-			Select(`
-				activities.user_id, 
-				activities.category_id, 
-				activities.project_id, 
-				CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
-			`).
-			Table("activities").
-			Where("project_id = ?", projectId).
-			Where("user_id = ?", userId).
-			Group("user_id, category_id, project_id").
-			Scan(&tempResults).Error
-	} else if from != "" && to != "" {
-		fromDate := from
-		toDate := to
+	fromDate, toDate := fixFromAndToTime(from, to)
 
-		if from == to {
-			toDate = to + " 23:59:59"
-			fromDate = from + " 00:00:00"
-		}
-
-		fromDate = from + "T00:00:00"
-		toDate = to + "T23:59:59"
-
-		err = database.DB.
-			Select(`
-				activities.user_id, 
-				activities.category_id, 
-				activities.project_id, 
-				CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
-			`).
-			Table("activities").
-			Where("project_id = ? AND Start_Date >= ? AND End_Date <= ?", projectId, fromDate, toDate).
-			Where("user_id = ?", userId).
-			Group("user_id, category_id, project_id").
-			Scan(&tempResults).Error
-	}
+	err = database.DB.
+		Select(`
+			activities.user_id, 
+			activities.category_id, 
+			activities.project_id, 
+			CAST(SUM(TIMESTAMPDIFF(SECOND, activities.start_date, activities.end_date))/3600.0 AS DECIMAL(10,2)) as time_spent
+		`).
+		Table("activities").
+		Where("project_id = ? AND Start_Date >= ? AND End_Date <= ?", projectId, fromDate, toDate).
+		Where("user_id = ?", userId).
+		Group("user_id, category_id, project_id").
+		Scan(&tempResults).Error
 
 	if err != nil {
 		return nil, DBErrorManager(err)

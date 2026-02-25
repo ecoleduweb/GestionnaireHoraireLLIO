@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"fmt"
 	"llio-api/models/DTOs"
 	"llio-api/models/enums"
 	"llio-api/services"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -63,8 +65,10 @@ func GetProjectById(c *gin.Context) {
 func GetDetailedProjects(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
 
-	from := c.DefaultQuery("from", "")
-	to := c.DefaultQuery("to", "")
+	year, month, day := time.Now().Date()
+
+	from := c.DefaultQuery("from", "2000-01-01")
+	to := c.DefaultQuery("to", fmt.Sprintf("%v-%v-%v", year, int(month), day))
 
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
@@ -181,8 +185,10 @@ func DeleteProject(c *gin.Context) {
 func GetDetailedProjectsByUser(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
 
-	from := c.DefaultQuery("from", "")
-	to := c.DefaultQuery("to", "")
+	year, month, day := time.Now().Date()
+
+	from := c.DefaultQuery("from", "2000-01-01")
+	to := c.DefaultQuery("to", fmt.Sprintf("%v-%v-%v", year, int(month), day))
 
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
