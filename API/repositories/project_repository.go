@@ -64,7 +64,7 @@ func GetProjects() ([]*DAOs.Project, error) {
 }
 
 func fixFromAndToTime(from string, to string) (string, string) {
-	year, month, day := time.Now().Date()
+	year, month, day := time.Now().AddDate(10, 0, 0).Date()
 
 	toDate := ""
 	fromDate := ""
