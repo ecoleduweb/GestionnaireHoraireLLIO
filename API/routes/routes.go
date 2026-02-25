@@ -73,6 +73,12 @@ func RegisterRoutes(r *gin.Engine) {
 		projectsGroup.GET("/me/detailed", controllers.GetDetailedProjectsByUser)
 	}
 
+	/*------------------- Report -------------------*/
+	reportGroup := r.Group("/report")
+	{
+		reportGroup.GET("/csv", middleware.RoleValidationMiddleware(enums.Administrator), controllers.ExportCSV)
+	}
+
 }
 
 // Routes pour l'authentification
