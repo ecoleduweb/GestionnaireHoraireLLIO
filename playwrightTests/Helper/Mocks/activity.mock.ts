@@ -463,7 +463,7 @@ export const activityMocks = {
     },
   },
   getAllActivitiesEmptyDefaultWeekSuccess: {
-    url: "/activities/me?startDate=2025-03-17&endDate=2025-03-23",
+    url: "/activities/me/detailed?startDate=2025-03-17&endDate=2025-03-23",
     method: "GET",
     response: {
       status: 200,
