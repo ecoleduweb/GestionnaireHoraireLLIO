@@ -83,7 +83,7 @@ func GetDetailedProjects(c *gin.Context) {
 
 	switch user.Role {
 	case enums.Administrator:
-		projects, err = services.GetDetailedProjects(from, to)
+		projects, err = services.GetDetailedProjects(from, to, user.Id)
 	case enums.ProjectManager:
 		projects, err = services.GetDetailedProjectsByManagerId(user.Id, from, to)
 	case enums.Employee:
@@ -105,19 +105,30 @@ func GetDetailedProjects(c *gin.Context) {
 }
 
 func GetProjects(c *gin.Context) {
-	projects, err := services.GetProjects()
-	if err != nil {
-		handleError(c, err, projectSTR)
-		return
-	}
+    currentUser, exists := c.Get("current_user")
+    if !exists {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+        return
+    }
 
-	if projects == nil {
-		// Retourner une liste vide au lieu de null
-		c.JSON(http.StatusOK, gin.H{"projects": []DTOs.ProjectDTO{}})
-		return
-	}
+    user, ok := currentUser.(*DTOs.UserDTO)
+    if !ok {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur interne du serveur"})
+        return
+    }
 
-	c.JSON(http.StatusOK, gin.H{"projects": projects})
+    projects, err := services.GetProjects(user.Id)
+    if err != nil {
+        handleError(c, err, projectSTR)
+        return
+    }
+
+    if projects == nil {
+        c.JSON(http.StatusOK, gin.H{"projects": []DTOs.ProjectDTO{}})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"projects": projects})
 }
 
 func UpdateProject(c *gin.Context) {
