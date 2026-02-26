@@ -12,7 +12,7 @@ test.describe('updateUserRole', () => {
         ])
             .apply();
         await page.clock.install({ time: new Date('2025-03-22T08:00:00') });
-        await page.goto('http://localhost:5002/users');
+        await page.goto('/administrator');
         await page.waitForLoadState('networkidle');
     });
 
@@ -27,7 +27,7 @@ test.describe('updateUserRole', () => {
             expect(dialog.message()).toBe('Rôle mis à jour avec succès');
             await dialog.dismiss().catch(() => {});
         });
-        
+        await page.locator('#user-button').click();
         await page.locator('#userSelect').selectOption('JérémieTest Lapointe | jayboss@email.com');
         await page.locator('#roleSelect').selectOption('Chargé de projet');
         
@@ -45,7 +45,7 @@ test.describe('updateUserRole', () => {
             expect(dialog.message()).toBe('Erreur lors de la mise à jour du rôle');
             await dialog.dismiss().catch(() => {});
         });
-        
+        await page.locator('#user-button').click();
         await page.locator('#userSelect').selectOption('JérémieTest Lapointe | jayboss@email.com');
         await page.locator('#roleSelect').selectOption('Chargé de projet');
         
