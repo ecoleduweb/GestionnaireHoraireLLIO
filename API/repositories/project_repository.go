@@ -146,9 +146,21 @@ func GetProjectActivitiesFromUser(projectId int, userId *int, from string, to st
 	return tempResults, err
 }
 
-func GetProjectsByManagerId(id int) ([]*DAOs.Project, error) {
+func GetProjectsByManagerId(userId int) ([]*DAOs.Project, error) {
 	var projects []*DAOs.Project
-	err := database.DB.Find(&projects, "manager_id = ?", id).Error
+
+	err := database.DB.
+		Table("projects").
+		Select("DISTINCT projects.*").
+		Joins(`
+			LEFT JOIN co_managers cm
+				ON projects.id = cm.project_id
+				AND cm.user_id = ?
+		`, userId).
+		Where("projects.manager_id = ? OR cm.user_id = ?", userId, userId).
+		Find(&projects).
+		Error
+
 	return projects, DBErrorManager(err)
 }
 

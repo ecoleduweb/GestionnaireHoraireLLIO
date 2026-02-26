@@ -48,6 +48,46 @@ func CreatedProject(c *gin.Context) {
 	})
 }
 
+func AddCoManager(c *gin.Context) {
+	projectId := c.Param("projectId")
+	projectIdInt, err := strconv.Atoi(projectId)
+	if err != nil {
+		handleError(c, err, projectSTR)
+		return
+	}
+
+	userId := c.Param("userId")
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		handleError(c, err, userSTR)
+		return
+	}
+
+	coManagerDTO := DTOs.CoManagerDTO{
+		UserId:    userIdInt,
+		ProjectId: projectIdInt,
+	}
+
+	currentUser, exists := c.Get("current_user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+
+	currentUserDTO := currentUser.(*DTOs.UserDTO)
+
+	coManagerAdded, err := services.AddCoManager(&coManagerDTO, currentUserDTO)
+	if err != nil {
+		handleError(c, err, "co-chargé de projet")
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"response":  "Le co-chargé de projet a bien été ajouté à la base de données",
+		"coManager": coManagerAdded,
+	})
+}
+
 func GetProjectById(c *gin.Context) {
 	id := c.Param("id")
 
@@ -148,6 +188,14 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
+	currentUser, exists := c.Get("current_user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+
+	currentUserDTO := currentUser.(*DTOs.UserDTO)
+
 	id := strconv.Itoa(projectToUpdate.Id)
 	_, err := services.GetProjectById(id)
 	if err != nil {
@@ -161,7 +209,7 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
-	updatedProjectDTO, err := services.UpdateProject(&projectToUpdate)
+	updatedProjectDTO, err := services.UpdateProject(&projectToUpdate, currentUserDTO)
 	if err != nil {
 		handleError(c, err, projectSTR)
 		return

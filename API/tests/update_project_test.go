@@ -23,7 +23,7 @@ func TestUpdateProject(t *testing.T) {
 		// On laisse les autres champs tels quels
 	}
 
-	w := sendRequest(router, "PUT", "/project", updatedProject, enums.Administrator)
+	w := sendRequest(router, "PUT", "/project", updatedProject, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var responseBody struct {
@@ -45,7 +45,7 @@ func TestUpdateProjectStatus(t *testing.T) {
 		Status:    enums.ProjectStatus(enums.Finish),
 	}
 
-	w := sendRequest(router, "PUT", "/project", updatedProject, enums.Administrator)
+	w := sendRequest(router, "PUT", "/project", updatedProject, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var responseBody struct {
@@ -70,7 +70,7 @@ func TestUpdateProjectEndDate(t *testing.T) {
 		EndAt:     endDate,
 	}
 
-	w := sendRequest(router, "PUT", "/project", updatedProject, enums.Administrator)
+	w := sendRequest(router, "PUT", "/project", updatedProject, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var responseBody struct {
@@ -90,7 +90,7 @@ func TestDoNotUpdateProjectWithNonExistingId(t *testing.T) {
 		Status:    enums.ProjectStatus(enums.InProgress),
 	}
 
-	w := sendRequest(router, "PUT", "/project", nonExistingProject, enums.Administrator)
+	w := sendRequest(router, "PUT", "/project", nonExistingProject, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusNotFound, nil)
 }
 
@@ -105,7 +105,7 @@ func TestDoNotUpdateProjectWithInvalidName(t *testing.T) {
 		Status:    doNotDeleteProject2.Status,
 	}
 
-	w := sendRequest(router, "PUT", "/project", updatedProject, enums.Administrator)
+	w := sendRequest(router, "PUT", "/project", updatedProject, nil, enums.Administrator)
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "uniqueId", Message: "Le champ uniqueId est invalide ou manquant"},
 	}
@@ -127,9 +127,43 @@ func TestDoNotUpdateProjectWithInconsistentDates(t *testing.T) {
 		EndAt:     now.Add(-24 * time.Hour), // Un jour avant CreatedAt
 	}
 
-	w := sendRequest(router, "PUT", "/project", updatedProject, enums.Administrator)
+	w := sendRequest(router, "PUT", "/project", updatedProject, nil, enums.Administrator)
 	expectedErrors := []DTOs.FieldErrorDTO{
 		{Field: "endAt", Message: "La date de fin doit être après la date de création"},
 	}
 	assertResponse(t, w, http.StatusBadRequest, expectedErrors)
+}
+
+func TestDoNotUpdateProjectAsEmployee(t *testing.T) {
+	endDate := time.Now().Add(25 * 24 * time.Hour)
+
+	updatedProject := DTOs.ProjectDTO{
+		Id:        doNotDeleteProject2.Id,
+		ManagerId: doNotDeleteUser.Id,
+		UniqueId:  doNotDeleteProject2.UniqueId,
+		Name:      doNotDeleteProject2.Name,
+		Status:    doNotDeleteProject2.Status,
+		EndAt:     endDate,
+	}
+
+	w := sendRequest(router, "PUT", "/project", updatedProject, nil, enums.Employee)
+	assertResponse(t, w, http.StatusForbidden, nil)
+	assert.NotNil(t, w.Body)
+}
+
+func TestDoNotUpdateProjectAsNotCoManager(t *testing.T) {
+	endDate := time.Now().Add(25 * 24 * time.Hour)
+
+	updatedProject := DTOs.ProjectDTO{
+		Id:        doNotDeleteProject2.Id,
+		ManagerId: doNotDeleteUser.Id,
+		UniqueId:  doNotDeleteProject2.UniqueId,
+		Name:      doNotDeleteProject2.Name,
+		Status:    doNotDeleteProject2.Status,
+		EndAt:     endDate,
+	}
+
+	w := sendRequest(router, "PUT", "/project", updatedProject, &doNotDeleteUser3.Id, enums.ProjectManager)
+	assertResponse(t, w, http.StatusForbidden, nil)
+	assert.NotNil(t, w.Body)
 }

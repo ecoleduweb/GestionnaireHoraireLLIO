@@ -9,18 +9,18 @@ import (
 )
 
 func TestGetCategories(t *testing.T) {
-	w := sendRequest(router, "GET", "/categories", nil)
+	w := sendRequest(router, "GET", "/categories", nil, nil)
 	assertResponse(t, w, http.StatusOK, nil)
 	assert.NotNil(t, w.Body)
 }
 
 func TestGetCategory(t *testing.T) {
-	w := sendRequest(router, "GET", fmt.Sprintf("/category/%d", doNotDeleteCategory.Id), nil)
+	w := sendRequest(router, "GET", fmt.Sprintf("/category/%d", doNotDeleteCategory.Id), nil, nil)
 	assertResponse(t, w, http.StatusOK, nil)
 	assert.NotNil(t, w.Body)
 }
 
 func TestGetNotFoundCategorie(t *testing.T) {
-	w := sendRequest(router, "GET", "/category/0", nil)
+	w := sendRequest(router, "GET", "/category/0", nil, nil)
 	assertResponse(t, w, http.StatusNotFound, nil)
 }

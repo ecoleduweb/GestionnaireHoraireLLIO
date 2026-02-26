@@ -3,31 +3,82 @@
   import "../../style/app.css"
   import ProjectsLeftPane from "../../Components/Projects/ProjectsLeftPane.svelte";
   import ProjectComponent from "../../Components/Projects/ProjectComponent.svelte";
-  import type { Project, UserInfo } from '../../Models/index.ts';
+  import type { DetailedProject, User, UserInfo } from '../../Models';
   import { ProjectApiService } from "../../services/ProjectApiService";
   import { UserApiService } from "../../services/UserApiService";
+  import AddCoManagerModal from '../../Components/Projects/AddCoManagerModal.svelte';
   import searchIcon from "../../../static/search.svg";
+
   // État des projets
-  let projects = $state<Project[]>([]);
-  let filteredProjects = $state<Project[]>([]);
+  let projects = $state<DetailedProject[]>([]);
+  let filteredProjects = $state<DetailedProject[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let projectFilter = $state('');
 
   let currentUser = $state<UserInfo | null>(null);
 
+  // État pour la modale d'ajout de responsable
+  let showAddCoManagerModal = $state(false);
+  let selectedProject = $state<DetailedProject | null>(null);
+  let users = $state<User[]>([]);
+  let usersToDisplay = $derived<User[]>(
+    selectedProject == null
+      ? []
+      : users.filter(u =>
+          selectedProject.managerId != u.id
+          &&
+          selectedProject.coLeads.findIndex(cl => cl.id === u.id) === -1
+        )
+  )
+
+  const handleAddCoManagerModalOpen = async (projectId: number) => {
+    selectedProject = projects.find(p => p.id == projectId);
+    await loadUsers();
+    showAddCoManagerModal = true;
+  }
+
   const loadProjects = async () => {
     try {
       isLoading = true;
       error = null;
-      const response = await ProjectApiService.getDetailedProjects();
-      projects = response;
+      projects = await ProjectApiService.getDetailedProjects();
     } catch (err) {
       console.error('Erreur lors de la récupération des projets:', err);
       error = "Impossible de charger les projets. Veuillez réessayer plus tard.";
       projects = [];
     } finally {
       isLoading = false;
+    }
+  }
+
+  const loadUsers = async () => {
+    try {
+      isLoading = true;
+      error = null;
+      users = await UserApiService.getAllManagersAdmin();
+    } catch (err) {
+      console.error('Erreur lors de la récupération des utilisateurs:', err);
+      users = [];
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  const handleAddCoManager = async (userId: number, projectId: number) => {
+    try {
+      isLoading = true;
+      error= null;
+      await ProjectApiService.addCoManagerToProject(projectId, userId);
+    } catch (e) {
+      console.error('Erreur lors de l\'ajout du co-chargé de projet :', e);
+      alert(e instanceof Error ? e.message : 'Erreur inconnue');
+    } finally {
+      isLoading = false;
+      showAddCoManagerModal = false;
+      selectedProject = null;
+      users = [];
+      await loadProjects();
     }
   }
 
@@ -38,7 +89,7 @@
         console.error('Erreur lors du chargement des informations utilisateur:', error);
         alert('Impossible de charger les informations utilisateur.');
       }
-    loadProjects();
+    await Promise.all([loadProjects(), loadUsers()]);
   });
 
   $effect(() => { // si le search est update, le fonction est rééxecutée 
@@ -90,8 +141,12 @@
     </div>
   {:else}
     {#each filteredProjects as project}
-      <ProjectComponent {project} />
+      <ProjectComponent {project} onClickAddCoManager={() => handleAddCoManagerModalOpen(project.id)} />
     {/each}
   {/if}
   </div>
 </div>
+
+{#if showAddCoManagerModal}
+  <AddCoManagerModal show={showAddCoManagerModal} users={usersToDisplay} project={selectedProject} onAdd={handleAddCoManager} onCancel={() => showAddCoManagerModal = false} />
+{/if}
