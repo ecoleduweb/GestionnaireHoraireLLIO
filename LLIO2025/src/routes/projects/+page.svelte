@@ -94,10 +94,9 @@
 
   $effect(() => { // si le search est update, le fonction est rééxecutée 
     const filter = projectFilter.toLowerCase().trim();
-
     filteredProjects = projects.filter(project =>
       project.name.toLowerCase().includes(filter) ||
-      project.id.toString().includes(filter)
+      project.uniqueId.toLowerCase().includes(filter)
   );
 });
 
