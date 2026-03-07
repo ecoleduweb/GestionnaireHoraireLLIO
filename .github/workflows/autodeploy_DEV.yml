@@ -21,83 +21,10 @@ jobs:
             set -e
             echo "Starting deployment process..."
 
-            # Arrêt des services (au moins l'API)
+            # Arrêt des services
             echo "Stopping services..."
             sudo systemctl stop llio-api.service || echo "API service not running"
             sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
-
-            # ====== BACKUP AU DÉBUT ======
-            echo "Preparing backup files..."
-            mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/API
-
-            # (A) Générer db.config (infra as code)
-            echo "Generating db.config..."
-            cat > /root/ProjetLLIO2025/GestionnaireHoraire/API/db.config << EOF
-            DB_USER="${{ secrets.DB_USER }}"
-            DB_PASS="${{ secrets.DB_PASSWORD }}"
-            DB_NAME="${{ secrets.DB_NAME_RUN }}"
-
-            DB_HOST="${{ secrets.DB_HOST }}"
-            DB_PORT="${{ secrets.DB_PORT }}"
-
-            BACKUP_DIR="${{ secrets.DB_BACKUP_DIR }}"
-            RETENTION_DAYS="${{ secrets.DB_BACKUP_RETENTION_DAYS }}"
-            EOF
-            chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/API/db.config
-  
-            # (B) Écraser backup.sh (transfer)
-            echo "Deploying backup.sh (overwrite)..."
-            cat > /root/ProjetLLIO2025/GestionnaireHoraire/API/backup.sh <<'EOF'
-            #!/bin/bash
-            set -e
-            set -o pipefail
-
-            SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-            CONFIG_FILE="${SCRIPT_DIR}/db.config"
-
-            if [ -f "$CONFIG_FILE" ]; then
-                source "$CONFIG_FILE"
-            else
-                echo "ERREUR : Fichier de configuration introuvable : $CONFIG_FILE"
-                exit 1
-            fi
-
-            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-            FILE_NAME="${BACKUP_DIR}/${DB_NAME}_${TIMESTAMP}.sql.gz"
-
-            if [ ! -d "$BACKUP_DIR" ]; then
-                mkdir -p "$BACKUP_DIR"
-                chmod 700 "$BACKUP_DIR"
-            fi
-
-            echo "[$(date +'%Y-%m-%d %H:%M:%S')] Démarrage backup : $DB_NAME"
-
-            export MYSQL_PWD="$DB_PASS"
-            mariadb-dump \
-              -h "$DB_HOST" \
-              -P "$DB_PORT" \
-              -u "$DB_USER" \
-              --single-transaction \
-              --routines \
-              --triggers \
-              --events \
-              --databases "$DB_NAME" \
-            | gzip > "$FILE_NAME"
-            unset MYSQL_PWD
-
-            echo "[$(date +'%Y-%m-%d %H:%M:%S')] Succès : $FILE_NAME"
-            find "$BACKUP_DIR" -type f -name "${DB_NAME}_*.sql.gz" -mtime +"$RETENTION_DAYS" -delete
-            echo "[$(date +'%Y-%m-%d %H:%M:%S')] Terminé."
-            EOF
-
-            # (C) chmod a+x
-            chmod a+x /root/ProjetLLIO2025/GestionnaireHoraire/API/backup.sh
-
-            # (D) Exécuter le backup AU DÉBUT
-            echo "Running DB backup NOW (at start)..."
-            cd /root/ProjetLLIO2025/GestionnaireHoraire/API
-            sudo ./backup.sh
-            # ====== FIN BACKUP AU DÉBUT ======
 
             # Copie du fichier de logs
             echo "Moving logs file to logs backup folder"
@@ -114,7 +41,30 @@ jobs:
             echo "Cloning fresh repository..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
 
-            # Configuration API (env)
+            # Génération du db.config pour le script de backup déjà présent dans le repo
+            echo "Generating db.config..."
+            cat > /root/ProjetLLIO2025/GestionnaireHoraire/Backup/db.config << EOF
+            DB_USER="${{ secrets.DB_USER }}"
+            DB_PASS="${{ secrets.DB_PASSWORD }}"
+            DB_NAME="${{ secrets.DB_NAME_RUN }}"
+
+            DB_HOST="${{ secrets.DB_HOST }}"
+            DB_PORT="${{ secrets.DB_PORT }}"
+
+            BACKUP_DIR="${{ secrets.DB_BACKUP_DIR }}"
+            RETENTION_DAYS="${{ secrets.DB_BACKUP_RETENTION_DAYS }}"
+            EOF
+
+            chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/Backup/db.config
+
+            # Rendre exécutable le script déjà dans le projet
+            chmod a+x /root/ProjetLLIO2025/GestionnaireHoraire/Backup/backup.sh
+
+            # Lancer le backup avec le script du projet
+            echo "Running backup script..."
+            /root/ProjetLLIO2025/GestionnaireHoraire/Backup/backup.sh
+
+            # Configuration API
             echo "Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
             cat > .env << EOF
@@ -142,7 +92,7 @@ jobs:
             /usr/local/go/bin/go mod tidy
             /usr/local/go/bin/go build -o app
 
-            # Frontend env + build
+            # Configuration Frontend
             echo "Configuring Frontend..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
             cat > .env << EOF
