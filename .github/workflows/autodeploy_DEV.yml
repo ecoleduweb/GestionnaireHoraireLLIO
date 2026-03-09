@@ -1,8 +1,10 @@
 name: Deployer LLIO DEV
+
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -11,12 +13,12 @@ jobs:
       - name: Deploy Full Application
         uses: appleboy/ssh-action@v0.1.2
         with:
-          host: ${{secrets.DEV_SSH_HOST}}
-          key: ${{secrets.DEV_SSH_KEY}}
-          username: ${{ secrets.SSH_USERNAME}}
+          host: ${{ secrets.DEV_SSH_HOST }}
+          key: ${{ secrets.DEV_SSH_KEY }}
+          username: ${{ secrets.SSH_USERNAME }}
           debug: true
           script: |
-            set -e # Exit immediately if a command exits with a non-zero status.
+            set -e
             echo "Starting deployment process..."
 
             # Arrêt des services
@@ -25,7 +27,7 @@ jobs:
             sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
 
             # Copie du fichier de logs
-            echo 'Moving logs file to logs backup folder'
+            echo "Moving logs file to logs backup folder"
             mkdir -p /root/logs
             DATE=$(date +'%Y-%m-%d_%H-%M')
             [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt" ] && cp /root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt /root/logs/logs_llio_$DATE.txt
@@ -35,9 +37,32 @@ jobs:
             cd /root/ProjetLLIO2025
             rm -rf GestionnaireHoraire
 
-            # Clone du projet (plus propre qu'un pull)
+            # Clone du projet
             echo "Cloning fresh repository..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
+
+            # Génération du db.config pour le script de backup déjà présent dans le repo
+            echo "Generating db.config..."
+            cat > /root/ProjetLLIO2025/GestionnaireHoraire/Backup/db.config << EOF
+            DB_USER="${{ secrets.DB_USER }}"
+            DB_PASS="${{ secrets.DB_PASSWORD }}"
+            DB_NAME="${{ secrets.DB_NAME_RUN }}"
+
+            DB_HOST="${{ secrets.DB_HOST }}"
+            DB_PORT="${{ secrets.DB_PORT }}"
+
+            BACKUP_DIR="${{ secrets.DB_BACKUP_DIR }}"
+            RETENTION_DAYS="${{ secrets.DB_BACKUP_RETENTION_DAYS }}"
+            EOF
+
+            chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/Backup/db.config
+
+            # Rendre exécutable le script déjà dans le projet
+            chmod a+x /root/ProjetLLIO2025/GestionnaireHoraire/Backup/backup.sh
+
+            # Lancer le backup avec le script du projet
+            echo "Running backup script..."
+            /root/ProjetLLIO2025/GestionnaireHoraire/Backup/backup.sh
 
             # Configuration API
             echo "Configuring API..."
@@ -87,7 +112,6 @@ jobs:
             sudo systemctl start llio-api || echo "Failed to start API service"
             sudo systemctl start llio-frontend || echo "Failed to start Frontend service"
 
-            # Vérification
             echo "Checking services status..."
             sudo systemctl status llio-api --no-pager
             sudo systemctl status llio-frontend --no-pager
