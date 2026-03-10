@@ -61,7 +61,7 @@
   <!-- Contenu du dashboard -->
   <div class="dashboard-content">
     <!-- Éléments du dashboard -->
-    <div class="dashboard-item">
+    <div class="dashboard-item flex-col">
       <div class="inline-flex rounded-md shadow-xs" role="group">
         <button
           onclick={() => goto('./calendar')}
@@ -70,23 +70,39 @@
         >
           Calendrier
         </button>
-        <button
-          type="button"
-          class="px-4 py-2 text-sm transition-colors font-semibold bg-[#014446] text-white rounded-r-lg"
-        >
-          Projets
-        </button>
+        {#if currentUser.role === UserRole.Admin}
+          <button
+            type="button" 
+            class="py-2 px-4 text-sm transition-colors font-semibold bg-[#014446] text-white"
+          >
+            Projets
+          </button>
+          <button 
+            onclick={() => goto('./administrator')}
+            type="button" 
+            class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-r-lg hover:bg-[#014446] hover:text-white cursor-pointer"
+          >
+            Admin
+          </button>
+        {:else}  
+          <button 
+            type="button" 
+            class="py-2 px-4 text-sm transition-colors font-semibold bg-[#014446] text-white rounded-r-lg "
+          >
+            Projets
+          </button>
+        {/if}
       </div>
 
-      {#if currentUser.role == UserRole.Admin || currentUser.role == UserRole.ProjectManager} 
+      {#if currentUser.role === UserRole.Admin || currentUser.role === UserRole.ProjectManager} 
         <button
           type="button"
           id="new-project-button"
           title="Créer un nouveau projet"
           onclick={handleNewProject}
-          class="ml-12 px-3 py-2 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-lg hover:bg-[#014446] hover:text-white cursor-pointer"
+          class="mt-4 px-3 py-2 flex items-center gap-2 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-lg hover:bg-[#014446] hover:text-white cursor-pointer"
         >
-          <Plus class="h-4 w-4" />
+          <Plus class="h-4 w-4" /> Créer un nouveau projet 
         </button>
       {/if}
     </div>

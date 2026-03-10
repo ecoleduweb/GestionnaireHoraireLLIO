@@ -5,6 +5,7 @@
   import DashboardProjectItem from "../Projects/DashboardPaneProjectItem.svelte";
   import type { DetailedProject, UserInfo } from '../../Models/index.ts';
   import { UserRole } from '../../lib/types/enums';
+  
 
 
   type Props = {
@@ -36,15 +37,32 @@
         >
           Calendrier
         </button>
-        <button 
-          onclick={() => goto('./projects')}
-          type="button" 
-          class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-r-lg hover:bg-[#014446] hover:text-white cursor-pointer"
-        >
-          Projets
-        </button>
+        {#if currentUser.role === UserRole.Admin}
+          <button 
+            onclick={() => goto('./projects')}
+            type="button" 
+            class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 hover:bg-[#014446] hover:text-white cursor-pointer"
+          >
+            Projets
+          </button>
+          <button 
+            onclick={() => goto('./administrator')}
+            type="button" 
+            class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-r-lg hover:bg-[#014446] hover:text-white cursor-pointer"
+          >
+            Admin
+          </button>
+        {:else}  
+          <button 
+            onclick={() => goto('./projects')}
+            type="button" 
+            class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-r-lg hover:bg-[#014446] hover:text-white cursor-pointer"
+          >
+            Projets
+          </button>
+        {/if}
       </div>
-      <div class="mt-4">
+      <!-- <div class="mt-4">
         {#if currentUser.role === UserRole.Admin}
           <button 
             onclick={() => goto('./users')}
@@ -58,7 +76,7 @@
             Utilisateurs
           </button>
         {/if}
-      </div>
+      </div> -->
     </div>
 
     <!-- Projets en cours -->
