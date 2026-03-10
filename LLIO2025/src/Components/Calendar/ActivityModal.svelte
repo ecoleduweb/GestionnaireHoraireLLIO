@@ -13,8 +13,8 @@
   } from '../../utils/date';
   import '../../style/app.css';
   import { ChevronDown, X, Plus } from 'lucide-svelte';
-  import ConfirmationCreateCategory from './ConfirmModal.svelte';
   import SearchSelect from "../Global/SearchSelect.svelte";
+  import ConfirmationModal from '../ConfirmationModal.svelte';
 
   type Props = {
     show: boolean;
@@ -619,18 +619,20 @@
       </div>
     </div>
   </div>
-  <ConfirmationCreateCategory
-    show={showCategoryConfirmModal}
-    title="Confirmer l'ajout"
-    message={`Voulez-vous ajouter la catégorie "<strong>${categoryToAdd}</strong>" ?`}
-    onConfirm={() => {
-      showCategoryConfirmModal = false;
-      confirmAddCategory();
-    }}
-    onCancel={() => {
-      showCategoryConfirmModal = false;
-    }}
-  />
+  {#if showCategoryConfirmModal}
+    <ConfirmationModal
+      modalTitle="Confirmer l'ajout"
+      modalText={`Voulez-vous ajouter la catégorie "<strong>${categoryToAdd}</strong>" ?`}
+      errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"
+      onSuccess={() => {
+        showCategoryConfirmModal = false;
+        confirmAddCategory();
+      }}
+      onClose={() => {
+        showCategoryConfirmModal = false;
+      }}
+    />
+  {/if}
 {/if}
 
 

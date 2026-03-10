@@ -1,15 +1,26 @@
 <script lang="ts">
   import { X } from 'lucide-svelte';
+  import { string } from 'yup';
 
   type Props = {
     modalTitle: string;
     modalText: string;
+    confirmText?: string;
+    cancelText?: string;
     errorText: string;
     onClose: () => void;
     onSuccess: () => void;
   };
 
-  let { modalTitle, modalText, errorText, onClose, onSuccess }: Props = $props();
+  let { 
+    modalTitle, 
+    modalText,
+    confirmText = 'Confirmer',
+    cancelText = 'Annuler',
+    errorText, 
+    onClose, 
+    onSuccess 
+  }: Props = $props();
 
   const handleClose = () => {
     onClose();
@@ -20,8 +31,7 @@
       await onSuccess();
       onClose();
     } catch (err) {
-      console.error(errorText, err);
-      alert(errorText);
+        if (errorText != "") alert(errorText);
     } finally {
     }
   };
@@ -53,14 +63,14 @@
                   class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200"
                   onclick={handleClose}
                 >
-                  Annuler
+                  {cancelText}
                 </button>
                 <button
                   type="submit"
                   class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
                   onclick={handleSubmit}
                 >
-                  Confirmer
+                  {confirmText}
                 </button>
             </div>
           </form>
