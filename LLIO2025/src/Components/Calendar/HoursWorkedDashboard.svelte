@@ -30,6 +30,8 @@ const handleSave = async () => {
     displayedHoursTotal = bank.timeInBank;
     displayedTextHoursWorked = bank.textHoursWorked;
 
+    showModal = false;
+
   } catch (err) {
     alert("Erreur lors de la configuration de la banque d'heure");
   }
@@ -39,6 +41,7 @@ const handleSave = async () => {
 <div class="bilan-container">
 
 <div class="header">
+
 <h2>
 
 {#if areDatesEqual(dateStart,dateEnd)}
@@ -48,6 +51,7 @@ Bilan du {formatDateHoursWorked(dateStart)} au {formatDateHoursWorked(dateEnd)}
 {/if}
 
 </h2>
+
 </div>
 
 <span>
