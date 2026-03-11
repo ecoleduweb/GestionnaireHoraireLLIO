@@ -84,8 +84,14 @@ export interface DetailedProject extends Project {
     createdAt: Date;
     updatedAt: Date;
 }
+export interface TimeBankConfig {
+  startDate: string;
+  hoursPerWeek: number;
+  offset: number;
+}
 
-export interface CoLead {
-    id: number;
-    name: string;
+export interface TimeBankResponse {
+  isConfigured: boolean;
+  timeInBank: number;
+  textHoursWorked: string;
 }
