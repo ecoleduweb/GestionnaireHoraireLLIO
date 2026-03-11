@@ -65,8 +65,8 @@ func CreateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {
 	return projectDTOResponse, err
 }
 
-func GetProjects() ([]*DTOs.ProjectDTO, error) {
-	projects, err := repositories.GetProjects()
+func GetProjects(userId int) ([]*DTOs.ProjectDTO, error) {
+	projects, err := repositories.GetProjects(userId)
 	if err != nil {
 		return nil, err
 	}
@@ -83,30 +83,30 @@ func GetProjects() ([]*DTOs.ProjectDTO, error) {
 	return projectsDTO, nil
 }
 
-func GetDetailedProjects() ([]map[string]any, error) {
-	projects, err := repositories.GetProjects()
+func GetDetailedProjects(from string, to string, userId int) ([]map[string]any, error) {
+	projects, err := repositories.GetProjects(userId)
 	if err != nil {
 		return nil, err
 	}
 
-	return formatProjects(projects, nil)
+	return formatProjects(projects, nil, from, to)
 }
 
-func GetDetailedProjectsByManagerId(id int) ([]map[string]any, error) {
+func GetDetailedProjectsByManagerId(id int, from string, to string) ([]map[string]any, error) {
 	projects, err := repositories.GetProjectsByManagerId(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return formatProjects(projects, nil)
+	return formatProjects(projects, nil, from, to)
 }
 
-func GetDetailedProjectsByUserId(id int) ([]map[string]any, error) {
+func GetDetailedProjectsByUserId(id int, from string, to string) ([]map[string]any, error) {
 	projects, err := repositories.GetProjectsByActivityPerUser(id)
 	if err != nil {
 		return nil, err
 	}
-	return formatProjects(projects, &id)
+	return formatProjects(projects, &id, from, to)
 }
 
 func GetProjectById(id string) (*DTOs.ProjectDTO, error) {
@@ -150,12 +150,37 @@ func DeleteProjectById(id int) error {
 	return nil
 }
 
-func UpdateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {
-
-	projectDAO := &DAOs.Project{}
-	err := copier.Copy(projectDAO, projectDTO)
+func UpdateProject(projectDTO *DTOs.ProjectDTO, author *DTOs.UserDTO) (*DTOs.ProjectDTO, error) {
+	currentProject, err := repositories.GetProjectById(fmt.Sprintf("%d", projectDTO.Id))
 	if err != nil {
 		return nil, err
+	}
+	projectDAO := &DAOs.Project{}
+
+	err = copier.Copy(projectDAO, projectDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	// Ici, on vérifie les permissions pour que seulement les personnes
+	// suivantes puissent modifier un projet :
+	//
+	// - Tous les administrateurs
+	// - Tout chargé de projet étant chargé ou co-chargé de ce projet en spécifique.
+	//
+	// Toutes les autres personnes (utilisateur régulier ou chargé de projet non-attribué)
+	//	ne peuvent pas modifier les co-chargés du projet
+	if author.Role < enums.Administrator {
+		if currentProject.ManagerId != author.Id {
+			isCoManager, err := repositories.IsUserCoManager(currentProject.Id, author.Id)
+			if err != nil {
+				return nil, err
+			}
+
+			if !isCoManager {
+				return nil, customs_errors.ErrUserForbidden
+			}
+		}
 	}
 
 	projectDAOUpdated, err := repositories.UpdateProject(projectDAO)
@@ -168,7 +193,7 @@ func UpdateProject(projectDTO *DTOs.ProjectDTO) (*DTOs.ProjectDTO, error) {
 	return projectDTOResponse, err
 }
 
-func formatProjects(projects []*DAOs.Project, userId *int) ([]map[string]any, error) {
+func formatProjects(projects []*DAOs.Project, userId *int, from string, to string) ([]map[string]any, error) {
 	users, err := repositories.GetAllUsers()
 	if err != nil {
 		return nil, err
@@ -187,13 +212,30 @@ func formatProjects(projects []*DAOs.Project, userId *int) ([]map[string]any, er
 		categoryMap[cat.Id] = cat
 	}
 
+	projectIds := make([]int, 0, len(projects))
+	for _, project := range projects {
+		projectIds = append(projectIds, project.Id)
+	}
+
+	coManagers, err := repositories.GetCoManagersByProjectIds(projectIds)
+	if err != nil {
+		return nil, err
+	}
+	coManagerMap := make(map[int][]int)
+	for _, coManager := range coManagers {
+		coManagerMap[coManager.ProjectId] = append(
+			coManagerMap[coManager.ProjectId],
+			coManager.UserId,
+		)
+	}
+
 	var result []map[string]any
 	for _, project := range projects {
 		var tempActivities []DAOs.ActivityWithTimeSpent
 		if userId != nil {
-			tempActivities, err = repositories.GetProjectActivitiesFromUser(project.Id, userId)
+			tempActivities, err = repositories.GetProjectActivitiesFromUser(project.Id, userId, from, to)
 		} else {
-			tempActivities, err = repositories.GetProjectActivities(project.Id)
+			tempActivities, err = repositories.GetProjectActivities(project.Id, from, to)
 		}
 		if err != nil {
 			return nil, err
@@ -209,14 +251,14 @@ func formatProjects(projects []*DAOs.Project, userId *int) ([]map[string]any, er
 			}
 		}
 
-		formattedProject := formatProjectWithActivities(project, activities, userMap, categoryMap)
+		formattedProject := formatProjectWithActivities(project, activities, userMap, categoryMap, coManagerMap[project.Id])
 		result = append(result, formattedProject)
 	}
 
 	return result, nil
 }
 
-func formatProjectWithActivities(project *DAOs.Project, activities []DAOs.Activity, userMap map[int]*DAOs.User, categoryMap map[int]*DAOs.Category) map[string]any {
+func formatProjectWithActivities(project *DAOs.Project, activities []DAOs.Activity, userMap map[int]*DAOs.User, categoryMap map[int]*DAOs.Category, coManagerUserIds []int) map[string]any {
 	employeesMap := make(map[int]map[string]any)
 
 	for _, activity := range activities {
@@ -278,12 +320,24 @@ func formatProjectWithActivities(project *DAOs.Project, activities []DAOs.Activi
 		lead = manager.FirstName + " " + manager.LastName
 	}
 
+	// Get co-managers info
+	coLeads := make([]map[string]any, 0, len(coManagerUserIds))
+	for _, coManagerId := range coManagerUserIds {
+		coManager, exists := userMap[coManagerId]
+		if exists {
+			coLeads = append(coLeads, map[string]any{
+				"id":   coManagerId,
+				"name": coManager.FirstName + " " + coManager.LastName,
+			})
+		}
+	}
+
 	return map[string]any{
 		"id":                 project.Id,
 		"uniqueId":           project.UniqueId,
 		"name":               project.Name,
 		"lead":               lead,
-		"coLeads":            []string{},
+		"coLeads":            coLeads,
 		"employees":          employees,
 		"totalTimeEstimated": project.EstimatedHours,
 		"totalTimeRemaining": float64(project.EstimatedHours) - totalTimeSpent,

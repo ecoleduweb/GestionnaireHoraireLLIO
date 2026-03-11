@@ -11,31 +11,31 @@ import (
 )
 
 func TestDeleteProjectBadId(t *testing.T) {
-	w := sendRequest(router, "DELETE", "/project/spin", nil, enums.Administrator)
+	w := sendRequest(router, "DELETE", "/project/spin", nil, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusNotFound, nil)
 	assert.NotNil(t, w.Body)
 }
 
 func TestDeleteProjectNoId(t *testing.T) {
-	w := sendRequest(router, "DELETE", "/project/", nil, enums.Administrator)
+	w := sendRequest(router, "DELETE", "/project/", nil, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusNotFound, nil)
 	assert.NotNil(t, w.Body)
 }
 
 func TestDeleteProjectNotEmpty(t *testing.T) {
-	w := sendRequest(router, "DELETE", "/project/"+strconv.Itoa(doNotDeleteProject.Id), nil, enums.Administrator)
+	w := sendRequest(router, "DELETE", "/project/"+strconv.Itoa(doNotDeleteProject.Id), nil, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusForbidden, nil)
 	assert.NotNil(t, w.Body)
 }
 
 func TestDeleteProjectWithoutPermission(t *testing.T) {
-	w := sendRequest(router, "DELETE", "/project/"+strconv.Itoa(pleaseDeleteProject.Id), nil, enums.Employee)
+	w := sendRequest(router, "DELETE", "/project/"+strconv.Itoa(pleaseDeleteProject.Id), nil, nil, enums.Employee)
 	assertResponse(t, w, http.StatusForbidden, nil)
 	assert.NotNil(t, w.Body)
 }
 
 func TestDeleteProject(t *testing.T) {
-	w := sendRequest(router, "DELETE", "/project/"+strconv.Itoa(pleaseDeleteProject.Id), nil, enums.Administrator)
+	w := sendRequest(router, "DELETE", "/project/"+strconv.Itoa(pleaseDeleteProject.Id), nil, nil, enums.Administrator)
 	assertResponse(t, w, http.StatusOK, nil)
 	assert.NotNil(t, w.Body)
 }
