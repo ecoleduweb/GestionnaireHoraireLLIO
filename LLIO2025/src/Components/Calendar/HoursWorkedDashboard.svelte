@@ -1,127 +1,107 @@
 ﻿<script lang="ts">
-  import { UserApiService } from '../../services/UserApiService';
-  import type { HoursConfig } from '$lib/types/type';
-  import HoursWorkedDashboardSummary from './HoursWorkedDashboardSummary.svelte';
-  import HoursWorkedConfigModal from './HoursWorkedConfigModal.svelte';
+import { UserApiService } from '../../services/UserApiService';
+import { formatDateHoursWorked, areDatesEqual } from '../../utils/date';
+import HoursWorkedConfigModal from './HoursWorkedConfigModal.svelte';
 
-  const { hoursTotal, dateStart, dateEnd, textHoursWorked } = $props();
-  let displayedHoursTotal = $state<number>(hoursTotal);
-  let displayedTextHoursWorked = $state<string>(textHoursWorked);
+const { hoursTotal, dateStart, dateEnd, textHoursWorked } = $props();
 
-  let showModal = $state(false);
-  let isSaving = $state(false);
-  let errorMsg = $state<string | null>(null);
+let displayedHoursTotal = $state(hoursTotal);
+let displayedTextHoursWorked = $state(textHoursWorked);
 
-  let config = $state<HoursConfig>({
-    startDate: '',
-    offset: 0,
-    hoursWorked: 0,
-  });
+let showModal = $state(false);
 
-  // Keep the displayed values in sync with parent props when the calendar view/date range changes.
-  $effect(() => {
-    displayedHoursTotal = hoursTotal;
-    displayedTextHoursWorked = textHoursWorked;
-  });
+$effect(() => {
+  displayedHoursTotal = hoursTotal;
+  displayedTextHoursWorked = textHoursWorked;
+});
 
-  $effect(() => {
-    const saved = localStorage.getItem('hoursConfig');
-    if (saved) {
-      try {
-        config = JSON.parse(saved);
-      } catch (err) {
-        console.warn('Failed to parse hoursConfig from localStorage', err);
-      }
-    }
-  });
+const openConfigModal = () => {
+  showModal = true;
+};
 
-  // on mount, try to load server-calculated time in bank
-  $effect(() => {
-    (async () => {
-      try {
-        const bank = await UserApiService.getTimeInBank();
-        if (bank && typeof bank.timeInBank === 'number') {
-          displayedHoursTotal = bank.timeInBank;
-        }
-        if (bank && typeof (bank as any).textHoursWorked === 'string') {
-          displayedTextHoursWorked = (bank as any).textHoursWorked;
-        }
-      } catch (err) {
-        console.warn('Time bank fetch failed', err);
-      }
-    })();
-  });
+const closeConfigModal = () => {
+  showModal = false;
+};
 
-  const handleSave = async () => {
-    errorMsg = null;
-    isSaving = true;
+const handleSave = async () => {
+  try {
+    const bank = await UserApiService.getTimeInBank();
 
-    try {
-      localStorage.setItem('hoursConfig', JSON.stringify(config));
+    displayedHoursTotal = bank.timeInBank;
+    displayedTextHoursWorked = bank.textHoursWorked;
 
-      await UserApiService.saveTimeBankConfig({
-        startDate: config.startDate,
-        hoursPerWeek: Number(config.hoursWorked),
-        offset: Number(config.offset),
-      });
-
-      const bank = await UserApiService.getTimeInBank();
-
-      if (bank && typeof bank.timeInBank === 'number') {
-        displayedHoursTotal = bank.timeInBank;
-      }
-
-      if (bank && typeof (bank as any).textHoursWorked === 'string') {
-        displayedTextHoursWorked = (bank as any).textHoursWorked;
-      }
-
-      showModal = false;
-    } catch (err) {
-      errorMsg = "Impossible de calculer pour l'instant. Vérifie l'API /user/time-bank et /user/time-bank/config.";
-      console.error(err);
-    } finally {
-      isSaving = false;
-    }
-  };
-
-  const openConfigModal = () => {
-    showModal = true;
-  };
-
-  const closeConfigModal = () => {
-    showModal = false;
-  };
-
-  const updateConfig = (patch: Partial<HoursConfig>) => {
-    config = { ...config, ...patch };
-  };
+  } catch (err) {
+    alert("Erreur lors de la configuration de la banque d'heure");
+  }
+};
 </script>
 
 <div class="bilan-container">
-  <HoursWorkedDashboardSummary
-    {dateStart}
-    {dateEnd}
-    {displayedHoursTotal}
-    {displayedTextHoursWorked}
-    onOpenConfig={openConfigModal}
-  />
+
+<div class="header">
+<h2>
+
+{#if areDatesEqual(dateStart,dateEnd)}
+Bilan du {formatDateHoursWorked(dateStart)}
+{:else}
+Bilan du {formatDateHoursWorked(dateStart)} au {formatDateHoursWorked(dateEnd)}
+{/if}
+
+</h2>
 </div>
 
+<span>
+Vous avez travaillé <strong>{displayedHoursTotal}</strong> heures {displayedTextHoursWorked}.
+</span>
+
+<div class="config-section">
+
+<button
+type="button"
+class="config-btn"
+onclick={openConfigModal}
+>
+Configurer
+</button>
+
+</div>
+
+</div>
+
+{#if showModal}
+
 <HoursWorkedConfigModal
-  {showModal}
-  {isSaving}
-  {errorMsg}
-  {config}
-  onClose={closeConfigModal}
-  onSave={handleSave}
-  onUpdateConfig={updateConfig}
+onClose={closeConfigModal}
+onSave={handleSave}
 />
 
+{/if}
+
 <style>
-  .bilan-container {
-    padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    position: relative;
-  }
+
+.bilan-container{
+padding:1rem;
+border:1px solid #ddd;
+border-radius:5px;
+}
+
+.header{
+margin-bottom:1rem;
+}
+
+.config-section{
+margin-top:1rem;
+padding-top:1rem;
+border-top:1px solid #eee;
+}
+
+.config-btn{
+background:#015e61;
+color:white;
+border:none;
+cursor:pointer;
+padding:0.75rem 1.5rem;
+border-radius:4px;
+}
+
 </style>

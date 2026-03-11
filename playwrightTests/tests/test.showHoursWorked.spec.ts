@@ -13,16 +13,22 @@ test.describe("showHoursWorked", () => {
 
   test("showHoursWorkedDefault", async ({ page }) => {
     const apiMocker = new ApiMocker(page);
+
     await apiMocker
       .addMocks([activityMocks.getAllActivitiesDefaultWeekSuccess])
       .apply();
+
     await page.goto("http://localhost:5002/calendar");
+
     await page.waitForSelector(".fc-event", { state: "visible" });
-    await expect(page.locator(".bilan-container")).toContainText("8 heures cette semaine.");
+
+    await expect(page.locator(".bilan-container"))
+      .toContainText("8 heures cette semaine.");
   });
 
   test("showHoursWorkedMonth", async ({ page }) => {
     const apiMocker = new ApiMocker(page);
+
     await apiMocker
       .addMocks([
         activityMocks.getAllActivitiesMonthSuccess,
@@ -30,14 +36,20 @@ test.describe("showHoursWorked", () => {
         activityMocks.getAllActivitiesDaySuccess,
       ])
       .apply();
+
     await page.goto("http://localhost:5002/calendar");
+
     await page.waitForSelector(".fc-event", { state: "visible" });
+
     await page.getByRole("button", { name: "Mois", exact: true }).click();
-    await expect(page.locator(".bilan-container")).toContainText("21 heures ce mois-ci.");
+
+    await expect(page.locator(".bilan-container"))
+      .toContainText("21 heures ce mois-ci.");
   });
 
   test("showHoursWorkedDay", async ({ page }) => {
     const apiMocker = new ApiMocker(page);
+
     await apiMocker
       .addMocks([
         activityMocks.getAllActivitiesDaySuccess,
@@ -45,21 +57,31 @@ test.describe("showHoursWorked", () => {
         activityMocks.getAllActivitiesMonthSuccess,
       ])
       .apply();
+
     await page.goto("http://localhost:5002/calendar");
+
     await page.waitForSelector(".fc-event", { state: "visible" });
+
     await page.getByRole("button", { name: "Jour", exact: true }).click();
-    await expect(page.locator(".bilan-container")).toContainText("7 heures aujourd'hui.");
+
+    await expect(page.locator(".bilan-container"))
+      .toContainText("7 heures aujourd'hui.");
   });
 
   test("hoursWorkedNoActivities", async ({ page }) => {
-  const apiMocker = new ApiMocker(page);
-  await apiMocker.addMocks([activityMocks.getAllActivityEmpty]).apply();
+    const apiMocker = new ApiMocker(page);
 
-  await page.goto("http://localhost:5002/calendar");
+    await apiMocker
+      .addMocks([activityMocks.getAllActivitiesEmptyDefaultWeekSuccess])
+      .apply();
 
-  await page.waitForSelector(".fc", { state: "visible" });
+    await page.goto("http://localhost:5002/calendar");
 
-  await expect(page.locator(".bilan-container")).toBeVisible();
-  await expect(page.locator(".bilan-container")).toContainText("0 heures cette semaine.");
-});
+    await page.waitForSelector(".fc", { state: "visible" });
+
+    await expect(page.locator(".bilan-container")).toBeVisible();
+
+    await expect(page.locator(".bilan-container"))
+      .toContainText("0 heures cette semaine.");
+  });
 });
