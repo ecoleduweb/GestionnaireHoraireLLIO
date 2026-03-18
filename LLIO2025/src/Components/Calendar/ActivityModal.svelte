@@ -275,7 +275,7 @@
     }
   };
 
-  const getTruncatedDisplayText = (uniqueId, name) => {
+  const getDisplayText = (uniqueId, name) => {
     const separator = " | ";
     const availableForName = uniqueId.length - separator.length;
     if (name === undefined || name === null || name.trim() === "") {
@@ -388,7 +388,7 @@
                 id="activity-project"
                 name="projectId"
                 items={projects.map((value) => {
-                  return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
+                  return { value: value.id, label: getDisplayText(value.uniqueId, value.name) };
                 })}
                 bind:selectedValue={activity.projectId}
                 placeholder="Sélectionner un projet"
