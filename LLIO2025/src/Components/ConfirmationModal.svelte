@@ -39,7 +39,7 @@
   <div class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h2 class="modal-title">{@html modalTitle}</h2>
+        <h2 class="modal-title">{modalTitle}</h2>
         <button type="button" class="text-black hover:text-gray-600" onclick={handleClose}>
           <X />
         </button>
@@ -53,7 +53,7 @@
             }}
           >
             <div class="form-group">
-                <h2 class="modal-text">{modalText}</h2>
+                <h2 class="modal-text">{@html modalText}</h2>
             </div>
 
             <div class="modal-footer">
