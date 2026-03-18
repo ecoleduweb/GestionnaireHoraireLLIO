@@ -74,7 +74,7 @@ export interface DetailedProject extends Project {
     id: number;
     color: string;
     lead: string;
-    coLeads: string[];
+    coLeads: CoLead[];
     employees: Employee[];
     totalTimeEstimated: number;
     totalTimeRemaining: number;
@@ -83,4 +83,9 @@ export interface DetailedProject extends Project {
     status: ProjectStatus;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface CoLead {
+    id: number;
+    name: string;
 }

@@ -31,10 +31,35 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
 
+	case customs_errors.ErrProjectHasActivities:
+		errorMsg := fmt.Sprintf("Le projet a une ou des activités associées, suppression impossible")
+		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
+
 	case customs_errors.ErrUserHasProjects:
 		errorMsg := fmt.Sprintf("L'utilisateur a un ou des projets associées, suppression impossible")
 		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
+
+	case customs_errors.ErrUserForbidden:
+		errorMsg := fmt.Sprintf("Accès refusé à la ressource demandée")
+		log.Printf("ERREUR - Accès refusé: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
+
+	case customs_errors.ErrUserIsManager:
+		errorMsg := fmt.Sprintf("L'utilisateur sélectionné est le chargé du projet, il ne peut donc pas être ajouté comme co-chargé de projet")
+		log.Printf("ERREUR - Ajout du co-chargé impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
+
+	case customs_errors.ErrUserRoleBelowManager:
+		errorMsg := fmt.Sprintf("L'utilisateur doit avoir le rôle de chargé de projet ou supérieur pour être ajouté comme co-chargé de projet")
+		log.Printf("ERREUR - Ajout du co-chargé impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
+
+	case customs_errors.ErrUserAlreadyCoManager:
+		errorMsg := fmt.Sprintf("L'utilisateur sélectionné est déjà co-chargé de ce projet")
+		log.Printf("ERREUR - Ajout du co-chargé impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
 
 	default:
 		errorMsg := fmt.Sprintf("Erreur inconnue lors du traitement du(de la) %s", subject)

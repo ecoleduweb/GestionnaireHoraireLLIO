@@ -16,6 +16,6 @@
   "dependencies": {
     "concurrently": "^8.2.2",
     "jsonwebtoken": "^9.0.2",
-    "playwright": "^1.44.1"
+    "playwright": "^1.58.1"
   }
 }

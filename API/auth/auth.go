@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
@@ -43,6 +44,13 @@ func AuthWithAzure() {
 
 	// Configuration de la session
 	store := sessions.NewCookieStore([]byte(sessionsConfig.SessionKey))
+	// MaxLenght n'est pas défini par la version de gorilla 1.4. Il faut passer par le codec.
+	for _, codec := range store.Codecs {
+		if sc, ok := codec.(*securecookie.SecureCookie); ok {
+			sc.MaxLength(8192)
+		}
+	}
+
 	store.MaxAge(sessionsConfig.SessionMaxAge)
 
 	store.Options.Path = "/"
