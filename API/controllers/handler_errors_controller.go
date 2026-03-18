@@ -41,7 +41,6 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusForbidden, gin.H{"error": errorMsg})
 
-<<<<<<< HEAD
 	case customs_errors.ErrUserForbidden:
 		errorMsg := fmt.Sprintf("Accès refusé à la ressource demandée")
 		log.Printf("ERREUR - Accès refusé: %s - %v", errorMsg, err)
@@ -60,11 +59,9 @@ func handleError(ctx *gin.Context, err error, subject string) {
 	case customs_errors.ErrUserAlreadyCoManager:
 		errorMsg := fmt.Sprintf("L'utilisateur sélectionné est déjà co-chargé de ce projet")
 		log.Printf("ERREUR - Ajout du co-chargé impossible: %s - %v", errorMsg, err)
-=======
 	case customs_errors.ErrInvalidRequest:
 		errorMsg := fmt.Sprintf("Données invalides pour le(la) %s", subject)
 		log.Printf("ERREUR - Requête invalide: %s - %v", errorMsg, err)
->>>>>>> 889154f (Ajustement du code en fonction des commentaires de rabitIA)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
 
 	default:

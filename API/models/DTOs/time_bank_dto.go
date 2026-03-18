@@ -9,6 +9,6 @@ type TimeBankConfigDTO struct {
 
 // Pour afficher le solde (GET root)
 type TimeBankBalanceDTO struct {
-	IsConfigured bool `json:"isConfigured"`
-	TimeInBank   *int `json:"timeInBank"`
+	IsConfigured bool     `json:"isConfigured"`
+	TimeInBank   *float64 `json:"timeInBank"`
 }

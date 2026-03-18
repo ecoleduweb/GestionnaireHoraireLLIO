@@ -11,7 +11,7 @@ import (
 func SaveTimeBankConfig(userId int, configDTO DTOs.TimeBankConfigDTO) (*DTOs.TimeBankConfigDTO, error) {
 	// Conversion String -> Time (On force le mode LOCAL pour éviter les décalages)
 	layout := "2006-01-02"
-	startDate, _ := time.ParseInLocation(layout, configDTO.StartDate, time.Local)
+	startDate, _ := time.ParseInLocation(layout, configDTO.StartDate, time.UTC)
 
 	user := &DAOs.User{
 		Id:                    userId,
@@ -59,12 +59,12 @@ func GetTimeBankBalance(userId int) (*DTOs.TimeBankBalanceDTO, error) {
 		}, nil
 	}
 
-	startDateTime := user.TimeBankStartDate.In(time.Local)
+	startDateTime := user.TimeBankStartDate.In(time.UTC)
 	hoursPerWeek := *user.TimeBankHoursPerWeek
 	offset := user.TimeBankBalanceOffset
 
-	now := time.Now().In(time.Local)
-	calcEndDate := getLastMondayLocal(now)
+	now := time.Now().UTC()
+	calcEndDate := getLastMondayUTC(now)
 
 	workedSeconds, err := repositories.GetTotalWorkedSeconds(userId, startDateTime, calcEndDate)
 	if err != nil {
@@ -84,21 +84,22 @@ func GetTimeBankBalance(userId int) (*DTOs.TimeBankBalanceDTO, error) {
 
 	balance := (totalWorkedHours + offset) - totalExpectedHours
 
-	finalBalance := int(math.Round(balance))
+	finalBalance := math.Round(balance*100) / 100
 	return &DTOs.TimeBankBalanceDTO{
 		IsConfigured: true,
 		TimeInBank:   &finalBalance,
 	}, nil
 }
 
-func getLastMondayLocal(t time.Time) time.Time {
-	weekday := int(t.Weekday()) // Dimanche=0, Lundi=1...
+func getLastMondayUTC(t time.Time) time.Time {
+	t = t.UTC() // Sécurité : on s'assure que la base de calcul est en UTC
+	weekday := int(t.Weekday())
 	if weekday == 0 {
 		weekday = 7
 	}
 	daysToSubtract := weekday - 1
 
-	// On retourne une date "pure" (00:00:00) en Local
 	lastMonday := t.AddDate(0, 0, -daysToSubtract)
-	return time.Date(lastMonday.Year(), lastMonday.Month(), lastMonday.Day(), 0, 0, 0, 0, time.Local)
+	// On retourne une date "pure" (00:00:00) exclusivement en UTC
+	return time.Date(lastMonday.Year(), lastMonday.Month(), lastMonday.Day(), 0, 0, 0, 0, time.UTC)
 }

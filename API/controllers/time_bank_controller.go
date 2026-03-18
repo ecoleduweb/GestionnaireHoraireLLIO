@@ -39,11 +39,10 @@ func GetTimeBankConfig(c *gin.Context) {
 		return
 	}
 
-	// Si pas de config, on renvoie null explicitement (code 200)
 	c.JSON(http.StatusOK, config)
 }
 
-// POST /user/time-bank/config
+// PUT /user/time-bank/config
 func SaveTimeBankConfig(c *gin.Context) {
 	user, shouldReturn := getUserFromContext(c)
 	if shouldReturn {
