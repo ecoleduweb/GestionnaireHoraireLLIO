@@ -7,6 +7,7 @@
   import ProjectModal from './ProjectModal.svelte';
   import type { Project, UserInfo } from '../../Models';
   import { UserRole } from '$lib/types/enums';
+  import NavButton from '../NavButton.svelte';
 
   type Props = {
     projects: Project[];
@@ -43,39 +44,8 @@
   <!-- Contenu du dashboard -->
   <div class="dashboard-content">
     <!-- Éléments du dashboard -->
-    <div class="dashboard-item flex-col">
-      <div class="inline-flex rounded-md shadow-xs" role="group">
-        <button
-          onclick={() => goto('./calendar')}
-          type="button"
-          class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-l-lg hover:bg-[#014446] hover:text-white cursor-pointer"
-        >
-          Calendrier
-        </button>
-        {#if currentUser.role === UserRole.Admin}
-          <button
-            type="button" 
-            class="py-2 px-4 text-sm transition-colors font-semibold bg-[#014446] text-white"
-          >
-            Projets
-          </button>
-          <button 
-            onclick={() => goto('./administrator')}
-            type="button" 
-            class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-r-lg hover:bg-[#014446] hover:text-white cursor-pointer"
-          >
-            Admin
-          </button>
-        {:else}  
-          <button 
-            type="button" 
-            class="py-2 px-4 text-sm transition-colors font-semibold bg-[#014446] text-white rounded-r-lg "
-          >
-            Projets
-          </button>
-        {/if}
-      </div>
-
+    <div class="dashboard-item flex-col">  
+      <NavButton currentUserRole = {currentUser.role} />
       {#if currentUser.role === UserRole.Admin || currentUser.role === UserRole.ProjectManager} 
         <button
           type="button"

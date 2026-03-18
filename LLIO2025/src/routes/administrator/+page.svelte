@@ -5,6 +5,7 @@
   import { LogOut } from 'lucide-svelte';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
+  import NavButton from "../../Components/NavButton.svelte";
   
   let currentUser = $state<UserInfo | null>(null);
   let isLoading = $state(false);    
@@ -32,28 +33,7 @@
   <div class="dashboard-content">
     <!-- Contenu à venir -->
     <div class="dashboard-item ">
-      <div class="inline-flex rounded-md shadow-xs" role="group">
-        <button
-            onclick={() => goto('./calendar')}
-            type="button"
-            class="px-4 py-2 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 hover:bg-[#014446] hover:text-white cursor-pointer rounded-l-lg"
-        >
-            Calendrier
-        </button>
-        <button 
-            onclick={() => goto('./projects')}
-            type="button" 
-            class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 hover:bg-[#014446] hover:text-white cursor-pointer"
-        >
-            Projets
-        </button>
-        <button             
-            type="button" 
-            class="py-2 px-4 text-sm transition-colors font-semibold bg-[#014446] text-white rounded-r-lg "
-        >
-            Admin
-        </button>
-      </div>
+      <NavButton currentUserRole = {currentUser?.role} />
     </div>
     <div class="dashboard-item-button flex-col justify-center-safe content-center">
       <div class="mt-4">

@@ -4,7 +4,6 @@
   import type { UserInfo } from '../../Models/index.ts';
   import { UserRole } from '../../lib/types/enums';
   import { UserApiService } from '../../services/UserApiService';
-  import { goto } from "$app/navigation";
 
   let users = $state<UserInfo[]>([]);
   let isLoading = $state(false);
