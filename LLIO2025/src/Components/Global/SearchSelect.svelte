@@ -59,4 +59,22 @@
         on:clear={() => handleSelect(new CustomEvent('clear', { detail: null }))}
         {placeholder}
         {required}
-/>
+        --item-height="auto">
+        <div slot="item" class="item" let:item>
+            {item.label}
+        </div>
+        
+</Select>
+
+<style>
+.item {
+        min-height: 16px;
+        padding: 10px 0;
+        line-height: 16px;
+        display: flex;
+        line-break: auto;
+        white-space: pre-wrap;
+        align-items: center;
+    }
+    
+</style>
