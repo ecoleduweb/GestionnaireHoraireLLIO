@@ -30,7 +30,7 @@ func CreateActivity(c *gin.Context) {
 		return
 	}
 
-	messageErrs := services.VerifyCreateActivityJSON(&activityDTO)
+	messageErrs := services.VerifyActivityJSON(&activityDTO)
 	if len(messageErrs) > 0 {
 		log.Printf("Une ou plusieurs erreurs de verification du format de l'activité sont survenues:%v", messageErrs)
 		c.JSON(http.StatusBadRequest, gin.H{"errors": messageErrs})
@@ -94,6 +94,13 @@ func UpdateActivity(c *gin.Context) {
 		return
 	}
 
+	messageErrs := services.VerifyActivityJSON(&updateActivityDTO)
+	if len(messageErrs) > 0 {
+		log.Printf("Une ou plusieurs erreurs de verification du format de l'activité sont survenues:%v", messageErrs)
+		c.JSON(http.StatusBadRequest, gin.H{"errors": messageErrs})
+		return
+	}
+
 	id := strconv.Itoa(updateActivityDTO.Id)
 	_, err := services.GetActivityById(id)
 	if err != nil {
@@ -106,6 +113,7 @@ func UpdateActivity(c *gin.Context) {
 		handleError(c, err, activiteSTR)
 		return
 	}
+
 
 	c.JSON(http.StatusOK, gin.H{"updated_activity": updatedActivityDTO})
 
