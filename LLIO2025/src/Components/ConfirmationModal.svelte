@@ -1,6 +1,5 @@
 <script lang="ts">
   import { X } from 'lucide-svelte';
-  import { string } from 'yup';
 
   type Props = {
     modalTitle: string;
