@@ -45,7 +45,7 @@ export interface ActivityUpdateResponse {
     updated_activity: Activity;
 }
 
-/*************** Project ***************/
+
 export interface ProjectBase {
     uniqueId: string;
     name?: string;

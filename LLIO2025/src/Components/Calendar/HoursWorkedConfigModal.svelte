@@ -1,265 +1,232 @@
 <script lang="ts">
-import { X } from "lucide-svelte";
-import { UserApiService } from "../../services/UserApiService";
-import type { TimeBankConfig } from "../../Models/index";
-import { validateTimeBankForm } from "../../Validation/TimeBank";
+  import { onMount } from 'svelte';
+  import { X } from 'lucide-svelte';
+  import { UserApiService } from '../../services/UserApiService';
+  import type { TimeBankConfig } from '../../Models/index';
+  import { validateTimeBankForm } from '../../Validation/TimeBank';
 
-type Props = {
-  onClose: () => void;
-  onSave: () => void;
-};
+  let { onClose, onSave } = $props();
 
-let { onClose, onSave }: Props = $props();
+  const config = $state<TimeBankConfig>({
+    startDate: '',
+    hoursPerWeek: 0,
+    offset: 0
+  });
 
-const config = $state<TimeBankConfig>({
-  startDate: "",
-  hoursPerWeek: 0,
-  offset: 0
-});
+  let isSubmitting = $state(false);
+  let isLoading = $state(true);
 
-let isSubmitting = $state(false);
+  onMount(async () => {
+    try {
+      const data = await UserApiService.getTimeBankConfig();
 
-const handleSubmit = async () => {
-  if (isSubmitting) return;
+      if (data) {
+        config.startDate = data.startDate;
+        config.hoursPerWeek = data.hoursPerWeek;
+        config.offset = data.offset;
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      isLoading = false;
+    }
+  });
 
-  try {
-    isSubmitting = true;
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
 
-    await UserApiService.saveTimeBankConfig(config);
+    try {
+      isSubmitting = true;
 
-    onSave();
-    onClose();
+      await UserApiService.saveTimeBankConfig(config);
 
-  } catch (err) {
-    console.error(err);
-    alert("Erreur lors de la configuration de la banque d'heure");
-  } finally {
-    isSubmitting = false;
-  }
-};
+      onSave();
+      onClose();
 
-const { form, errors } = validateTimeBankForm(handleSubmit, config);
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la configuration de la banque d'heure");
+    } finally {
+      isSubmitting = false;
+    }
+  };
+
+  const { form, errors } = validateTimeBankForm(handleSubmit, config);
 </script>
 
 <div class="modal-overlay">
+  <div class="modal">
 
-<div class="modal">
+    <div class="modal-header">
+      <h3>Configuration des heures en banque</h3>
+      <button class="close-btn" onclick={onClose}>
+        <X size={18}/>
+      </button>
+    </div>
 
-<div class="modal-header">
+    <div class="modal-body">
 
-<h2 class="modal-title">Configuration des heures en banque</h2>
+      {#if isLoading}
+        <p>Chargement...</p>
+      {:else}
 
-<button
-type="button"
-class="text-black hover:text-gray-600"
-onclick={onClose}
->
-<X />
-</button>
+        <form use:form onsubmit={(e) => e.preventDefault()}>
 
-</div>
+          <div class="form-group">
+            <label>Début de la période</label>
+            <input
+              type="date"
+              name="startDate"
+              bind:value={config.startDate}
+            />
+            {#if $errors.startDate}
+              <span class="error-text">{$errors.startDate}</span>
+            {/if}
+          </div>
 
-<div class="modal-content">
+          <div class="form-group">
+            <label>Heures par semaine</label>
+            <input
+              type="number"
+              name="hoursPerWeek"
+              min="0"
+              step="0.5"
+              bind:value={config.hoursPerWeek}
+            />
+            {#if $errors.hoursPerWeek}
+              <span class="error-text">{$errors.hoursPerWeek}</span>
+            {/if}
+          </div>
 
-<form
-class="flex flex-col h-full"
-use:form
-onsubmit={(e) => e.preventDefault()}
->
+          <div class="form-group">
+            <label>Offset</label>
+            <input
+              type="number"
+              name="offset"
+              step="0.5"
+              bind:value={config.offset}
+            />
+            {#if $errors.offset}
+              <span class="error-text">{$errors.offset}</span>
+            {/if}
+          </div>
 
-<div class="form-group">
+          <div class="modal-footer">
+            <button type="button" onclick={onClose}>
+              Annuler
+            </button>
 
-<label for="startDate">Début de la période</label>
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+            </button>
+          </div>
 
-<input
-id="startDate"
-name="startDate"
-type="date"
-bind:value={config.startDate}
-/>
+        </form>
 
-{#if $errors.startDate}
-<span class="error-text">
-{$errors.startDate}
-</span>
-{/if}
+      {/if}
+    </div>
 
-</div>
-
-
-<div class="form-group">
-
-<label for="hoursWorked">Nombre d'heures par semaine</label>
-
-<input
-id="hoursWorked"
-name="hoursPerWeek"
-type="number"
-min="0"
-step="0.5"
-bind:value={config.hoursPerWeek}
-/>
-
-{#if $errors.hoursPerWeek}
-<span class="error-text">
-{$errors.hoursPerWeek}
-</span>
-{/if}
-
-</div>
-
-
-<div class="form-group">
-
-<label for="offset">Décalage (offset)</label>
-
-<input
-id="offset"
-name="offset"
-type="number"
-min="0"
-step="0.5"
-bind:value={config.offset}
-/>
-
-{#if $errors.offset}
-<span class="error-text">
-{$errors.offset}
-</span>
-{/if}
-
-</div>
-
-
-<div class="modal-footer">
-
-<button
-type="button"
-class="btn-cancel"
-onclick={onClose}
->
-Annuler
-</button>
-
-<button
-type="submit"
-class="btn-save"
-disabled={isSubmitting}
->
-{isSubmitting ? "En cours..." : "Enregistrer"}
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
+  </div>
 </div>
 
 <style>
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-.modal-overlay{
-position:fixed;
-top:0;
-left:0;
-right:0;
-bottom:0;
-background-color:rgba(0,0,0,0.5);
-display:flex;
-align-items:center;
-justify-content:center;
-z-index:1000;
-}
+  .modal {
+    background: white;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+  }
 
-.modal{
-background-color:white;
-border-radius:4px;
-width:400px;
-max-width:90%;
-box-shadow:0 2px 10px rgba(0,0,0,0.1);
-}
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+  }
 
-.modal-header{
-padding:12px 24px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-border-bottom:1px solid #eee;
-}
+  .modal-body {
+    padding: 1rem;
+  }
 
-.modal-title{
-font-size:18px;
-margin:0;
-color:#333;
-}
+  .form-group {
+    margin-bottom: 1rem;
+  }
 
-.modal-content{
-padding:24px;
-}
+  input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
 
-.form-group{
-margin-bottom:16px;
-}
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
 
-label{
-display:block;
-margin-bottom:8px;
-color:#666;
-font-size:14px;
-}
+  /* 🔥 BOUTONS STYLÉS */
+  .modal-footer button {
+    padding: 0.6rem 1.4rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+  }
 
-input{
-width:100%;
-padding:8px 12px;
-border:1px solid #ccc;
-border-radius:4px;
-box-sizing:border-box;
-}
+  /* Annuler */
+  .modal-footer button[type="button"] {
+    background: #f3f4f6;
+    color: #333;
+  }
 
-.modal-footer{
-display:flex;
-justify-content:flex-end;
-gap:12px;
-margin-top:24px;
-}
+  .modal-footer button[type="button"]:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+  }
 
-.btn-cancel,
-.btn-save{
-padding:10px 20px;
-border:none;
-border-radius:6px;
-font-weight:500;
-cursor:pointer;
-font-size:14px;
-transition:all 0.2s ease;
-}
+  /* Enregistrer */
+  .modal-footer button[type="submit"] {
+    background: #015e61;
+    color: white;
+  }
 
-.btn-cancel{
-background:#f3f3f3;
-color:#333;
-border:1px solid #ddd;
-}
+  .modal-footer button[type="submit"]:hover {
+    background: #014446;
+    transform: translateY(-1px);
+  }
 
-.btn-cancel:hover{
-background:#e8e8e8;
-}
+  /* Disabled */
+  .modal-footer button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
 
-.btn-save{
-background:#015e61;
-color:white;
-}
+  .error-text {
+    color: red;
+    font-size: 0.8rem;
+  }
 
-.btn-save:hover{
-background:#014446;
-}
-
-.error-text{
-color:#e53e3e;
-font-size:14px;
-margin-top:4px;
-}
-
+  .close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
 </style>

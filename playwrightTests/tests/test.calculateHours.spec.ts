@@ -20,15 +20,22 @@ test.describe("calcul d'heures", () => {
   });
 
  test("calcul d'heures success", async ({ page }) => {
-    const apiMocker = new ApiMocker(page);
-    await apiMocker.addMocks([userMocks.saveTimeBankConfigSuccess, userMocks.getTimeBankSuccess]).apply();
-    await page.getByText("Configurer").click();
-    
-    await page.fill('#startDate', '2025-03-01');
-    await page.fill('#hoursWorked', '40');
-    
-    await page.getByText("Enregistrer").click();
-    
-    await expect(page.getByText("40")).toBeVisible();
-  });
+  const apiMocker = new ApiMocker(page);
+
+  await apiMocker
+    .addMocks([
+      userMocks.saveTimeBankConfigSuccess,
+      userMocks.getTimeBankSuccess
+    ])
+    .apply();
+
+  await page.getByText("Configurer").click();
+
+  await page.fill('[name="startDate"]', '2025-03-01');
+  await page.fill('[name="hoursPerWeek"]', '40');
+
+  await page.getByText("Enregistrer").click();
+
+  await expect(page.getByTestId("total-hours")).toHaveText("40");
+});
 });

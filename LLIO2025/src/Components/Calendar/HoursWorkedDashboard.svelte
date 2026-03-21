@@ -1,111 +1,121 @@
 ﻿<script lang="ts">
-import { UserApiService } from '../../services/UserApiService';
-import { formatDateHoursWorked, areDatesEqual } from '../../utils/date';
-import HoursWorkedConfigModal from './HoursWorkedConfigModal.svelte';
+  import { onMount } from 'svelte';
+  import { UserApiService } from '../../services/UserApiService';
+  import { formatDateHoursWorked, areDatesEqual } from '../../utils/date';
+  import HoursWorkedConfigModal from './HoursWorkedConfigModal.svelte';
 
-const { hoursTotal, dateStart, dateEnd, textHoursWorked } = $props();
+  type Props = {
+    hoursTotal: number | null;
+    dateStart: Date;
+    dateEnd: Date;
+    textHoursWorked: string;
+  };
 
-let displayedHoursTotal = $state(hoursTotal);
-let displayedTextHoursWorked = $state(textHoursWorked);
+  let { hoursTotal, dateStart, dateEnd, textHoursWorked }: Props = $props();
 
-let showModal = $state(false);
+  let displayedHoursTotal = $state<number | null>(hoursTotal ?? null);
+  let showModal = $state(false);
 
-$effect(() => {
-  displayedHoursTotal = hoursTotal;
-  displayedTextHoursWorked = textHoursWorked;
-});
+  onMount(async () => {
+    try {
+      const bank = await UserApiService.getTimeInBank();
+      displayedHoursTotal = bank.timeInBank;
+    } catch (err) {
+      console.error(err);
+    }
+  });
 
-const openConfigModal = () => {
-  showModal = true;
-};
+  const openConfigModal = () => {
+    showModal = true;
+  };
 
-const closeConfigModal = () => {
-  showModal = false;
-};
-
-const handleSave = async () => {
-  try {
-    const bank = await UserApiService.getTimeInBank();
-
-    displayedHoursTotal = bank.timeInBank;
-    displayedTextHoursWorked = bank.textHoursWorked;
-
+  const closeConfigModal = () => {
     showModal = false;
+  };
 
-  } catch (err) {
-    alert("Erreur lors de la configuration de la banque d'heure");
-  }
-};
+  const handleSave = async () => {
+    try {
+      const bank = await UserApiService.getTimeInBank();
+      displayedHoursTotal = bank.timeInBank;
+      showModal = false;
+    } catch (err) {
+      alert("Erreur lors de la configuration");
+    }
+  };
 </script>
 
-<div class="bilan-container">
+<style>
+  .card {
+    background: #f5f5f5;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 500px;
+  }
 
-<div class="header">
+  .section {
+    margin-bottom: 1rem;
+  }
 
-<h2>
+  .label {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    color: #999;
+    margin-bottom: 0.5rem;
+  }
 
-{#if areDatesEqual(dateStart,dateEnd)}
-Bilan du {formatDateHoursWorked(dateStart)}
-{:else}
-Bilan du {formatDateHoursWorked(dateStart)} au {formatDateHoursWorked(dateEnd)}
-{/if}
+  .link {
+    color: #2563eb;
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font: inherit;
+    padding: 0;
+  }
+</style>
 
-</h2>
+<div class="card">
 
-</div>
+ 
+  {#if displayedHoursTotal === null}
 
-<span>
-Vous avez travaillé <strong>{displayedHoursTotal}</strong> heures {displayedTextHoursWorked}.
-</span>
+    <div class="section">
+      <p>
+        Vous avez 
+        <button class="link" on:click={openConfigModal}>
+          configurer
+        </button>
+        heures en banque.
+      </p>
+    </div>
 
-<div class="config-section">
+  {:else}
 
-<button
-type="button"
-class="config-btn"
-onclick={openConfigModal}
->
-Configurer
-</button>
+    
+    <div class="section">
+      
 
-</div>
+      <p>
+        Vous avez 
+        <button
+          class="link"
+          on:click={openConfigModal}
+          data-testid="total-hours"
+          title="Modifier les heures"
+        >
+          {displayedHoursTotal}
+        </button>
+        heures en banque.
+      </p>
+    </div>
+
+  {/if}
 
 </div>
 
 {#if showModal}
-
-<HoursWorkedConfigModal
-onClose={closeConfigModal}
-onSave={handleSave}
-/>
-
+  <HoursWorkedConfigModal 
+    onClose={closeConfigModal} 
+    onSave={handleSave} 
+  />
 {/if}
-
-<style>
-
-.bilan-container{
-padding:1rem;
-border:1px solid #ddd;
-border-radius:5px;
-}
-
-.header{
-margin-bottom:1rem;
-}
-
-.config-section{
-margin-top:1rem;
-padding-top:1rem;
-border-top:1px solid #eee;
-}
-
-.config-btn{
-background:#015e61;
-color:white;
-border:none;
-cursor:pointer;
-padding:0.75rem 1.5rem;
-border-radius:4px;
-}
-
-</style>

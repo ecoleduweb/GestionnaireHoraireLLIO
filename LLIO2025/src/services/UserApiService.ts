@@ -1,7 +1,7 @@
 import type { TimeBankConfig } from '../Models/index';
 import type { TimeBankResponse } from '../Models/index';
 import type { User, UserInfo } from '../Models/index';
-import { DELETE, GET, PATCH, POST } from '../ts/server';
+import { DELETE, GET, PATCH, POST, PUT } from '../ts/server';
 
 const getUserInfo = async (): Promise<UserInfo> => {
   const response = await GET<UserInfo>('/user/me');
@@ -36,7 +36,7 @@ const deleteUser = async (userId: number): Promise<void> => {
 };
 
 const saveTimeBankConfig = async (config: TimeBankConfig): Promise<TimeBankConfig> => {
-  const response = await POST<TimeBankConfig, TimeBankConfig>(
+  const response = await PUT<TimeBankConfig, TimeBankConfig>(
     '/user/time-bank/config',
     config
   );

@@ -4,7 +4,8 @@ import type { TimeBankConfig } from '../Models';
 
 const schema = yup.object().shape({
   startDate: yup
-    .string()
+    .date()
+    .typeError("Veuillez entrer une date valide")
     .required("La date de début est requise"),
 
   hoursPerWeek: yup
@@ -17,8 +18,8 @@ const schema = yup.object().shape({
   offset: yup
     .number()
     .typeError("Veuillez entrer un nombre")
-    .min(0, "Le décalage ne peut pas être négatif")
-    .nullable()
+    .required("Le décalage est requis")
+    .default(0),
 });
 
 export const validateTimeBankForm = (
