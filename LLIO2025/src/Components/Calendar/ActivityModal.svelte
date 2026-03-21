@@ -275,24 +275,14 @@
     }
   };
 
-  const getTruncatedDisplayText = (uniqueId, name, maxLength = 30) => {
+  const getDisplayText = (uniqueId, name) => {
     const separator = " | ";
-    const availableForName = maxLength - uniqueId.length - separator.length;
+    const availableForName = uniqueId.length - separator.length;
     if (name === undefined || name === null || name.trim() === "") {
       return uniqueId; // Si le nom est vide, retourner uniquement l'uniqueId
     }
 
-    if (availableForName <= 0) {
-      // Si l'uniqueId est déjà trop long, on le tronque aussi
-      return uniqueId.substring(0, maxLength - 3) + "...";
-    }
-
-    if (name.length <= availableForName) {
-      return `${uniqueId}${separator}${name}`;
-    }
-
-    const truncatedName = name.substring(0, availableForName - 3) + "...";
-    return `${uniqueId}${separator}${truncatedName}`;
+    return `${uniqueId}${separator}${name}`;
   };
 
   $effect(() => {
@@ -398,7 +388,7 @@
                 id="activity-project"
                 name="projectId"
                 items={projects.map((value) => {
-                  return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
+                  return { value: value.id, label: getDisplayText(value.uniqueId, value.name) };
                 })}
                 bind:selectedValue={activity.projectId}
                 placeholder="Sélectionner un projet"
