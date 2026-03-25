@@ -23,15 +23,21 @@ jobs:
             set -e
             echo "Starting deployment process..."
 
-            # FIX: nettoyage des options incompatibles + blocage des configs MySQL système (bind-address)
+            # FIX PROPRE: on force une config MySQL propre pour éviter bind-address
+            # sans modifier backup.sh
             if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
               chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
 
-              sed -i 's/--no-defaults//g' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
-              sed -i 's/--defaults-file=\/dev\/null//g' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+              cat > /tmp/my.cnf << EOF
+              [client]
+              user=${{ secrets.DB_USER }}
+              password=${{ secrets.DB_PASSWORD }}
+              host=${{ secrets.DB_HOST }}
+              port=${{ secrets.DB_PORT }}
+              EOF
 
               export MYSQL_HOME=/tmp
-              export MYSQL_READ_DEFAULT_FILE=/dev/null
+              export MYSQL_READ_DEFAULT_FILE=/tmp/my.cnf
 
               /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
             fi
