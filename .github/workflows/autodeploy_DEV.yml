@@ -21,19 +21,19 @@ jobs:
 
           script: |
             set -e
-            echo "🚀 Starting deployment..."
+            echo " Starting deployment..."
 
             # ========================
             # STOP SERVICES
             # ========================
-            echo "🛑 Stopping services..."
+            echo " Stopping services..."
             sudo systemctl stop llio-api.service || echo "API not running"
             sudo systemctl stop llio-frontend.service || echo "Frontend not running"
 
             # ========================
             # BACKUP LOGS
             # ========================
-            echo "📁 Backup logs..."
+            echo " Backup logs..."
             mkdir -p /root/logs
             DATE=$(date +'%Y-%m-%d_%H-%M')
 
@@ -48,10 +48,10 @@ jobs:
             cd /root/ProjetLLIO2025
             rm -rf GestionnaireHoraire
 
-            echo "📥 Cloning repo..."
+            echo " Cloning repo..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
 
-            echo "📂 Listing files..."
+            echo " Listing files..."
             ls -la /root/ProjetLLIO2025/GestionnaireHoraire
 
             # ========================
@@ -59,7 +59,7 @@ jobs:
             # ========================
             mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup
 
-            echo "⚙️ Generating db.config..."
+            echo " Generating db.config..."
             cat > /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config << EOF
             DB_USER="${{ secrets.DB_USER }}"
             DB_PASS="${{ secrets.DB_PASSWORD }}"
@@ -68,8 +68,8 @@ jobs:
             DB_HOST="${{ secrets.DB_HOST }}"
             DB_PORT="${{ secrets.DB_PORT }}"
 
-            BACKUP_DIR="${{ secrets.DB_BACKUP_DIR }}"
-            RETENTION_DAYS="${{ secrets.DB_BACKUP_RETENTION_DAYS }}"
+            BACKUP_DIR="/var/backups/mariadb"
+            RETENTION_DAYS=365
             EOF
 
             chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
@@ -77,14 +77,14 @@ jobs:
             
             if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
               chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
-              echo "💾 Running backup..."
+              echo " Running backup..."
               /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
             else
-              echo "⚠️ backup.sh not found, skipping backup"
+              echo " backup.sh not found, skipping backup"
             fi
 
             
-            echo "⚙️ Configuring API..."
+            echo " Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
 
             cat > .env << EOF
@@ -108,12 +108,12 @@ jobs:
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
             EOF
 
-            echo "🔨 Building API..."
+            echo " Building API..."
             /usr/local/go/bin/go mod tidy
             /usr/local/go/bin/go build -o app
 
            
-            echo "⚙️ Configuring Frontend..."
+            echo " Configuring Frontend..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
 
             cat > .env << EOF
@@ -124,20 +124,20 @@ jobs:
             BASE_PATH=/llio-frontend
             EOF
 
-            echo "📦 Installing dependencies..."
+            echo " Installing dependencies..."
             npm install
 
-            echo "🏗️ Building frontend..."
+            echo " Building frontend..."
             npm run build
 
             
-            echo "🚀 Starting services..."
+            echo " Starting services..."
             sudo systemctl start llio-api.service || echo "❌ API failed"
             sudo systemctl start llio-frontend.service || echo "❌ Frontend failed"
 
            
-            echo "📊 Checking services..."
+            echo " Checking services..."
             sudo systemctl status llio-api.service --no-pager
             sudo systemctl status llio-frontend.service --no-pager
 
-            echo "✅ Deployment completed!"
+            echo " Deployment completed!"
