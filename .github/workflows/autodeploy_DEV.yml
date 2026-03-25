@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - MM_AutoDeployMain
   workflow_dispatch:
 
 jobs:
