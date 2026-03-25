@@ -26,30 +26,36 @@ jobs:
             echo "Starting deployment process..."
 
             # ========================
-            # BACKUP + FIX MARIADB
+            # BACKUP AVANT DÉPLOIEMENT
             # ========================
+            echo "Preparing backup directory..."
+            sudo mkdir -p /var/backups/mariadb
+            sudo chmod 700 /var/backups/mariadb
+
             if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
+              echo "Running database backup..."
+
               chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
 
-              echo "Fix mariadb-dump config..."
-
-              # Remplace proprement la ligne mariadb-dump
+              # Fix pour ignorer la config MySQL système (bind-address)
               sed -i 's|mariadb-dump.*|mariadb-dump --no-defaults --host=${{ secrets.DB_HOST }} --port=${{ secrets.DB_PORT }} \\|' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
 
               /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+            else
+              echo "Backup script not found, skipping backup."
             fi
 
             # ========================
-            # STOP SERVICES
+            # ARRÊT DES SERVICES
             # ========================
             echo "Stopping services..."
-            sudo systemctl stop llio-api.service || echo "API not running"
-            sudo systemctl stop llio-frontend.service || echo "Frontend not running"
+            sudo systemctl stop llio-api.service || echo "API service not running"
+            sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
 
             # ========================
-            # SAVE LOGS
+            # SAUVEGARDE DES LOGS
             # ========================
-            echo "Moving logs..."
+            echo "Saving logs..."
             mkdir -p /root/logs
             DATE=$(date +'%Y-%m-%d_%H-%M')
 
@@ -58,18 +64,20 @@ jobs:
             fi
 
             # ========================
-            # CLEAN + CLONE
+            # MISE À JOUR DU PROJET
             # ========================
             echo "Refreshing project..."
             cd /root/ProjetLLIO2025
             rm -rf GestionnaireHoraire
 
+            echo "Cloning repository..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
 
             # ========================
-            # DB CONFIG
+            # CONFIGURATION BASE DE DONNÉES
             # ========================
             echo "Generating db.config..."
+            mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup
 
             cat > /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config <<EOF
             DB_USER="${{ secrets.DB_USER }}"
@@ -84,7 +92,7 @@ jobs:
             chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
 
             # ========================
-            # API CONFIG
+            # CONFIGURATION API
             # ========================
             echo "Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
@@ -115,7 +123,7 @@ jobs:
             /usr/local/go/bin/go build -o app
 
             # ========================
-            # FRONTEND CONFIG
+            # CONFIGURATION FRONTEND
             # ========================
             echo "Configuring Frontend..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
@@ -128,20 +136,23 @@ jobs:
             BASE_PATH=/llio-frontend
             EOF
 
-            echo "Installing frontend..."
+            echo "Installing frontend dependencies..."
             npm install
 
             echo "Building frontend..."
             npm run build
 
             # ========================
-            # START SERVICES
+            # DÉMARRAGE DES SERVICES
             # ========================
             echo "Starting services..."
-            sudo systemctl start llio-api.service || echo "API failed"
-            sudo systemctl start llio-frontend.service || echo "Frontend failed"
+            sudo systemctl start llio-api.service
+            sudo systemctl start llio-frontend.service
 
-            echo "Checking services..."
+            # ========================
+            # VÉRIFICATION DES SERVICES
+            # ========================
+            echo "Checking services status..."
             sudo systemctl status llio-api.service --no-pager
             sudo systemctl status llio-frontend.service --no-pager
 
