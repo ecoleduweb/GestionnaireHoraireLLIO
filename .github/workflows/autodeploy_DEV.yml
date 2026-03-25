@@ -25,28 +25,30 @@ jobs:
 
             echo "Starting deployment process..."
 
-            # Backup
+            # ========================
+            # BACKUP + FIX MARIADB
+            # ========================
             if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
               chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
 
-            cat > /tmp/my.cnf <<EOF
-            [client]
-            user=${{ secrets.DB_USER }}
-            password=${{ secrets.DB_PASSWORD }}
-            host=${{ secrets.DB_HOST }}
-            port=${{ secrets.DB_PORT }}
-            EOF
+              echo "Fix mariadb-dump config..."
 
-              export MYSQL_HOME=/tmp
-              export MYSQL_READ_DEFAULT_FILE=/tmp/my.cnf
+              # Remplace proprement la ligne mariadb-dump
+              sed -i 's|mariadb-dump.*|mariadb-dump --no-defaults --host=${{ secrets.DB_HOST }} --port=${{ secrets.DB_PORT }} \\|' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
 
               /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
             fi
 
+            # ========================
+            # STOP SERVICES
+            # ========================
             echo "Stopping services..."
             sudo systemctl stop llio-api.service || echo "API not running"
             sudo systemctl stop llio-frontend.service || echo "Frontend not running"
 
+            # ========================
+            # SAVE LOGS
+            # ========================
             echo "Moving logs..."
             mkdir -p /root/logs
             DATE=$(date +'%Y-%m-%d_%H-%M')
@@ -55,54 +57,66 @@ jobs:
               cp /root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt /root/logs/logs_llio_$DATE.txt
             fi
 
+            # ========================
+            # CLEAN + CLONE
+            # ========================
             echo "Refreshing project..."
             cd /root/ProjetLLIO2025
             rm -rf GestionnaireHoraire
 
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
 
+            # ========================
+            # DB CONFIG
+            # ========================
             echo "Generating db.config..."
 
-              cat > /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config <<EOF
-              DB_USER="${{ secrets.DB_USER }}"
-              DB_PASS="${{ secrets.DB_PASSWORD }}"
-              DB_NAME="${{ secrets.DB_NAME_RUN }}"
-              DB_HOST="${{ secrets.DB_HOST }}"
-              DB_PORT="${{ secrets.DB_PORT }}"
-              BACKUP_DIR="/var/backups/mariadb"
-              RETENTION_DAYS=365
-              EOF
+            cat > /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config <<EOF
+            DB_USER="${{ secrets.DB_USER }}"
+            DB_PASS="${{ secrets.DB_PASSWORD }}"
+            DB_NAME="${{ secrets.DB_NAME_RUN }}"
+            DB_HOST="${{ secrets.DB_HOST }}"
+            DB_PORT="${{ secrets.DB_PORT }}"
+            BACKUP_DIR="/var/backups/mariadb"
+            RETENTION_DAYS=365
+            EOF
 
             chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
 
+            # ========================
+            # API CONFIG
+            # ========================
             echo "Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
 
-              cat > .env <<EOF
-              DB_USER=${{ secrets.DB_USER }}
-              DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-              DB_HOST=${{ secrets.DB_HOST }}
-              DB_PORT=${{ secrets.DB_PORT }}
-              DB_NAME_RUN=${{ secrets.DB_NAME_RUN }}
-              DB_NAME_TEST=${{ secrets.DB_NAME_TEST }}
-              ENV=${{ secrets.ENV }}
-              AZUREAD_CLIENT_ID=${{ secrets.AZUREAD_CLIENT_ID }}
-              AZUREAD_CLIENT_SECRET=${{ secrets.AZUREAD_CLIENT_SECRET }}
-              AZUREAD_CALLBACK_URL=${{ secrets.AZUREAD_CALLBACK_URL }}
-              SESSION_MAX_AGE=${{ secrets.SESSION_MAX_AGE }}
-              SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-              JWT_DURATION=${{ secrets.JWT_DURATION }}
-              FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-              ENABLE_TRACING=true
-              TRACE_URL=https://telemetry.edwrdl.ca/traces
-              APPLICATION_NAME=API_LLIO_DEV
-              JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-              EOF
+            cat > .env <<EOF
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_NAME_RUN=${{ secrets.DB_NAME_RUN }}
+            DB_NAME_TEST=${{ secrets.DB_NAME_TEST }}
+            ENV=${{ secrets.ENV }}
+            AZUREAD_CLIENT_ID=${{ secrets.AZUREAD_CLIENT_ID }}
+            AZUREAD_CLIENT_SECRET=${{ secrets.AZUREAD_CLIENT_SECRET }}
+            AZUREAD_CALLBACK_URL=${{ secrets.AZUREAD_CALLBACK_URL }}
+            SESSION_MAX_AGE=${{ secrets.SESSION_MAX_AGE }}
+            SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+            JWT_DURATION=${{ secrets.JWT_DURATION }}
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+            ENABLE_TRACING=true
+            TRACE_URL=https://telemetry.edwrdl.ca/traces
+            APPLICATION_NAME=API_LLIO_DEV
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            EOF
 
             echo "Building API..."
             /usr/local/go/bin/go mod tidy
             /usr/local/go/bin/go build -o app
 
+            # ========================
+            # FRONTEND CONFIG
+            # ========================
             echo "Configuring Frontend..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
 
@@ -120,6 +134,9 @@ jobs:
             echo "Building frontend..."
             npm run build
 
+            # ========================
+            # START SERVICES
+            # ========================
             echo "Starting services..."
             sudo systemctl start llio-api.service || echo "API failed"
             sudo systemctl start llio-frontend.service || echo "Frontend failed"
