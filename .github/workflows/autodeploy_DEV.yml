@@ -23,8 +23,7 @@ jobs:
             set -e
             echo "Starting deployment process..."
 
-            # FIX PROPRE: on force une config MySQL propre pour éviter bind-address
-            # sans modifier backup.sh
+            # FIX PROPRE: config MySQL isolée pour éviter bind-address
             if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
               chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
 
