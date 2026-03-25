@@ -23,16 +23,15 @@ jobs:
             set -e
             echo "Starting deployment process..."
 
-            # FIX: on empêche mariadb-dump de lire les configs système (my.cnf)
-            # car elles contiennent des options incompatibles (ex: bind-address)
-            # et causent le crash du backup
-            # -> on ne modifie pas backup.sh, on change seulement l’environnement
-            export MYSQL_HOME=/dev/null
-            export MYSQL_READ_DEFAULT_FILE=/dev/null
-
-            # Backup avant arrêt des services
+            # FIX: on supprime les options incompatibles dans backup.sh au runtime
+            # car la version de mariadb-dump du serveur ne supporte pas --no-defaults
+            # et on ne modifie pas le fichier dans le repo, seulement sur le serveur
             if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
               chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+
+              sed -i 's/--no-defaults//g' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+              sed -i 's/--defaults-file=\/dev\/null//g' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+
               /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
             fi
 
@@ -73,13 +72,13 @@ jobs:
             RETENTION_DAYS=365
             EOF
 
-            chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
+                        chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
 
-            # Configuration API
-            echo "Configuring API..."
-            cd /root/ProjetLLIO2025/GestionnaireHoraire/API
+                        # Configuration API
+                        echo "Configuring API..."
+                        cd /root/ProjetLLIO2025/GestionnaireHoraire/API
 
-            cat > .env << EOF
+                        cat > .env << EOF
             DB_USER=${{ secrets.DB_USER }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_HOST=${{ secrets.DB_HOST }}
@@ -116,19 +115,19 @@ jobs:
             BASE_PATH=/llio-frontend
             EOF
 
-                        echo "Installing dependencies..."
-                        npm install
-
-                        echo "Building frontend..."
+             echo "Installing dependencies..."
+            npm install
+             echo "Building frontend..."
                         npm run build
 
-            # Démarrage services
-            echo "Starting services..."
-            sudo systemctl start llio-api.service || echo "Failed to start API service"
-            sudo systemctl start llio-frontend.service || echo "Failed to start Frontend service"
+                        # Démarrage services
+                        echo "Starting services..."
+                        sudo systemctl start llio-api.service || echo "Failed to start API service"
+                        sudo systemctl start llio-frontend.service || echo "Failed to start Frontend service"
 
-            echo "Checking services..."
-            sudo systemctl status llio-api.service --no-pager
-            sudo systemctl status llio-frontend.service --no-pager
+                        echo "Checking services..."
+                        sudo systemctl status llio-api.service --no-pager
+                        sudo systemctl status llio-frontend.service --no-pager
 
-            echo "Deployment completed successfully!"
+                        echo "Deployment completed successfully!"
+                       
