@@ -37,7 +37,7 @@ jobs:
 
               chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
 
-              # Fix pour ignorer la config MySQL système (bind-address)
+              # Fix mariadb-dump (ignore config système)
               sed -i 's|mariadb-dump.*|mariadb-dump --no-defaults --host=${{ secrets.DB_HOST }} --port=${{ secrets.DB_PORT }} \\|' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
 
               /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
@@ -49,8 +49,8 @@ jobs:
             # ARRÊT DES SERVICES
             # ========================
             echo "Stopping services..."
-            sudo systemctl stop llio-api.service || echo "API service not running"
-            sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
+            sudo systemctl stop llio-api || echo "API service not running"
+            sudo systemctl stop llio-frontend || echo "Frontend service not running"
 
             # ========================
             # SAUVEGARDE DES LOGS
@@ -128,13 +128,13 @@ jobs:
             echo "Configuring Frontend..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
 
-            cat > .env <<EOF
-            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
-            PUBLIC_ENABLED_TELEMETRY=true
-            PUBLIC_TRACE_URL=https://telemetry.edwrdl.ca/traces
-            PUBLIC_APPLICATION_NAME=LLIO_DEV
-            BASE_PATH=/llio-frontend
-            EOF
+              cat > .env <<EOF
+              VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+              PUBLIC_ENABLED_TELEMETRY=true
+              PUBLIC_TRACE_URL=https://telemetry.edwrdl.ca/traces
+              PUBLIC_APPLICATION_NAME=LLIO_DEV
+              BASE_PATH=/llio-frontend
+              EOF
 
             echo "Installing frontend dependencies..."
             npm install
@@ -146,14 +146,14 @@ jobs:
             # DÉMARRAGE DES SERVICES
             # ========================
             echo "Starting services..."
-            sudo systemctl start llio-api.service
-            sudo systemctl start llio-frontend.service
+            sudo systemctl start llio-api || echo "Failed to start API service"
+            sudo systemctl start llio-frontend || echo "Failed to start Frontend service"
 
             # ========================
             # VÉRIFICATION DES SERVICES
             # ========================
             echo "Checking services status..."
-            sudo systemctl status llio-api.service --no-pager
-            sudo systemctl status llio-frontend.service --no-pager
+            sudo systemctl status llio-api --no-pager
+            sudo systemctl status llio-frontend --no-pager
 
             echo "Deployment completed successfully!"
