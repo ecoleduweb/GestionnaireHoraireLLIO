@@ -19,7 +19,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           debug: true
 
-          sscript: |
+          script: |
             set -e
             echo "Starting deployment process..."
 
