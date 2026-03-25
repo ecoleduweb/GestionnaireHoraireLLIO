@@ -25,9 +25,9 @@ jobs:
 
             echo "Starting deployment process..."
 
-            # ========================
+            
             # BACKUP AVANT DÉPLOIEMENT
-            # ========================
+            
             echo "Preparing backup directory..."
             sudo mkdir -p /var/backups/mariadb
             sudo chmod 700 /var/backups/mariadb
@@ -45,16 +45,16 @@ jobs:
               echo "Backup script not found, skipping backup."
             fi
 
-            # ========================
+            
             # ARRÊT DES SERVICES
-            # ========================
+            
             echo "Stopping services..."
             sudo systemctl stop llio-api || echo "API service not running"
             sudo systemctl stop llio-frontend || echo "Frontend service not running"
 
-            # ========================
+            
             # SAUVEGARDE DES LOGS
-            # ========================
+           
             echo "Saving logs..."
             mkdir -p /root/logs
             DATE=$(date +'%Y-%m-%d_%H-%M')
@@ -63,9 +63,9 @@ jobs:
               cp /root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt /root/logs/logs_llio_$DATE.txt
             fi
 
-            # ========================
+            
             # MISE À JOUR DU PROJET
-            # ========================
+           
             echo "Refreshing project..."
             cd /root/ProjetLLIO2025
             rm -rf GestionnaireHoraire
@@ -73,9 +73,9 @@ jobs:
             echo "Cloning repository..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
 
-            # ========================
+           
             # CONFIGURATION BASE DE DONNÉES
-            # ========================
+            
             echo "Generating db.config..."
             mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup
 
@@ -91,9 +91,9 @@ jobs:
 
             chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
 
-            # ========================
+            
             # CONFIGURATION API
-            # ========================
+            
             echo "Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
 
@@ -122,19 +122,19 @@ jobs:
             /usr/local/go/bin/go mod tidy
             /usr/local/go/bin/go build -o app
 
-            # ========================
+            
             # CONFIGURATION FRONTEND
-            # ========================
+           
             echo "Configuring Frontend..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
 
-              cat > .env <<EOF
-              VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
-              PUBLIC_ENABLED_TELEMETRY=true
-              PUBLIC_TRACE_URL=https://telemetry.edwrdl.ca/traces
-              PUBLIC_APPLICATION_NAME=LLIO_DEV
-              BASE_PATH=/llio-frontend
-              EOF
+            cat > .env <<EOF
+            VITE_API_BASE_URL=***
+            PUBLIC_ENABLED_TELEMETRY=true
+            PUBLIC_TRACE_URL=https://telemetry.edwrdl.ca/traces
+            PUBLIC_APPLICATION_NAME=LLIO_***
+            BASE_PATH=/llio-frontend
+            EOF
 
             echo "Installing frontend dependencies..."
             npm install
@@ -142,16 +142,16 @@ jobs:
             echo "Building frontend..."
             npm run build
 
-            # ========================
+           
             # DÉMARRAGE DES SERVICES
-            # ========================
+            
             echo "Starting services..."
             sudo systemctl start llio-api || echo "Failed to start API service"
             sudo systemctl start llio-frontend || echo "Failed to start Frontend service"
 
-            # ========================
+           
             # VÉRIFICATION DES SERVICES
-            # ========================
+            
             echo "Checking services status..."
             sudo systemctl status llio-api --no-pager
             sudo systemctl status llio-frontend --no-pager
