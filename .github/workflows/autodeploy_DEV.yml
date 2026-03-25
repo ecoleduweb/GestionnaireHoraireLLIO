@@ -23,10 +23,16 @@ jobs:
             set -e
             echo "Starting deployment process..."
 
+            # FIX: on empêche mariadb-dump de lire les configs système (my.cnf)
+            # car elles contiennent des options incompatibles (ex: bind-address)
+            # et causent le crash du backup
+            # -> on ne modifie pas backup.sh, on change seulement l’environnement
+            export MYSQL_HOME=/dev/null
+            export MYSQL_READ_DEFAULT_FILE=/dev/null
+
             # Backup avant arrêt des services
             if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
               chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
-              sed -i 's/mariadb-dump/mariadb-dump --defaults-file=\/dev\/null/g' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
               /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
             fi
 
@@ -53,11 +59,11 @@ jobs:
             echo "Cloning repository..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
 
-              # Config backup
-              echo "Generating db.config..."
-              mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup
+            # Config backup
+            echo "Generating db.config..."
+            mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup
 
-              cat > /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config << EOF
+            cat > /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config << EOF
             DB_USER="${{ secrets.DB_USER }}"
             DB_PASS="${{ secrets.DB_PASSWORD }}"
             DB_NAME="${{ secrets.DB_NAME_RUN }}"
@@ -67,13 +73,13 @@ jobs:
             RETENTION_DAYS=365
             EOF
 
-              chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
+            chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
 
-              # Configuration API
-              echo "Configuring API..."
-              cd /root/ProjetLLIO2025/GestionnaireHoraire/API
+            # Configuration API
+            echo "Configuring API..."
+            cd /root/ProjetLLIO2025/GestionnaireHoraire/API
 
-              cat > .env << EOF
+            cat > .env << EOF
             DB_USER=${{ secrets.DB_USER }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_HOST=${{ secrets.DB_HOST }}
@@ -94,15 +100,15 @@ jobs:
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
             EOF
 
-              echo "Building API..."
-              /usr/local/go/bin/go mod tidy
-              /usr/local/go/bin/go build -o app
+            echo "Building API..."
+            /usr/local/go/bin/go mod tidy
+            /usr/local/go/bin/go build -o app
 
-              # Configuration Frontend
-              echo "Configuring Frontend..."
-              cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
+            # Configuration Frontend
+            echo "Configuring Frontend..."
+            cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
 
-              cat > .env << EOF
+            cat > .env << EOF
             VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
             PUBLIC_ENABLED_TELEMETRY=true
             PUBLIC_TRACE_URL=https://telemetry.edwrdl.ca/traces
@@ -110,19 +116,19 @@ jobs:
             BASE_PATH=/llio-frontend
             EOF
 
-              echo "Installing dependencies..."
-              npm install
+                        echo "Installing dependencies..."
+                        npm install
 
-              echo "Building frontend..."
-              npm run build
+                        echo "Building frontend..."
+                        npm run build
 
-              # Démarrage services
-              echo "Starting services..."
-              sudo systemctl start llio-api.service || echo "Failed to start API service"
-              sudo systemctl start llio-frontend.service || echo "Failed to start Frontend service"
+            # Démarrage services
+            echo "Starting services..."
+            sudo systemctl start llio-api.service || echo "Failed to start API service"
+            sudo systemctl start llio-frontend.service || echo "Failed to start Frontend service"
 
-              echo "Checking services..."
-              sudo systemctl status llio-api.service --no-pager
-              sudo systemctl status llio-frontend.service --no-pager
+            echo "Checking services..."
+            sudo systemctl status llio-api.service --no-pager
+            sudo systemctl status llio-frontend.service --no-pager
 
-              echo "Deployment completed successfully!"
+            echo "Deployment completed successfully!"
