@@ -21,10 +21,22 @@ jobs:
 
           script: |
             set -e
+            echo "Starting deployment process..."
 
-            sudo systemctl stop llio-api.service || true
-            sudo systemctl stop llio-frontend.service || true
+            # Backup avant arrêt des services
+            if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
+              chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+              sed -i 's/mariadb-dump/mariadb-dump --no-defaults/g' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+              /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+            fi
 
+            # Arrêt des services
+            echo "Stopping services..."
+            sudo systemctl stop llio-api.service || echo "API service not running"
+            sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
+
+            # Copie des logs
+            echo "Moving logs file..."
             mkdir -p /root/logs
             DATE=$(date +'%Y-%m-%d_%H-%M')
 
@@ -32,11 +44,17 @@ jobs:
               cp /root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt /root/logs/logs_llio_$DATE.txt
             fi
 
+            # Refresh projet
+            echo "Refreshing project directory..."
             cd /root/ProjetLLIO2025
             rm -rf GestionnaireHoraire
 
+            # Clone
+            echo "Cloning repository..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
 
+            # Config backup
+            echo "Generating db.config..."
             mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup
 
             cat > /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config << EOF
@@ -51,14 +69,8 @@ jobs:
 
             chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
 
-            if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
-              chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
-
-              sed -i 's/mariadb-dump/mariadb-dump --no-defaults/g' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
-
-              /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
-            fi
-
+            # Configuration API
+            echo "Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
 
             cat > .env << EOF
@@ -82,9 +94,12 @@ jobs:
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
             EOF
 
+            echo "Building API..."
             /usr/local/go/bin/go mod tidy
             /usr/local/go/bin/go build -o app
 
+            # Configuration Frontend
+            echo "Configuring Frontend..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
 
             cat > .env << EOF
@@ -95,13 +110,19 @@ jobs:
             BASE_PATH=/llio-frontend
             EOF
 
+            echo "Installing dependencies..."
             npm install
+
+            echo "Building frontend..."
             npm run build
 
-            sudo systemctl start llio-api.service || true
-            sudo systemctl start llio-frontend.service || true
+            # Démarrage services
+            echo "Starting services..."
+            sudo systemctl start llio-api.service || echo "Failed to start API service"
+            sudo systemctl start llio-frontend.service || echo "Failed to start Frontend service"
 
+            echo "Checking services..."
             sudo systemctl status llio-api.service --no-pager
             sudo systemctl status llio-frontend.service --no-pager
 
-            echo " Deployment completed!"
+            echo "Deployment completed successfully!"
