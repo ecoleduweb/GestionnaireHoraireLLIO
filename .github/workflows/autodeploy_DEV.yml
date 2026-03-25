@@ -9,6 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Deploy Full Application
         uses: appleboy/ssh-action@v0.1.10
@@ -17,15 +18,22 @@ jobs:
           key: ${{ secrets.DEV_SSH_KEY }}
           username: ${{ secrets.SSH_USERNAME }}
           debug: true
+
           script: |
             set -e
-            echo "Starting deployment process..."
+            echo "🚀 Starting deployment..."
 
-            echo "Stopping services..."
-            sudo systemctl stop llio-api.service || echo "API service not running"
-            sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
+            # ========================
+            # STOP SERVICES
+            # ========================
+            echo "🛑 Stopping services..."
+            sudo systemctl stop llio-api.service || echo "API not running"
+            sudo systemctl stop llio-frontend.service || echo "Frontend not running"
 
-            echo "Moving logs file..."
+            # ========================
+            # BACKUP LOGS
+            # ========================
+            echo "📁 Backup logs..."
             mkdir -p /root/logs
             DATE=$(date +'%Y-%m-%d_%H-%M')
 
@@ -33,19 +41,26 @@ jobs:
               cp /root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt /root/logs/logs_llio_$DATE.txt
             fi
 
-            echo "Refreshing project directory..."
+            # ========================
+            # CLEAN + CLONE
+            # ========================
+            echo "🧹 Cleaning project..."
             cd /root/ProjetLLIO2025
             rm -rf GestionnaireHoraire
 
-            echo "Cloning repository..."
+            echo "📥 Cloning repo..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
 
+            echo "📂 Listing files..."
             ls -la /root/ProjetLLIO2025/GestionnaireHoraire
 
-            mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/Backup
+            # ========================
+            # BACKUP CONFIG (FIXED PATH)
+            # ========================
+            mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup
 
-            echo "Generating db.config..."
-            cat > /root/ProjetLLIO2025/GestionnaireHoraire/Backup/db.config << EOF
+            echo "⚙️ Generating db.config..."
+            cat > /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config << EOF
             DB_USER="${{ secrets.DB_USER }}"
             DB_PASS="${{ secrets.DB_PASSWORD }}"
             DB_NAME="${{ secrets.DB_NAME_RUN }}"
@@ -57,64 +72,72 @@ jobs:
             RETENTION_DAYS="${{ secrets.DB_BACKUP_RETENTION_DAYS }}"
             EOF
 
-            chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/Backup/db.config
+            chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
 
-            chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/Backup/backup.sh
+            
+            if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
+              chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+              echo "💾 Running backup..."
+              /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+            else
+              echo "⚠️ backup.sh not found, skipping backup"
+            fi
 
-            echo "Running backup..."
-            /root/ProjetLLIO2025/GestionnaireHoraire/Backup/backup.sh
-
-            echo "Configuring API..."
+            
+            echo "⚙️ Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
 
             cat > .env << EOF
-                DB_USER=${{ secrets.DB_USER }}
-                DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                DB_HOST=${{ secrets.DB_HOST }}
-                DB_PORT=${{ secrets.DB_PORT }}
-                DB_NAME_RUN=${{ secrets.DB_NAME_RUN }}
-                DB_NAME_TEST=${{ secrets.DB_NAME_TEST }}
-                ENV=${{ secrets.ENV }}
-                AZUREAD_CLIENT_ID=${{ secrets.AZUREAD_CLIENT_ID }}
-                AZUREAD_CLIENT_SECRET=${{ secrets.AZUREAD_CLIENT_SECRET }}
-                AZUREAD_CALLBACK_URL=${{ secrets.AZUREAD_CALLBACK_URL }}
-                SESSION_MAX_AGE=${{ secrets.SESSION_MAX_AGE }}
-                SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-                JWT_DURATION=${{ secrets.JWT_DURATION }}
-                FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-                ENABLE_TRACING=true
-                TRACE_URL=https://telemetry.edwrdl.ca/traces
-                APPLICATION_NAME=API_LLIO_DEV
-                JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-                EOF
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_NAME_RUN=${{ secrets.DB_NAME_RUN }}
+            DB_NAME_TEST=${{ secrets.DB_NAME_TEST }}
+            ENV=${{ secrets.ENV }}
+            AZUREAD_CLIENT_ID=${{ secrets.AZUREAD_CLIENT_ID }}
+            AZUREAD_CLIENT_SECRET=${{ secrets.AZUREAD_CLIENT_SECRET }}
+            AZUREAD_CALLBACK_URL=${{ secrets.AZUREAD_CALLBACK_URL }}
+            SESSION_MAX_AGE=${{ secrets.SESSION_MAX_AGE }}
+            SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+            JWT_DURATION=${{ secrets.JWT_DURATION }}
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+            ENABLE_TRACING=true
+            TRACE_URL=https://telemetry.edwrdl.ca/traces
+            APPLICATION_NAME=API_LLIO_DEV
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            EOF
 
-                            echo "Building API..."
-                            /usr/local/go/bin/go mod tidy
-                            /usr/local/go/bin/go build -o app
+            echo "🔨 Building API..."
+            /usr/local/go/bin/go mod tidy
+            /usr/local/go/bin/go build -o app
 
-                            echo "Configuring Frontend..."
-                            cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
+           
+            echo "⚙️ Configuring Frontend..."
+            cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
 
-                            cat > .env << EOF
-                VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
-                PUBLIC_ENABLED_TELEMETRY=true
-                PUBLIC_TRACE_URL=https://telemetry.edwrdl.ca/traces
-                PUBLIC_APPLICATION_NAME=LLIO_DEV
-                BASE_PATH=/llio-frontend
-                EOF
+            cat > .env << EOF
+            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+            PUBLIC_ENABLED_TELEMETRY=true
+            PUBLIC_TRACE_URL=https://telemetry.edwrdl.ca/traces
+            PUBLIC_APPLICATION_NAME=LLIO_DEV
+            BASE_PATH=/llio-frontend
+            EOF
 
-                         echo "Installing dependencies..."
-                            npm install
+            echo "📦 Installing dependencies..."
+            npm install
 
-                            echo "Building frontend..."
-                            npm run build
+            echo "🏗️ Building frontend..."
+            npm run build
 
-                            echo "Starting services..."
-                            sudo systemctl start llio-api.service || echo "Failed to start API"
-                            sudo systemctl start llio-frontend.service || echo "Failed to start Frontend"
+            
+            echo "🚀 Starting services..."
+            sudo systemctl start llio-api.service || echo "❌ API failed"
+            sudo systemctl start llio-frontend.service || echo "❌ Frontend failed"
 
-                            echo "Checking services..."
-                            sudo systemctl status llio-api.service --no-pager
-                            sudo systemctl status llio-frontend.service --no-pager
+           
+            echo "📊 Checking services..."
+            sudo systemctl status llio-api.service --no-pager
+            sudo systemctl status llio-frontend.service --no-pager
 
-                            echo "Deployment completed successfully!"
+            echo "✅ Deployment completed!"
