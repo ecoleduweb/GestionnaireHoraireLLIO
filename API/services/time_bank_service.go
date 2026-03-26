@@ -9,7 +9,6 @@ import (
 )
 
 func SaveTimeBankConfig(userId int, configDTO DTOs.TimeBankConfigDTO) (*DTOs.TimeBankConfigDTO, error) {
-	// Conversion String -> Time (On force le mode LOCAL pour éviter les décalages)
 	layout := "2006-01-02"
 	startDate, _ := time.ParseInLocation(layout, configDTO.StartDate, time.UTC)
 
