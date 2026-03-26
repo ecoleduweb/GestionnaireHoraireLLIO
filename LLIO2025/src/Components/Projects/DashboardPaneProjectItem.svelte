@@ -1,9 +1,10 @@
 <script lang="ts">
   import { formatHours } from '../../utils/date';
-  import type { Project } from '../../Models/index.ts';
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   import { ChevronDown } from 'lucide-svelte';
+  import { getHoursColor } from '../../utils/displayUtils';
+  import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
 
   let { project } = $props();
 
@@ -13,46 +14,33 @@
   function toggle() {
     open = !open;
   }
-const calculateEmployeeTime = (employee: any, type: 'spent' | 'estimated'): number => {
-  return employee.categories.reduce(
-    (sum: number, cat: any) =>
-      sum + (type === 'spent' ? cat.timeSpent : cat.timeEstimated),
-    0
-  );
-};const calculateRemainingTime = (timeSpent: number, timeEstimated: number): number => {
-  return timeEstimated - timeSpent;
-};
-  function getProjectHoursColorBasedOnEstimatedHours(project: Project) {
-    if (project.totalTimeEstimated <= 0) {
-      return 'text-gray-400';
-    } else if (project.totalTimeSpent > project.totalTimeEstimated) {
-      return 'text-red-700';
-    } else {
-      return 'text-gray-700';
-    }
-  }
+
+
+
 </script>
 
 <div class="border-l-10 border-b" style="border-left-color: {project.color}">
   <div class="p-4">
 
-    <!-- HEADER CLIQUABLE -->
-      <button
-      type="button"
-      class="flex justify-between items-center w-full text-left"
-      onclick={toggle}
-      aria-expanded={open}
-    >
-      <div>
-        <span class="text-black">{project.uniqueId}</span>
-        <span class="text-gray-500 ml-2">|</span>
-        <span class="text-gray-500 ml-2">{project.name}</span>
-      </div>
+    <button
+  type="button"
+  class="flex justify-between items-center w-full text-left"
+  onclick={toggle}
+  aria-expanded={open}
+>
+  <div>
+    <span class="text-black">{project.uniqueId}</span>
+    <span class="text-gray-500 ml-2">|</span>
+    <span class="text-gray-500 ml-2">{project.name}</span>
+  </div>
 
-      <ChevronDown
+  <div class="flex items-center gap-2">
+   
+    <ChevronDown
       class="w-4 h-4 shrink-0 transition-transform duration-200 {open ? 'rotate-90' : ''}"
-      />
-    </button>
+    />
+  </div>
+</button>
 
 
     {#if open}
@@ -65,9 +53,9 @@ const calculateEmployeeTime = (employee: any, type: 'spent' | 'estimated'): numb
       <thead>
         <tr class="text-xs text-gray-400">
           <th class="text-left pl-4 font-normal w-1/4">Catégorie</th>
-          <th class="text-right font-normal w-1/4">Temps passé</th>
-          <th class="text-right font-normal w-1/4">Temps estimé</th>
-          <th class="text-right pr-4 font-normal w-1/4">Temps restant</th>
+          <th class="text-center font-normal w-1/4">Temps<br>passé</th>
+          <th class="text-center font-normal w-1/4">Temps<br>estimé</th>
+          <th class="text-right pr-4 font-normal w-1/4">Temps<br>restant</th>
         </tr>
       </thead>
 
@@ -85,19 +73,11 @@ const calculateEmployeeTime = (employee: any, type: 'spent' | 'estimated'): numb
 
   
             <td class="py-2 px-4 text-right text-gray-400">
-              {category.timeEstimated
-                ? formatHours(category.timeEstimated)
-                : '-'}
+              {formatHours(category.timeEstimated)}
             </td>
 
-            <td
-              class="py-2 pr-4  text-right"
-              class:text-red-500={category.timeEstimated - category.timeSpent < 0}
-              class:text-gray-400={category.timeEstimated - category.timeSpent >= 0}
-            >
-              {category.timeEstimated
-                ? formatHours(category.timeEstimated - category.timeSpent)
-                : '-'}
+           <td class="py-2 pr-4 text-right {getHoursColor(category.timeSpent, category.timeEstimated)}">
+              {formatHours(category.timeEstimated - category.timeSpent)}
             </td>
           </tr>
         {/each}
@@ -114,20 +94,15 @@ const calculateEmployeeTime = (employee: any, type: 'spent' | 'estimated'): numb
             {formatHours(calculateEmployeeTime(project.employees[selectedEmployee], 'estimated'))}
           </td>
 
-          <td
-            class="pr-4 text-right"
-            class:text-red-500={
-              calculateRemainingTime(
+          <td class="pr-4 text-right {getHoursColor(
+              calculateEmployeeTime(project.employees[selectedEmployee], 'spent'),
+              calculateEmployeeTime(project.employees[selectedEmployee], 'estimated')
+            )}">
+              {formatHours(
+                calculateRemainingTime(
                 calculateEmployeeTime(project.employees[selectedEmployee], 'spent'),
                 calculateEmployeeTime(project.employees[selectedEmployee], 'estimated')
-              ) < 0
-            }
-          >
-            {formatHours(
-              calculateRemainingTime(
-                calculateEmployeeTime(project.employees[selectedEmployee], 'spent'),
-                calculateEmployeeTime(project.employees[selectedEmployee], 'estimated')
-              )
+                )
             )}
           </td>
         </tr>

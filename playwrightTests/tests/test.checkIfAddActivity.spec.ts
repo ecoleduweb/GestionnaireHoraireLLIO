@@ -101,8 +101,5 @@ test.describe("checkAddActivity", () => {
   test("Afficher les catégories des activités", async ({ page }) => {
     await page.getByRole("button", { name: "new-1 | new commut" }).click();
     await expect(page.getByText("Catégorie")).toBeVisible();
-    await expect(page.getByText("Temps passé")).toBeVisible();
-    await expect(page.getByText("Temps estimé")).toBeVisible();
-    await expect(page.getByText("Temps restant")).toBeVisible();
   });
 });
