@@ -9,6 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Deploy Full Application
         uses: appleboy/ssh-action@v0.1.2
@@ -18,32 +19,15 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           debug: true
           script: |
+
             set -e
             echo "Starting deployment process..."
+            echo "Preparing backup using fresh repo..."
+            cd /root
+            rm -rf /root/backup-temp
+            git clone https://github.com/ecoleduweb/GestionnaireHoraire.git backup-temp
 
-            # Arrêt des services
-            echo "Stopping services..."
-            sudo systemctl stop llio-api.service || echo "API service not running"
-            sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
-
-            # Copie du fichier de logs
-            echo "Moving logs file to logs backup folder"
-            mkdir -p /root/logs
-            DATE=$(date +'%Y-%m-%d_%H-%M')
-            [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt" ] && cp /root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt /root/logs/logs_llio_$DATE.txt
-
-            # Suppression et récréation du répertoire GestionnaireHoraire
-            echo "Refreshing project directory..."
-            cd /root/ProjetLLIO2025
-            rm -rf GestionnaireHoraire
-
-            # Clone du projet
-            echo "Cloning fresh repository..."
-            git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
-
-            # Génération du db.config pour le script de backup déjà présent dans le repo
-            echo "Generating db.config..."
-            cat > /root/ProjetLLIO2025/GestionnaireHoraire/Backup/db.config << EOF
+            cat > /root/backup-temp/docs/Backup/db.config <<EOF
             DB_USER="${{ secrets.DB_USER }}"
             DB_PASS="${{ secrets.DB_PASSWORD }}"
             DB_NAME="${{ secrets.DB_NAME_RUN }}"
@@ -51,18 +35,34 @@ jobs:
             DB_HOST="${{ secrets.DB_HOST }}"
             DB_PORT="${{ secrets.DB_PORT }}"
 
-            BACKUP_DIR="${{ secrets.DB_BACKUP_DIR }}"
-            RETENTION_DAYS="${{ secrets.DB_BACKUP_RETENTION_DAYS }}"
+            BACKUP_DIR="/var/backups/mariadb"
+            RETENTION_DAYS=365
             EOF
 
-            chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/Backup/db.config
+            chmod 600 /root/backup-temp/docs/Backup/db.config
+            chmod +x /root/backup-temp/docs/Backup/backup.sh
 
-            # Rendre exécutable le script déjà dans le projet
-            chmod a+x /root/ProjetLLIO2025/GestionnaireHoraire/Backup/backup.sh
+            echo "Running backup..."
+            /root/backup-temp/docs/Backup/backup.sh
 
-            # Lancer le backup avec le script du projet
-            echo "Running backup script..."
-            /root/ProjetLLIO2025/GestionnaireHoraire/Backup/backup.sh
+          
+
+            # Arrêt des services
+            echo "Stopping services..."
+            sudo systemctl stop llio-api.service || echo "API service not running"
+            sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
+
+            
+            # Suppression et récréation du répertoire
+            echo "Refreshing project directory..."
+            cd /root/ProjetLLIO2025
+            rm -rf GestionnaireHoraire
+            
+            # Clonage du dépôt
+            echo "Copying project from backup-temp..."
+            rm -rf /root/ProjetLLIO2025/GestionnaireHoraire
+            cp -r /root/backup-temp /root/ProjetLLIO2025/GestionnaireHoraire
+
 
             # Configuration API
             echo "Configuring API..."
