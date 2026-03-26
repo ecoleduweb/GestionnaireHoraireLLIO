@@ -14,46 +14,65 @@
   const isProjectsActive = $derived(path === '/projects');
   const isAdminActive = $derived(path === '/administrator');
 
-  const baseClass = "px-4 py-2 text-sm transition-colors font-semibold"
-
-  const bouttonCalendarClass =  $derived(isCalendarActive ? `${baseClass} bg-[#014446] text-white rounded-l-lg` : `${baseClass} bg-gray-200 text-gray-900 hover:bg-[#014446] hover:text-white cursor-pointer rounded-l-lg`)
+  const bouttonCalendarClass =  $derived(isCalendarActive ? `btnBaseClass btnActiveBaseClass btnLeftRoundedClass` : ` btnBaseClass btnNotActiveBaseClass btnLeftRoundedClass `)
   const bouttonProjectsClass =  $derived( currentUserRole === UserRole.Admin
                                             ? (
                                                 isProjectsActive
-                                                  ? `${baseClass} bg-[#014446] text-white`
-                                                  : `${baseClass} bg-gray-200 text-gray-900 hover:bg-[#014446] hover:text-white cursor-pointer`
+                                                  ? ` btnBaseClass btnActiveBaseClass `
+                                                  : ` btnBaseClass btnNotActiveBaseClass `
                                               )
                                             : (
                                                 isProjectsActive
-                                                  ? `${baseClass} bg-[#014446] text-white rounded-r-lg`
-                                                  : `${baseClass} bg-gray-200 text-gray-900 hover:bg-[#014446] hover:text-white cursor-pointer rounded-r-lg`
+                                                  ? ` btnBaseClass btnActiveBaseClass btnRightRoundedClass `
+                                                  : ` btnBaseClass btnNotActiveBaseClass btnRightRoundedClass `
                                               ));
-  const bouttonAdminClass =  $derived(isAdminActive ? `${baseClass} bg-[#014446] text-white rounded-r-lg` : `${baseClass} bg-gray-200 text-gray-900 hover:bg-[#014446] hover:text-white cursor-pointer rounded-r-lg`)
+  const bouttonAdminClass =  $derived(isAdminActive ? ` btnBaseClass btnActiveBaseClass btnRightRoundedClass ` : ` btnBaseClass btnNotActiveBaseClass btnRightRoundedClass `)
 
 </script>
-      <div class="inline-flex rounded-md shadow-xs" role="group">
-        <button
-            onclick={() => goto('./calendar')}
-            type="button"
-            class={bouttonCalendarClass}
-        >
-            Calendrier
-        </button>
-        <button 
-            onclick={() => goto('./projects')}
-            type="button" 
-            class={bouttonProjectsClass}
-        >
-            Projets
-        </button>
-        {#if currentUserRole === UserRole.Admin}
-            <button 
-                onclick={() => goto('./administrator')}
-                type="button" 
-                class={bouttonAdminClass}
-            >
-                Admin
-            </button>
-        {/if}
-      </div>
+
+<div class="inline-flex rounded-md shadow-xs" role="group">
+  <button
+      onclick={() => goto('./calendar')}
+      type="button"
+      class={bouttonCalendarClass}
+  >
+      Calendrier
+  </button>
+  <button 
+      onclick={() => goto('./projects')}
+      type="button" 
+      class={bouttonProjectsClass}
+  >
+      Projets
+  </button>
+  {#if currentUserRole === UserRole.Admin}
+      <button 
+          onclick={() => goto('./administrator')}
+          type="button" 
+          class={bouttonAdminClass}
+      >
+          Admin
+      </button>
+  {/if}
+</div>
+
+<style>
+@reference "tailwindcss";
+.btnBaseClass
+{
+    @apply px-4 py-2 text-sm transition-colors font-semibold ;
+}
+.btnActiveBaseClass{
+    @apply bg-[#014446] text-white ;
+}
+.btnNotActiveBaseClass{
+    @apply bg-gray-200 text-gray-900 hover:bg-[#014446] hover:text-white cursor-pointer ;
+}
+.btnLeftRoundedClass{
+    @apply rounded-l-lg ;
+}
+.btnRightRoundedClass{
+    @apply rounded-r-lg ;
+}
+</style>
 
