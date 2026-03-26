@@ -20,32 +20,37 @@ func TestTimeBankScenarios(t *testing.T) {
 	loc := time.UTC
 	now := time.Now().In(loc)
 
-	// Lundi de la semaine courante
 	weekday := int(now.Weekday())
 	if weekday == 0 {
 		weekday = 7
 	}
 	mondayCurrentWeek := now.AddDate(0, 0, -(weekday - 1))
 
-	// Lundi de la semaine DERNIÈRE (Début période) - Mise à 00:00:00
 	mondayLastWeek := time.Date(mondayCurrentWeek.Year(), mondayCurrentWeek.Month(), mondayCurrentWeek.Day(), 0, 0, 0, 0, loc).AddDate(0, 0, -7)
 	startDateStr := mondayLastWeek.Format("2006-01-02")
 
 	// --- 2. Nettoyage initial ---
-	database.DB.Model(&doNotDeleteUser).Updates(map[string]interface{}{
+	if err := database.DB.Model(&doNotDeleteUser).Updates(map[string]interface{}{
 		"time_bank_start_date":     nil,
 		"time_bank_hours_per_week": nil,
 		"time_bank_balance_offset": 0,
-	})
+	}).Error; err != nil {
+		t.Fatalf("Erreur lors du nettoyage initial de doNotDeleteUser : %v", err)
+	}
 
 	// --- 3. Définition du Nettoyage AUTOMATIQUE ---
 	t.Cleanup(func() {
-		database.DB.Where("name LIKE ?", "Test TimeBank%").Delete(&DAOs.Activity{})
-		database.DB.Model(&doNotDeleteUser).Updates(map[string]interface{}{
+		if err := database.DB.Where("name LIKE ?", "Test TimeBank%").Delete(&DAOs.Activity{}).Error; err != nil {
+			t.Fatalf("Erreur lors de la suppression des activités de test (cleanup) : %v", err)
+		}
+
+		if err := database.DB.Model(&doNotDeleteUser).Updates(map[string]interface{}{
 			"time_bank_start_date":     nil,
 			"time_bank_hours_per_week": nil,
 			"time_bank_balance_offset": 0,
-		})
+		}).Error; err != nil {
+			t.Fatalf("Erreur lors de la réinitialisation de doNotDeleteUser (cleanup) : %v", err)
+		}
 	})
 
 	// --- SCÉNARIO 1 : Date Invalide lors de la config ---
