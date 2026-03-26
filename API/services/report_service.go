@@ -1,44 +1,52 @@
 package services
 
 import (
-	"bytes"
-	"encoding/csv"
 	"fmt"
+	"io"
 	"llio-api/repositories"
-	"strconv"
-	"time"
+
+	"github.com/xuri/excelize/v2"
 )
 
-func GenerateExportCSV(from string, to string) (*bytes.Buffer, error) {
-    activities, err := repositories.GetAllForExport(from, to)
+func GenerateExcel(w io.Writer) error {
+    activities, err := repositories.GetAllForExport()
     if err != nil {
-        return nil, fmt.Errorf("failed to fetch activities: %w", err)
+        return fmt.Errorf("failed to fetch activities: %w", err)
     }
 
-    buf := &bytes.Buffer{}
-    writer := csv.NewWriter(buf)
+	f := excelize.NewFile()
+	sheet := "Sheet1"
 
-    writer.Write([]string{
-        "activity_id", "activity_name", "activity_description", "start_time", "end_time",
-        "category_id", "category_name",
-        "project_id", "project_name",
-        "user_id", "user_fisrt_name", "user_last_name",
-    })
+	headers := []string{
+		"Prénom", "Nom",
+		"Projet", "Unique ID",
+		"Activité", "Catégorie",
+		"Date de début", "Date de fin","Temps passé (h)",
+	}
 
-    for _, a := range activities {
-        writer.Write([]string{
-            strconv.Itoa(a.Id), a.Name, a.Description,
-            a.StartDate.Format(time.RFC3339), a.EndDate.Format(time.RFC3339),
-            strconv.Itoa(a.CategoryId), a.Category.Name,
-            strconv.Itoa(a.ProjectId), a.Project.Name,
-            strconv.Itoa(a.UserId), a.User.FirstName, a.User.LastName,
-        })
-    }
+	for i, h := range headers {
+		col := string(rune('A' + i))
+		f.SetCellValue(sheet, col+"1", h)
+	}
 
-    writer.Flush()
-    if err := writer.Error(); err != nil {
-        return nil, fmt.Errorf("csv write failed: %w", err)
-    }
+	row := 2
 
-    return buf, nil
+	for _, a := range activities {
+		f.SetCellValue(sheet, fmt.Sprintf("A%d", row), a.User.FirstName)
+		f.SetCellValue(sheet, fmt.Sprintf("B%d", row), a.User.LastName)
+
+		f.SetCellValue(sheet, fmt.Sprintf("C%d", row), a.Project.Name)
+		f.SetCellValue(sheet, fmt.Sprintf("D%d", row), a.Project.UniqueId)
+
+		f.SetCellValue(sheet, fmt.Sprintf("E%d", row), a.Name)
+		f.SetCellValue(sheet, fmt.Sprintf("F%d", row), a.Category.Name)
+
+		f.SetCellValue(sheet, fmt.Sprintf("G%d", row), a.StartDate.Format("2006-01-02 15:04"))
+		f.SetCellValue(sheet, fmt.Sprintf("H%d", row), a.EndDate.Format("2006-01-02 15:04"))
+        f.SetCellValue(sheet, fmt.Sprintf("I%d", row), a.TimeSpent)
+
+		row++
+	}
+
+	return f.Write(w)
 }
