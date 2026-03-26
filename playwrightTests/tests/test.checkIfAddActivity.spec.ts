@@ -64,6 +64,27 @@ test.describe("checkAddActivity", () => {
     ).toBeVisible();
   });
 
+
+  test("ajouterUneActiviteAvecAutoFocusEtToucheEntree", async ({ page }) => {
+    const apiMocker = new ApiMocker(page);
+    await apiMocker
+        .addMocks([activityMocks.addActivitySuccessNoNameNoDescription])
+        .apply();
+
+    await page.getByText("Nouvelle activité").click();
+    await page.waitForTimeout(2000);
+
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Enter");
+
+    await expect(page.locator(".fc-event-title-container")).toBeVisible();
+    await expect(
+        page.locator(".fc-event").getByText("Projet sous-sol")
+    ).toBeVisible();
+  });
+
+
   test("ajouterUneActiviteCasErreur", async ({page}) => {
     const apiMocker = new ApiMocker(page);
     await apiMocker
