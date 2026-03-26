@@ -78,7 +78,7 @@ func TestDeleteActivityWrongUser(t *testing.T) {
 	var createdActivity DAOs.Activity
 	errDB := database.DB.Where("id = ? AND user_id = ?", idToDelete, doNotDeleteUser2.Id).First(&createdActivity).Error
 	assert.NoError(t, errDB)
-	assert.Equal(t, activityToDelete.Name, activityToDelete.Name)
+	assert.Equal(t, activityToDelete.Name, createdActivity.Name)
 }
 
 func TestDeleteNonExistentActivity(t *testing.T) {
