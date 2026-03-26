@@ -1,120 +1,68 @@
-name: Deployer LLIO DEV
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Deploy Full Application
-        uses: appleboy/ssh-action@v0.1.10
+        uses: appleboy/ssh-action@v0.1.2
         with:
           host: ${{ secrets.DEV_SSH_HOST }}
           key: ${{ secrets.DEV_SSH_KEY }}
           username: ${{ secrets.SSH_USERNAME }}
           debug: true
-
           script: |
+          
             set -e
-            set -o pipefail
-
             echo "Starting deployment process..."
 
-            
-            # BACKUP AVANT DÉPLOIEMENT
-            
-            echo "Preparing backup directory..."
-            sudo mkdir -p /var/backups/mariadb
-            sudo chmod 700 /var/backups/mariadb
-
-            if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh" ]; then
-              echo "Running database backup..."
-
-              chmod +x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
-
-              # Fix mariadb-dump (ignore config système)
-              sed -i 's|mariadb-dump.*|mariadb-dump --no-defaults --host=${{ secrets.DB_HOST }} --port=${{ secrets.DB_PORT }} \\|' /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
-
-              /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
-            else
-              echo "Backup script not found, skipping backup."
-            fi
-
-            
-            # ARRÊT DES SERVICES
-            
-            echo "Stopping services..."
-            sudo systemctl stop llio-api || echo "API service not running"
-            sudo systemctl stop llio-frontend || echo "Frontend service not running"
-
-            
-            # SAUVEGARDE DES LOGS
-           
-            echo "Saving logs..."
-            mkdir -p /root/logs
-            DATE=$(date +'%Y-%m-%d_%H-%M')
-
-            if [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt" ]; then
-              cp /root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt /root/logs/logs_llio_$DATE.txt
-            fi
-
-            
-            # MISE À JOUR DU PROJET
-           
-            echo "Refreshing project..."
-            cd /root/ProjetLLIO2025
-            rm -rf GestionnaireHoraire
-
-            echo "Cloning repository..."
-            git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
-
-           
-            # CONFIGURATION BASE DE DONNÉES
-            
+            # Génération du db.config pour le script de backup déjà présent dans le repo
             echo "Generating db.config..."
-            mkdir -p /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup
-
             cat > /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config <<EOF
             DB_USER="${{ secrets.DB_USER }}"
             DB_PASS="${{ secrets.DB_PASSWORD }}"
             DB_NAME="${{ secrets.DB_NAME_RUN }}"
+
             DB_HOST="${{ secrets.DB_HOST }}"
             DB_PORT="${{ secrets.DB_PORT }}"
-            BACKUP_DIR="/var/backups/mariadb"
-            RETENTION_DAYS=365
+
+            BACKUP_DIR="${{ secrets.DB_BACKUP_DIR }}"
+            RETENTION_DAYS="${{ secrets.DB_BACKUP_RETENTION_DAYS }}"
             EOF
 
             chmod 600 /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/db.config
 
-            
-            # CONFIGURATION API
-            
+            # Rendre exécutable le script déjà dans le projet
+            chmod a+x /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+
+            # Lancer le backup avec le script du projet
+            echo "Running backup script..."
+            /root/ProjetLLIO2025/GestionnaireHoraire/docs/Backup/backup.sh
+
+            # Arrêt des services
+            echo "Stopping services..."
+            sudo systemctl stop llio-api.service || echo "API service not running"
+            sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
+
+            # Copie du fichier de logs
+            echo "Moving logs file to logs backup folder"
+            mkdir -p /root/logs
+            DATE=$(date +'%Y-%m-%d_%H-%M')
+            [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt" ] && cp /root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt /root/logs/logs_llio_$DATE.txt
+
+            # Suppression et récréation du répertoire GestionnaireHoraire
+            echo "Refreshing project directory..."
+            cd /root/ProjetLLIO2025
+            rm -rf GestionnaireHoraire
+
+            # Clone du projet
+            echo "Cloning fresh repository..."
+            git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
+
+            # Configuration APICollapse commentComment on line L67antoineCegepRDL commented on Mar 25, 2026 antoineCegepRDLon Mar 25, 2026ContributorMore actionsTu as retiré les commentaires des  sections, tu peux les remettreReactWrite a replyResolve comment
             echo "Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
-
             cat > .env <<EOF
             DB_USER=${{ secrets.DB_USER }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            DB_NAME_RUN=${{ secrets.DB_NAME_RUN }}
-            DB_NAME_TEST=${{ secrets.DB_NAME_TEST }}
-            ENV=${{ secrets.ENV }}
-            AZUREAD_CLIENT_ID=${{ secrets.AZUREAD_CLIENT_ID }}
-            AZUREAD_CLIENT_SECRET=${{ secrets.AZUREAD_CLIENT_SECRET }}
-            AZUREAD_CALLBACK_URL=${{ secrets.AZUREAD_CALLBACK_URL }}
-            SESSION_MAX_AGE=${{ secrets.SESSION_MAX_AGE }}
-            SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-            JWT_DURATION=${{ secrets.JWT_DURATION }}
-            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-            ENABLE_TRACING=true
-            TRACE_URL=https://telemetry.edwrdl.ca/traces
-            APPLICATION_NAME=API_LLIO_DEV
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
             EOF
 
@@ -122,36 +70,24 @@ jobs:
             /usr/local/go/bin/go mod tidy
             /usr/local/go/bin/go build -o app
 
-            
-            # CONFIGURATION FRONTEND
-           
+            # Configuration Frontend
             echo "Configuring Frontend..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
-
             cat > .env <<EOF
-            VITE_API_BASE_URL=***
+            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
             PUBLIC_ENABLED_TELEMETRY=true
-            PUBLIC_TRACE_URL=https://telemetry.edwrdl.ca/traces
-            PUBLIC_APPLICATION_NAME=LLIO_***
             BASE_PATH=/llio-frontend
             EOF
 
-            echo "Installing frontend dependencies..."
+            echo "Building Frontend..."
             npm install
-
-            echo "Building frontend..."
             npm run build
 
-           
-            # DÉMARRAGE DES SERVICES
-            
+            # Démarrage des services
             echo "Starting services..."
             sudo systemctl start llio-api || echo "Failed to start API service"
             sudo systemctl start llio-frontend || echo "Failed to start Frontend service"
 
-           
-            # VÉRIFICATION DES SERVICES
-            
             echo "Checking services status..."
             sudo systemctl status llio-api --no-pager
             sudo systemctl status llio-frontend --no-pager
