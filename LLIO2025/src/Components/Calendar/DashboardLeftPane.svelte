@@ -62,7 +62,7 @@
     </div>
 
     <!-- Projets en cours -->
-    <div class="overflow-y-auto max-h-[calc(100vh-150px)]">
+    <div>
       {#each detailedProjects.filter(x => !x.isArchived) as project}
         <DashboardProjectItem project={project} />
       {/each}
