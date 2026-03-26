@@ -1,33 +1,35 @@
-<script lang="ts">
-  import { ReportApiService } from '../../services/ReportApiService';
+<script>
+  let loading = false;
 
-  const downloadReport = async () => {
+  async function handleDownload() {
+    loading = true;
     try {
-      const blob = await ReportApiService.getReportCsv();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const response = await fetch("http://localhost:8080/report/excel", {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Erreur lors du téléchargement");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'export.csv';
+      a.download = "activities.xlsx";
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Erreur lors du téléchargement du rapport :', err);
-      alert('Impossible de récupérer le rapport. Vérifiez la console.');
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      alert("Impossible de télécharger le fichier Excel");
+    } finally {
+      loading = false;
     }
   }
 </script>
 
-<style>
-  .btn-download {
-    padding: 0.6rem 1rem;
-    background-color: #2b6cb0;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-</style>
-
-<button class="btn-download" on:click={downloadReport}>Télécharger le rapport CSV</button>
+<button on:click={handleDownload} disabled={loading}>
+  {#if loading}Téléchargement...{:else}Exporter Excel{/if}
+</button>
