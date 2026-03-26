@@ -3,8 +3,6 @@ package repositories
 import (
 	"llio-api/database"
 	"llio-api/models/DAOs"
-
-	"gorm.io/gorm"
 )
 
 func FirstOrCreateUser(user *DAOs.User) (*DAOs.User, error) {
@@ -61,16 +59,16 @@ func UserHasProjects(userId int) (bool, error) {
 }
 
 func UpdateUserTimeBankConfig(user *DAOs.User) (*DAOs.User, error) {
-	tx := database.DB.Model(user).
-		Select("TimeBankStartDate", "TimeBankHoursPerWeek", "TimeBankBalanceOffset").
-		Updates(user)
+	tx := database.DB.Model(&DAOs.User{}).
+		Where("id = ?", user.Id).
+		Updates(map[string]interface{}{
+			"time_bank_start_date":     user.TimeBankStartDate,
+			"time_bank_hours_per_week": user.TimeBankHoursPerWeek,
+			"time_bank_balance_offset": user.TimeBankBalanceOffset,
+		})
 
 	if tx.Error != nil {
 		return nil, DBErrorManager(tx.Error)
-	}
-
-	if tx.RowsAffected == 0 {
-		return nil, DBErrorManager(gorm.ErrRecordNotFound)
 	}
 
 	return user, nil
