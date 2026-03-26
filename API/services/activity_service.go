@@ -179,3 +179,12 @@ func GetDetailedActivitiesFromRange(from string, to string, idUser int) ([]*DTOs
 
 	return detailedActivitiesDTOs, err
 }
+
+func GetActivitiesCountFromCategoryId(categoryId string) (int, error) {
+	activitiesCount, err := repositories.GetActivitiesCountFromCategoryId(categoryId)
+	if err != nil {
+		return 0, err
+	}
+
+	return activitiesCount, err
+}

@@ -49,3 +49,10 @@ func GetActivitiesFromRange(from string, to string, idUser int) ([]*DAOs.Activit
 		fromWithTime, toWithTime, idUser).Find(&activities).Error
 	return activities, DBErrorManager(err)
 }
+
+func GetActivitiesCountFromCategoryId(categoryId string) (int, error) {
+	var activities []*DAOs.Activity
+
+	err := database.DB.Where("category_id = ?", categoryId).Find(&activities).Error
+	return len(activities), DBErrorManager(err)
+}

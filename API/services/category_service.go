@@ -1,9 +1,11 @@
 package services
 
 import (
+	"llio-api/customs_errors"
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
 	"llio-api/repositories"
+	"log"
 
 	"github.com/jinzhu/copier"
 )
@@ -99,4 +101,21 @@ func GetCategoriesByProjectId(projectId string) ([]*DTOs.CategoryDTO, error) {
 	}
 
 	return categoriesDTOs, err
+}
+
+func DeleteCategory(id string) error {
+
+	activitiesCount, err := repositories.GetActivitiesCountFromCategoryId(id)
+
+	if err != nil {
+		log.Printf("Il y a eu une erreur dans la base de données.")
+		return err
+	}
+
+	if activitiesCount > 0 {
+		log.Printf("Il y a déjà une activité liée à cette catégorie.")
+		return customs_errors.ErrUserHasActivities
+	}
+
+	return repositories.DeleteCategory(id)
 }
