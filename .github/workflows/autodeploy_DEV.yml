@@ -53,26 +53,21 @@ jobs:
             sudo systemctl stop llio-api.service || echo "API service not running"
             sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
 
-            # Copie du fichier de logs
-            echo "Moving logs file to logs backup folder"
-            mkdir -p /root/logs
-            DATE=$(date +'%Y-%m-%d_%H-%M')
-            [ -f "/root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt" ] && cp /root/ProjetLLIO2025/GestionnaireHoraire/API/logs.txt /root/logs/logs_llio_$DATE.txt
-
+            
             # Suppression et récréation du répertoire
             echo "Refreshing project directory..."
             cd /root/ProjetLLIO2025
             rm -rf GestionnaireHoraire
-
-            # Clone du projet
+            
+            # Clonage du dépôt
             echo "Cloning fresh repository..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
+
 
             # Configuration API
             echo "Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
-
-            cat > .env <<EOF
+            cat > .env << EOF
             DB_USER=${{ secrets.DB_USER }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_HOST=${{ secrets.DB_HOST }}
@@ -100,8 +95,7 @@ jobs:
             # Configuration Frontend
             echo "Configuring Frontend..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
-
-            cat > .env <<EOF
+            cat > .env << EOF
             VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
             PUBLIC_ENABLED_TELEMETRY=true
             PUBLIC_TRACE_URL=https://telemetry.edwrdl.ca/traces

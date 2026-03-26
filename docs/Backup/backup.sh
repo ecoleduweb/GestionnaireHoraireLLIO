@@ -34,6 +34,7 @@ mariadb-dump \
   -u "$DB_USER" \
   -h "$DB_HOST" \
   --port="$DB_PORT" \
+  --protocol=TCP \
   --single-transaction \
   --routines \
   --triggers \
