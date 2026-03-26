@@ -76,7 +76,7 @@ func RegisterRoutes(r *gin.Engine) {
 	/*------------------- Report -------------------*/
 	reportGroup := r.Group("/report")
 	{
-		reportGroup.GET("/csv", middleware.RoleValidationMiddleware(enums.Administrator), controllers.ExportCSV)
+		reportGroup.GET("/excel", middleware.RoleValidationMiddleware(enums.Administrator), controllers.ExportExcel)
 	}
 
 }

@@ -12,11 +12,8 @@ import (
 
 var rapportSTR = "rapport"
 
-func ExportCSV(c *gin.Context) {
+func ExportExcel(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
-
-	from := c.DefaultQuery("from", "")
-	to := c.DefaultQuery("to", "")
 
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
@@ -35,13 +32,14 @@ func ExportCSV(c *gin.Context) {
 		return
 	}
 
-    buf, err := services.GenerateExportCSV(from, to)
+	// Headers download
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename=activities.xlsx")
+	c.Header("Transfer-Encoding", "chunked") // 🔥 important pour gros fichiers
+
+    err := services.GenerateExcel(c.Writer)
     if err != nil {
         handleError(c, err, rapportSTR)
         return
     }
-
-    c.Header("Content-Type", "text/csv")
-    c.Header("Content-Disposition", `attachment; filename="export.csv"`)
-    c.Data(http.StatusOK, "text/csv", buf.Bytes())
 }
