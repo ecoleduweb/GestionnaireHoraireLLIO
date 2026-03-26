@@ -1,3 +1,10 @@
+name: Deployer LLIO DEV
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
