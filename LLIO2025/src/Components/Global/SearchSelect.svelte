@@ -67,6 +67,7 @@
 
     function onKeydownHandler(e: KeyboardEvent) {
         if (selectedItem != null && !listOpen && (e.key === 'Enter' || e.key === 'Return')) {
+            e.preventDefault();
             onSubmit?.();
         }
     }
