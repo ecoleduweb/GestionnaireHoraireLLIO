@@ -26,7 +26,7 @@ fi
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Démarrage backup : $DB_NAME"
 
-# 4. Dump (Corrigé avec --no-defaults)
+# 4. Exécution du backup
 export MYSQL_PWD="$DB_PASS"
 
 mariadb-dump \
