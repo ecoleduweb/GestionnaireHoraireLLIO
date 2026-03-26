@@ -3,7 +3,6 @@
     import type { SelectItem } from "$lib/types/SelectItem";
     import type { FieldsSetter } from '@felte/core';
 
-
     type Props = {
         id?: string;
         name?: string;
@@ -12,6 +11,8 @@
         placeholder?: string;
         required?: boolean;
         setFields?: FieldsSetter<Record<string, unknown>>;
+        focused?: boolean;
+        onSubmit?: () => void;
     }
 
     let {
@@ -21,7 +22,9 @@
         selectedValue = $bindable(null),
         placeholder,
         required,
-        setFields
+        setFields,
+        focused = $bindable(false),
+        onSubmit,
     } : Props = $props();
 
     // L'item sélectionné, pour affichage de svelte-select
@@ -43,11 +46,37 @@
     function handleSelect(e: CustomEvent<SelectItem | null>) {
         const nextValue = e.detail?.value ?? null;
         selectedValue = nextValue;
-
         if (setFields && name) {
             setFields(name, nextValue);
         }
     }
+    // La partie suivante gère l'envoi du formulaire par la touche entrée du clavier.
+    //
+    // listOpen est utilisé pour détecter si la liste des options est ouverte. Ceci est utile pour détecter manuellement
+    // si un appui sur la touche Entrée sert à choisir une option ou pour envoyer le formulaire.
+    //
+    // inputElement est utilisé pour y insérer l'évènement de keydown pour détecter l'appui d'une touche, puisque le
+    // vrai on:keydown du svelte-select ne fonctionne pas.
+    //
+    // onKeydownHandle gère la logique de quelle touche a été appuyée et pourquoi, pour ensuite déclencher l'évènement
+    // onSubmit.
+    //
+    // L'effect attache le *event handler* au select.
+    let listOpen = $state(false);
+    let inputElement = $state<HTMLInputElement | null>(null);
+
+    function onKeydownHandler(e: KeyboardEvent) {
+        if (selectedItem != null && !listOpen && (e.key === 'Enter' || e.key === 'Return')) {
+            e.preventDefault();
+            onSubmit?.();
+        }
+    }
+
+    $effect(() => {
+        if (!inputElement) return;
+        inputElement.addEventListener('keydown', onKeydownHandler);
+        return () => inputElement?.removeEventListener('keydown', onKeydownHandler);
+    });
 </script>
 
 <Select
@@ -59,15 +88,17 @@
         on:clear={() => handleSelect(new CustomEvent('clear', { detail: null }))}
         {placeholder}
         {required}
+        bind:focused={focused}
+        bind:listOpen
+        bind:input={inputElement}
         --item-height="auto">
-        <div slot="item" class="item" let:item>
-            {item.label}
-        </div>
-        
+    <div slot="item" class="item" let:item>
+        {item.label}
+    </div>
 </Select>
 
 <style>
-.item {
+    .item {
         min-height: 16px;
         padding: 10px 0;
         line-height: 16px;
@@ -76,5 +107,4 @@
         white-space: pre-wrap;
         align-items: center;
     }
-    
 </style>
