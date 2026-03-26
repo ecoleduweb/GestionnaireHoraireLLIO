@@ -1,6 +1,7 @@
 package services
 
 import (
+	"llio-api/customs_errors"
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
 	"llio-api/repositories"
@@ -118,8 +119,18 @@ func UpdateActivity(activityDTO *DTOs.ActivityDTO) (*DTOs.DetailedActivityDTO, e
 	return GetDetailedActivityById(activityDAOUpdated.Id)
 }
 
-func DeleteActivity(id string) error {
-	return repositories.DeleteActivity(id)
+func DeleteActivity(id string, userId int) error {
+	canDelete, err := repositories.UserHasPermissionToInteractWithActivities(userId, id)
+
+	if err != nil {
+		return err
+	}
+
+	if canDelete {
+		return repositories.DeleteActivity(id)
+	}
+
+	return customs_errors.ErrUserForbidden
 }
 
 func GetActivitiesFromRange(from string, to string, idUser int) ([]*DTOs.ActivityDTO, error) {

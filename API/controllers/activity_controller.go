@@ -114,7 +114,6 @@ func UpdateActivity(c *gin.Context) {
 		return
 	}
 
-
 	c.JSON(http.StatusOK, gin.H{"updated_activity": updatedActivityDTO})
 
 }
@@ -122,6 +121,13 @@ func UpdateActivity(c *gin.Context) {
 func DeleteActivity(c *gin.Context) {
 
 	id := c.Param("id")
+
+	user, shouldReturn := getUserFromContext(c)
+
+	if shouldReturn {
+		return
+	}
+
 	activity, err := services.GetActivityById(id)
 	if err != nil {
 		handleError(c, err, activiteSTR)
@@ -133,7 +139,7 @@ func DeleteActivity(c *gin.Context) {
 		return
 	}
 
-	err = services.DeleteActivity(id)
+	err = services.DeleteActivity(id, user.Id)
 	if err != nil {
 		handleError(c, err, activiteSTR)
 		return
@@ -170,6 +176,7 @@ func GetDetailedActivitiesFromRange(c *gin.Context) {
 	to := c.Query("endDate")
 
 	user, shouldReturn := getUserFromContext(c)
+
 	if shouldReturn {
 		return
 	}
