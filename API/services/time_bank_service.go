@@ -4,7 +4,6 @@ import (
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
 	"llio-api/repositories"
-	"math"
 	"time"
 )
 
@@ -83,10 +82,9 @@ func GetTimeBankBalance(userId int) (*DTOs.TimeBankBalanceDTO, error) {
 
 	balance := (totalWorkedHours + offset) - totalExpectedHours
 
-	finalBalance := math.Round(balance*100) / 100
 	return &DTOs.TimeBankBalanceDTO{
 		IsConfigured: true,
-		TimeInBank:   &finalBalance,
+		TimeInBank:   &balance,
 	}, nil
 }
 
