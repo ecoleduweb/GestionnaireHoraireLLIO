@@ -61,8 +61,6 @@ func UserHasProjects(userId int) (bool, error) {
 
 func UserHasPermissionToInteractWithActivities(userId int, id string) (bool, error) {
 	var count int64
-	var test DAOs.Activity
-	database.DB.Model(&DAOs.Activity{}).Where("id = ? AND user_id = ?", id, userId).First(&test)
 
 	err := database.DB.Model(&DAOs.Activity{}).Where("id = ? AND user_id = ?", id, userId).Count(&count).Error
 	if err != nil {
