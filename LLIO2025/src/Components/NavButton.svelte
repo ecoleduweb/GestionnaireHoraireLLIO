@@ -15,10 +15,7 @@
   const isAdminActive = $derived(path === '/administrator');
 
   const bouttonCalendarClass =  $derived(isCalendarActive ? `btnActiveBaseClass` : `btnNotActiveBaseClass`)
-  const bouttonProjectsClass =  $derived( currentUserRole === UserRole.Admin
-                                            ? ( isProjectsActive ? `btnActiveBaseClass` : `btnNotActiveBaseClass`)
-                                            : ( isProjectsActive ? `btnActiveBaseClass btnRightRoundedClass` : `btnNotActiveBaseClass btnRightRoundedClass`)
-                                        );
+  const bouttonProjectsClass =  $derived(isProjectsActive ? `btnActiveBaseClass` : `btnNotActiveBaseClass`);
   const bouttonAdminClass =  $derived(isAdminActive ? `btnActiveBaseClass` : `btnNotActiveBaseClass`)
 
 </script>
@@ -27,7 +24,7 @@
   <button
       onclick={() => goto('./calendar')}
       type="button"
-      class={`btnBaseClass btnLeftRoundedClass ${bouttonCalendarClass}`}
+      class={`btnBaseClass  ${bouttonCalendarClass}`}
   >
       Calendrier
   </button>
@@ -42,7 +39,7 @@
       <button 
           onclick={() => goto('./administrator')}
           type="button" 
-          class={`btnBaseClass btnRightRoundedClass ${bouttonAdminClass}`}
+          class={`btnBaseClass  ${bouttonAdminClass}`}
       >
           Admin
       </button>
@@ -61,10 +58,10 @@
 .btnNotActiveBaseClass{
     @apply bg-gray-200 text-gray-900 hover:bg-[#014446] hover:text-white cursor-pointer ;
 }
-.btnLeftRoundedClass{
+:global(button:first-child){
     @apply rounded-l-lg ;
 }
-.btnRightRoundedClass{
+:global(button:last-child){
     @apply rounded-r-lg ;
 }
 </style>
