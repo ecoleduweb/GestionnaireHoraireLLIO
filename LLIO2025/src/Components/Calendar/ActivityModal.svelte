@@ -395,7 +395,9 @@
                 placeholder="Sélectionner un projet"
                 setFields={setFields}
                 bind:focused={isProjectSelectFocused}
-                onSubmit={()=>{handleSubmit()}}
+                onSubmit={()=>{
+                  const form = document.querySelector('form');
+                  form?.requestSubmit();}}
                 required
               />
               {#if $errors.projectId}
