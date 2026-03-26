@@ -119,8 +119,8 @@ func UpdateActivity(activityDTO *DTOs.ActivityDTO) (*DTOs.DetailedActivityDTO, e
 	return GetDetailedActivityById(activityDAOUpdated.Id)
 }
 
-func DeleteActivity(id string, userId int) error {
-	canDelete, err := repositories.UserHasPermissionToInteractWithActivities(userId, id)
+func DeleteActivity(id string, user *DTOs.UserDTO) error {
+	canDelete, err := repositories.UserHasPermissionToInteractWithActivities(user, id)
 
 	if err != nil {
 		return err

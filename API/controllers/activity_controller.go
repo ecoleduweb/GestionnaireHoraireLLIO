@@ -139,7 +139,7 @@ func DeleteActivity(c *gin.Context) {
 		return
 	}
 
-	err = services.DeleteActivity(id, user.Id)
+	err = services.DeleteActivity(id, user)
 	if err != nil {
 		handleError(c, err, activiteSTR)
 		return

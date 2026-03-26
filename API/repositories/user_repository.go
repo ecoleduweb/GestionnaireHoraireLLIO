@@ -3,6 +3,8 @@ package repositories
 import (
 	"llio-api/database"
 	"llio-api/models/DAOs"
+	"llio-api/models/DTOs"
+	"llio-api/models/enums"
 )
 
 func FirstOrCreateUser(user *DAOs.User) (*DAOs.User, error) {
@@ -59,10 +61,14 @@ func UserHasProjects(userId int) (bool, error) {
 	return count > 0, nil
 }
 
-func UserHasPermissionToInteractWithActivities(userId int, id string) (bool, error) {
+func UserHasPermissionToInteractWithActivities(user *DTOs.UserDTO, id string) (bool, error) {
 	var count int64
 
-	err := database.DB.Model(&DAOs.Activity{}).Where("id = ? AND user_id = ?", id, userId).Count(&count).Error
+	if user.Role == enums.Administrator {
+		return true, nil
+	}
+
+	err := database.DB.Model(&DAOs.Activity{}).Where("id = ? AND user_id = ?", id, user.Id).Count(&count).Error
 	if err != nil {
 		return false, DBErrorManager(err)
 	}
