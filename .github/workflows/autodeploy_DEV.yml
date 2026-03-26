@@ -64,8 +64,7 @@ jobs:
             echo "Cloning fresh repository..."
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
 
-            # Configuration APICollapse commentComment on line L67antoineCegepRDL commented on Mar 25, 2026 antoineCegepRDLon Mar 25, 2026ContributorMore actionsTu as retiré les commentaires des  sections, tu peux les remettreReactWrite a replyResolve comment
-            echo "Configuring API..."
+            # Configuration APICollapse echo "Configuring API..."
             cd /root/ProjetLLIO2025/GestionnaireHoraire/API
             cat > .env <<EOF
             DB_USER=${{ secrets.DB_USER }}
