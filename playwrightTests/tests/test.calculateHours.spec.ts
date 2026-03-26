@@ -8,6 +8,10 @@ import { categoryMocks } from "../Helper/Mocks/category.mock";
 test.describe("calcul d'heures", () => {
   test.beforeEach(async ({ page }) => {
     const apiMocker = new ApiMocker(page);
+    await page.clock.install({
+      time: new Date("2025-03-22T08:00:00-04:00"),
+    });
+
     await apiMocker
       .addMocks([
         userMocks.userMeSuccess,
@@ -16,8 +20,10 @@ test.describe("calcul d'heures", () => {
         categoryMocks.getCategoriesByProjectSuccess,
       ])
       .apply();
+
     await page.goto("http://localhost:5002/calendar");
   });
+});
 
  test("calcul d'heures success", async ({ page }) => {
   const apiMocker = new ApiMocker(page);
@@ -37,5 +43,4 @@ test.describe("calcul d'heures", () => {
   await page.getByText("Enregistrer").click();
 
   await expect(page.getByTestId("total-hours")).toHaveText("40");
-});
 });

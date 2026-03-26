@@ -32,13 +32,17 @@
     }
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (values: TimeBankConfig) => {
     if (isSubmitting) return;
 
     try {
       isSubmitting = true;
 
-      await UserApiService.saveTimeBankConfig(config);
+      await UserApiService.saveTimeBankConfig({
+        startDate: values.startDate,
+        hoursPerWeek: Number(values.hoursPerWeek),
+        offset: Number(values.offset)
+      });
 
       onSave();
       onClose();
