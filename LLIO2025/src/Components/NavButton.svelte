@@ -14,19 +14,12 @@
   const isProjectsActive = $derived(path === '/projects');
   const isAdminActive = $derived(path === '/administrator');
 
-  const bouttonCalendarClass =  $derived(isCalendarActive ? `btnBaseClass btnActiveBaseClass btnLeftRoundedClass` : ` btnBaseClass btnNotActiveBaseClass btnLeftRoundedClass `)
+  const bouttonCalendarClass =  $derived(isCalendarActive ? `btnActiveBaseClass` : `btnNotActiveBaseClass`)
   const bouttonProjectsClass =  $derived( currentUserRole === UserRole.Admin
-                                            ? (
-                                                isProjectsActive
-                                                  ? ` btnBaseClass btnActiveBaseClass `
-                                                  : ` btnBaseClass btnNotActiveBaseClass `
-                                              )
-                                            : (
-                                                isProjectsActive
-                                                  ? ` btnBaseClass btnActiveBaseClass btnRightRoundedClass `
-                                                  : ` btnBaseClass btnNotActiveBaseClass btnRightRoundedClass `
-                                              ));
-  const bouttonAdminClass =  $derived(isAdminActive ? ` btnBaseClass btnActiveBaseClass btnRightRoundedClass ` : ` btnBaseClass btnNotActiveBaseClass btnRightRoundedClass `)
+                                            ? ( isProjectsActive ? `btnActiveBaseClass` : `btnNotActiveBaseClass`)
+                                            : ( isProjectsActive ? `btnActiveBaseClass btnRightRoundedClass` : `btnNotActiveBaseClass btnRightRoundedClass`)
+                                        );
+  const bouttonAdminClass =  $derived(isAdminActive ? `btnActiveBaseClass` : `btnNotActiveBaseClass`)
 
 </script>
 
@@ -34,14 +27,14 @@
   <button
       onclick={() => goto('./calendar')}
       type="button"
-      class={bouttonCalendarClass}
+      class={`btnBaseClass btnLeftRoundedClass ${bouttonCalendarClass}`}
   >
       Calendrier
   </button>
   <button 
       onclick={() => goto('./projects')}
       type="button" 
-      class={bouttonProjectsClass}
+      class={`btnBaseClass ${bouttonProjectsClass}`}
   >
       Projets
   </button>
@@ -49,7 +42,7 @@
       <button 
           onclick={() => goto('./administrator')}
           type="button" 
-          class={bouttonAdminClass}
+          class={`btnBaseClass btnRightRoundedClass ${bouttonAdminClass}`}
       >
           Admin
       </button>
