@@ -26,7 +26,7 @@ fi
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Démarrage backup : $DB_NAME"
 
-# 4. Exécution du backup
+# 4. Mot de passe passé via variable temporaire sécurisée
 export MYSQL_PWD="$DB_PASS"
 
 mariadb-dump \
