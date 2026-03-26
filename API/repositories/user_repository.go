@@ -61,14 +61,14 @@ func UserHasProjects(userId int) (bool, error) {
 	return count > 0, nil
 }
 
-func UserHasPermissionToInteractWithActivities(user *DTOs.UserDTO, id string) (bool, error) {
+func UserHasPermissionToInteractWithActivity(user *DTOs.UserDTO, activityId string) (bool, error) {
 	var count int64
 
 	if user.Role == enums.Administrator {
 		return true, nil
 	}
 
-	err := database.DB.Model(&DAOs.Activity{}).Where("id = ? AND user_id = ?", id, user.Id).Count(&count).Error
+	err := database.DB.Model(&DAOs.Activity{}).Where("id = ? AND user_id = ?", activityId, user.Id).Count(&count).Error
 	if err != nil {
 		return false, DBErrorManager(err)
 	}

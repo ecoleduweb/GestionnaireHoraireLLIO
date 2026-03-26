@@ -120,7 +120,7 @@ func UpdateActivity(activityDTO *DTOs.ActivityDTO) (*DTOs.DetailedActivityDTO, e
 }
 
 func DeleteActivity(id string, user *DTOs.UserDTO) error {
-	canDelete, err := repositories.UserHasPermissionToInteractWithActivities(user, id)
+	canDelete, err := repositories.UserHasPermissionToInteractWithActivity(user, id)
 
 	if err != nil {
 		return err
