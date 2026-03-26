@@ -48,7 +48,7 @@ func TestDeleteActivity(t *testing.T) {
 	assert.True(t, errors.Is(errDB, gorm.ErrRecordNotFound))
 }
 
-func TestDeleteActivityVulnFix(t *testing.T) {
+func TestDeleteActivityWrongUser(t *testing.T) {
 
 	activityToDelete := DTOs.ActivityDTO{
 		Name:        "Activity to Delete",
