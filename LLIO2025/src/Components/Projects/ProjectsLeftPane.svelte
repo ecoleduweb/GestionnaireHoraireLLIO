@@ -7,6 +7,7 @@
   import ProjectModal from './ProjectModal.svelte';
   import type { Project, UserInfo } from '../../Models';
   import { UserRole } from '$lib/types/enums';
+  import NavButton from '../NavButton.svelte';
   import { ProjectApiService } from '../../services/ProjectApiService';
   import ConfirmationModal from '../ConfirmationModal.svelte';
 
@@ -61,32 +62,17 @@
   <!-- Contenu du dashboard -->
   <div class="dashboard-content">
     <!-- Éléments du dashboard -->
-    <div class="dashboard-item">
-      <div class="inline-flex rounded-md shadow-xs" role="group">
-        <button
-          onclick={() => goto('./calendar')}
-          type="button"
-          class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-l-lg hover:bg-[#014446] hover:text-white cursor-pointer"
-        >
-          Calendrier
-        </button>
-        <button
-          type="button"
-          class="px-4 py-2 text-sm transition-colors font-semibold bg-[#014446] text-white rounded-r-lg"
-        >
-          Projets
-        </button>
-      </div>
-
-      {#if currentUser.role == UserRole.Admin || currentUser.role == UserRole.ProjectManager} 
+    <div class="dashboard-item flex-col">  
+      <NavButton currentUserRole = {currentUser.role} />
+      {#if currentUser.role === UserRole.Admin || currentUser.role === UserRole.ProjectManager} 
         <button
           type="button"
           id="new-project-button"
           title="Créer un nouveau projet"
           onclick={handleNewProject}
-          class="ml-12 px-3 py-2 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-lg hover:bg-[#014446] hover:text-white cursor-pointer"
+          class="mt-4 px-3 py-2 flex items-center gap-2 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-lg hover:bg-[#014446] hover:text-white cursor-pointer"
         >
-          <Plus class="h-4 w-4" />
+          <Plus class="h-4 w-4" /> Créer un nouveau projet 
         </button>
       {/if}
     </div>
