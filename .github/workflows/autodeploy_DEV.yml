@@ -1,3 +1,23 @@
+name: Deployer LLIO DEV
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Full Application
+        uses: appleboy/ssh-action@v0.1.2
+        with:
+          host: ${{ secrets.DEV_SSH_HOST }}
+          key: ${{ secrets.DEV_SSH_KEY }}
+          username: ${{ secrets.SSH_USERNAME }}
+          debug: true
+
 script: |
   
   set -e
