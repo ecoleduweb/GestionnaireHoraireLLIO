@@ -54,13 +54,10 @@ const calculateEmployeeTime = (employee: any, type: 'spent' | 'estimated'): numb
       />
     </button>
 
-   <div class="flex gap-2 mt-2">
-
-</div>
 
     {#if open}
   <div
-    class="px-2 pb-2 bg-white text-sm overflow-hidden"
+    class="px-2 pb-2 bg-white text-sm "
     transition:slide={{ duration: 300, easing: quintOut }}
   >
     <table class="w-full border-separate border-spacing-y-1">

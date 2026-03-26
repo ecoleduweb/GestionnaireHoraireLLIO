@@ -32,14 +32,17 @@ test.describe("checkAddActivity", () => {
 
     await page.getByPlaceholder("Nom de l'activité...").fill("asd");
     await page.locator("#activity-description").fill("asd");
-    await page.getByPlaceholder('Sélectionner un projet').click();
-    await page.getByText(/^Projet sous-sol\b/).first().click();
+    await page.getByPlaceholder("Sélectionner un projet").click();
+    await page
+      .getByText(/^Projet sous-sol\b/)
+      .first()
+      .click();
     await page.locator("#activity-category-search").first().click();
     await page.locator(".category-item").first().click();
     await page.getByText("Créer").click();
     await page.waitForSelector(".fc-event", { state: "visible" });
     await expect(
-      page.locator(".fc-event").getByText("Projet sous-sol")
+      page.locator(".fc-event").getByText("Projet sous-sol"),
     ).toBeVisible();
   });
 
@@ -52,37 +55,54 @@ test.describe("checkAddActivity", () => {
     await page.getByText("Nouvelle activité").click();
     await page.waitForTimeout(2000);
 
-    await page.getByPlaceholder('Sélectionner un projet').click();
-    await page.getByText(/^Projet sous-sol\b/).first().click();
+    await page.getByPlaceholder("Sélectionner un projet").click();
+    await page
+      .getByText(/^Projet sous-sol\b/)
+      .first()
+      .click();
     await page.locator("#activity-category-search").first().click();
     await page.locator(".category-item").first().click();
     await page.getByText("Créer").click();
 
     await expect(page.locator(".fc-event-title-container")).toBeVisible();
     await expect(
-      page.locator(".fc-event").getByText("Projet sous-sol")
+      page.locator(".fc-event").getByText("Projet sous-sol"),
     ).toBeVisible();
   });
 
-  test("ajouterUneActiviteCasErreur", async ({page}) => {
+  test("ajouterUneActiviteCasErreur", async ({ page }) => {
     const apiMocker = new ApiMocker(page);
     await apiMocker
-        .addMocks([activityMocks.addActivitySuccessNoNameNoDescription])
-        .apply();
+      .addMocks([activityMocks.addActivitySuccessNoNameNoDescription])
+      .apply();
 
     await page.getByText("Nouvelle activité").click();
     await page.waitForTimeout(2000);
     await page.getByText("Créer").click();
-    await expect(page.locator("span:has-text('Veuillez sélectionner un projet')")).toBeVisible();
+    await expect(
+      page.locator("span:has-text('Veuillez sélectionner un projet')"),
+    ).toBeVisible();
 
-    await page.getByPlaceholder('Sélectionner un projet').click();
-    await page.getByText(/^Projet sous-sol\b/).first().click();
-    await expect(page.locator("span:has-text('Veuillez sélectionner un projet')")).not.toBeVisible();
+    await page.getByPlaceholder("Sélectionner un projet").click();
+    await page
+      .getByText(/^Projet sous-sol\b/)
+      .first()
+      .click();
+    await expect(
+      page.locator("span:has-text('Veuillez sélectionner un projet')"),
+    ).not.toBeVisible();
     await page.getByText("Créer").click();
 
     await expect(page.locator(".fc-event-title-container")).toBeVisible();
     await expect(
-        page.locator(".fc-event").getByText("Projet sous-sol")
+      page.locator(".fc-event").getByText("Projet sous-sol"),
     ).toBeVisible();
-  })
+  });
+  test("Afficher les catégories des activités", async ({ page }) => {
+    await page.getByRole("button", { name: "new-1 | new commut" }).click();
+    await expect(page.getByText("Catégorie")).toBeVisible();
+    await expect(page.getByText("Temps passé")).toBeVisible();
+    await expect(page.getByText("Temps estimé")).toBeVisible();
+    await expect(page.getByText("Temps restant")).toBeVisible();
+  });
 });
