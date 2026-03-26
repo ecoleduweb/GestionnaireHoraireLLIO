@@ -9,7 +9,7 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-func VerifyCreateActivityJSON(activityDTO *DTOs.ActivityDTO) []DTOs.FieldErrorDTO {
+func VerifyActivityJSON(activityDTO *DTOs.ActivityDTO) []DTOs.FieldErrorDTO {
 	var errors []DTOs.FieldErrorDTO
 
 	if activityDTO.ProjectId == 0 {

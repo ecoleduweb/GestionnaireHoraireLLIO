@@ -25,15 +25,18 @@ import (
 
 // variables globales utilisées pour led tests
 var (
-	router              *gin.Engine
-	w                   *httptest.ResponseRecorder
-	doNotDeleteUser     DAOs.User
-	pleaseDeleteUser    DAOs.User
-	pleaseDeleteProject DAOs.Project
-	doNotDeleteCategory DAOs.Category
-	doNotDeleteProject  DAOs.Project
-	doNotDeleteProject2 DAOs.Project
-	doNotDeleteActivity DAOs.Activity
+	router               *gin.Engine
+	w                    *httptest.ResponseRecorder
+	doNotDeleteUser      DAOs.User
+	doNotDeleteUser2     DAOs.User
+	doNotDeleteUser3     DAOs.User
+	pleaseDeleteUser     DAOs.User
+	pleaseDeleteProject  DAOs.Project
+	doNotDeleteCategory  DAOs.Category
+	doNotDeleteProject   DAOs.Project
+	doNotDeleteProject2  DAOs.Project
+	doNotDeleteActivity  DAOs.Activity
+	doNotDeleteCoManager DAOs.CoManager
 )
 
 // Global JWT token for authentication in tests
@@ -41,9 +44,9 @@ var accessToken string
 
 // Create and set JWT token for tests
 
-func createAndSetAccessToken(role enums.UserRole) {
+func createAndSetAccessToken(role enums.UserRole, userId int) {
 	// Create a JWT token for the test user
-	token, err := services.CreateJWTToken(doNotDeleteUser.Id, doNotDeleteUser.Email, doNotDeleteUser.FirstName, doNotDeleteUser.LastName, time.Now().Add(time.Hour), role)
+	token, err := services.CreateJWTToken(userId, doNotDeleteUser.Email, doNotDeleteUser.FirstName, doNotDeleteUser.LastName, time.Now().Add(time.Hour), role)
 	if err != nil {
 		log.Fatalf("Failed to create JWT token: %v", err)
 	}
@@ -72,6 +75,7 @@ func prepareTestData() {
 		FirstName: "John",
 		LastName:  "Doe",
 		Email:     "john.doe@example.com",
+		Role:      enums.Administrator,
 	}
 	database.DB.Create(&testUser)
 	doNotDeleteUser = testUser
@@ -83,6 +87,24 @@ func prepareTestData() {
 	}
 	database.DB.Create(&testUser2)
 	pleaseDeleteUser = testUser2
+	testUser3 := DAOs.User{
+		Id:        3,
+		FirstName: "Jane",
+		LastName:  "Doe",
+		Email:     "jane.doe@example.com",
+		Role:      enums.ProjectManager,
+	}
+	database.DB.Create(&testUser3)
+	doNotDeleteUser2 = testUser3
+	testUser4 := DAOs.User{
+		Id:        4,
+		FirstName: "Jane",
+		LastName:  "Doe",
+		Email:     "jane.doe@example.com",
+		Role:      enums.ProjectManager,
+	}
+	database.DB.Create(&testUser4)
+	doNotDeleteUser3 = testUser4
 	testProject := DAOs.Project{
 		Id:             1, // Assurez-vous que l'ID est unique pour le test
 		UniqueId:       "Interne-1234",
@@ -149,6 +171,13 @@ func prepareTestData() {
 	}
 	database.DB.Create(&testActivity)
 	doNotDeleteActivity = testActivity
+
+	testCoManager := DAOs.CoManager{
+		UserId:    doNotDeleteUser2.Id,
+		ProjectId: doNotDeleteProject2.Id,
+	}
+	database.DB.Create(&testCoManager)
+	doNotDeleteCoManager = testCoManager
 }
 
 // Change de répertoir pour trouver le .env
@@ -199,7 +228,7 @@ func setupTestRouter() (*gin.Engine, *httptest.ResponseRecorder) {
 
 // sendRequest envoie une requête HTTP au routeur de test
 // pour créer une requête http avec un role administrateur, on ajoute le role voulu à la fin : sendRequest(router, "POST", "/activity", activity, enums.Employee)
-func sendRequest(router *gin.Engine, method, url string, body interface{}, userRole ...enums.UserRole) *httptest.ResponseRecorder {
+func sendRequest(router *gin.Engine, method, url string, body interface{}, userId *int, userRole ...enums.UserRole) *httptest.ResponseRecorder {
 	var req *http.Request
 	// If accessToken exists, we need to add it to the request cookies
 	// This will be used in non-authenticated helper functions
@@ -212,10 +241,17 @@ func sendRequest(router *gin.Engine, method, url string, body interface{}, userR
 		req, _ = http.NewRequest(method, url, bytes.NewBuffer(jsonValue))
 	}
 
-	if (userRole != nil) && len(userRole) > 0 {
-		createAndSetAccessToken(userRole[0])
+	var finalUserId int
+	if userId != nil {
+		finalUserId = *userId
 	} else {
-		createAndSetAccessToken(enums.Employee)
+		finalUserId = doNotDeleteUser.Id
+	}
+
+	if (userRole != nil) && len(userRole) > 0 {
+		createAndSetAccessToken(userRole[0], finalUserId)
+	} else {
+		createAndSetAccessToken(enums.Employee, finalUserId)
 	}
 
 	cookie := &http.Cookie{
@@ -256,5 +292,6 @@ func drop_all_tables() {
 	database.DB.Exec("DROP TABLE IF EXISTS projects")
 	database.DB.Exec("DROP TABLE IF EXISTS categories")
 	database.DB.Exec("DROP TABLE IF EXISTS activities")
+	database.DB.Exec("DROP TABLE IF EXISTS co_managers")
 	database.DB.Exec("SET FOREIGN_KEY_CHECKS = 1")
 }

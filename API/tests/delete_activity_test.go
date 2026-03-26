@@ -27,7 +27,7 @@ func TestDeleteActivity(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	createW := sendRequest(router, "POST", "/activity", activityToDelete)
+	createW := sendRequest(router, "POST", "/activity", activityToDelete, nil)
 	assertResponse(t, createW, http.StatusCreated, nil)
 
 	var createResponseBody struct {
@@ -39,7 +39,7 @@ func TestDeleteActivity(t *testing.T) {
 
 	idToDelete := strconv.Itoa(createResponseBody.Activity.Id)
 
-	w := sendRequest(router, "DELETE", "/activity/"+idToDelete, nil)
+	w := sendRequest(router, "DELETE", "/activity/"+idToDelete, nil, nil)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var deletedActivity DAOs.Activity
@@ -51,6 +51,6 @@ func TestDeleteActivity(t *testing.T) {
 func TestDeleteNonExistentActivity(t *testing.T) {
 	nonExistentId := "99999"
 
-	w := sendRequest(router, "DELETE", "/activity/"+nonExistentId, nil)
+	w := sendRequest(router, "DELETE", "/activity/"+nonExistentId, nil, nil)
 	assertResponse(t, w, http.StatusNotFound, nil)
 }

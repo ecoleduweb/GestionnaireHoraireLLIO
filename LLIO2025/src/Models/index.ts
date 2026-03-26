@@ -74,7 +74,7 @@ export interface DetailedProject extends Project {
     id: number;
     color: string;
     lead: string;
-    coLeads: string[];
+    coLeads: CoLead[];
     employees: Employee[];
     totalTimeEstimated: number;
     totalTimeRemaining: number;
@@ -95,3 +95,8 @@ export interface TimeBankResponse {
   timeInBank: number;
   textHoursWorked: string;
 }
+export interface CoLead {
+    id: number;
+    name: string;
+}
+
