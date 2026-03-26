@@ -23,9 +23,8 @@ jobs:
             set -e
             echo "Starting deployment process..."
             echo "Preparing backup using fresh repo..."
-
             cd /root
-
+            rm -rf /root/backup-temp
             git clone https://github.com/ecoleduweb/GestionnaireHoraire.git backup-temp
 
             cat > /root/backup-temp/docs/Backup/db.config <<EOF
@@ -46,7 +45,7 @@ jobs:
             echo "Running backup..."
             /root/backup-temp/docs/Backup/backup.sh
 
-            rm -rf /root/backup-temp
+          
 
             # Arrêt des services
             echo "Stopping services..."
@@ -60,8 +59,9 @@ jobs:
             rm -rf GestionnaireHoraire
             
             # Clonage du dépôt
-            echo "Cloning fresh repository..."
-            git clone https://github.com/ecoleduweb/GestionnaireHoraire.git
+            echo "Copying project from backup-temp..."
+            rm -rf /root/ProjetLLIO2025/GestionnaireHoraire
+            cp -r /root/backup-temp /root/ProjetLLIO2025/GestionnaireHoraire
 
 
             # Configuration API
