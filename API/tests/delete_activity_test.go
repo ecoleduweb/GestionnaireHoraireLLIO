@@ -74,6 +74,11 @@ func TestDeleteActivityWrongUser(t *testing.T) {
 
 	w := sendRequest(router, "DELETE", "/activity/"+idToDelete, nil, &doNotDeleteUser.Id)
 	assertResponse(t, w, http.StatusForbidden, nil)
+
+	var createdActivity DAOs.Activity
+	errDB := database.DB.Where("id = ? AND user_id = ?", idToDelete, doNotDeleteUser2.Id).First(&createdActivity).Error
+	assert.NoError(t, errDB)
+	assert.Equal(t, activityToDelete.Name, activityToDelete.Name)
 }
 
 func TestDeleteNonExistentActivity(t *testing.T) {
