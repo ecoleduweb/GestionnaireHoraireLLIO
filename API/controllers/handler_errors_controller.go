@@ -59,6 +59,7 @@ func handleError(ctx *gin.Context, err error, subject string) {
 	case customs_errors.ErrUserAlreadyCoManager:
 		errorMsg := fmt.Sprintf("L'utilisateur sélectionné est déjà co-chargé de ce projet")
 		log.Printf("ERREUR - Ajout du co-chargé impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
 	case customs_errors.ErrInvalidRequest:
 		errorMsg := fmt.Sprintf("Données invalides pour le(la) %s", subject)
 		log.Printf("ERREUR - Requête invalide: %s - %v", errorMsg, err)
