@@ -36,10 +36,17 @@ const deleteUser = async (userId: number): Promise<void> => {
 };
 
 const saveTimeBankConfig = async (config: TimeBankConfig): Promise<TimeBankConfig> => {
+  const payload = {
+    ...config,
+    hoursPerWeek: Number(config.hoursPerWeek),
+    offset: Number(config.offset),
+  };
+
   const response = await PUT<TimeBankConfig, TimeBankConfig>(
     '/user/time-bank/config',
-    config
+    payload
   );
+
   return response;
 };
 
