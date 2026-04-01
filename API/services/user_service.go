@@ -108,7 +108,7 @@ func UpdateUserRole(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	return userDTOResponse, err
 }
 
-func UpdateUserRefreshToken(userId int, refreshToken *string) error {
+func UpdateUserGraphAccessToken(userId int, graphAccessToken *string) error {
 	// Get the existing user
 	existingUser, err := repositories.GetUserById(userId)
 	if err != nil {
@@ -116,7 +116,7 @@ func UpdateUserRefreshToken(userId int, refreshToken *string) error {
 	}
 
 	// Only update the refresh token
-	existingUser.RefreshToken = refreshToken
+	existingUser.GraphAccessToken = graphAccessToken
 
 	// Save the updated user
 	_, err = repositories.UpdateUser(existingUser)

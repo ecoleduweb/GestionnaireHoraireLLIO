@@ -72,7 +72,6 @@ func AuthWithAzure() {
 					azureadv2.OpenIDScope,
 					azureadv2.EmailScope,         // pour obtenir l'adresse e-mail de l'utilisateur
 					azureadv2.CalendarsReadScope, // pour obtenir les évènements de l'utilisateur
-					azureadv2.OfflineAccessScope, // pour obtenir un jeton d'actualisation
 				},
 			},
 		),

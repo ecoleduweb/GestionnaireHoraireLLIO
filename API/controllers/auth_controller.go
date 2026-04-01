@@ -57,7 +57,7 @@ func GetAuthCallback(c *gin.Context) {
 
 	// On sauvegarde le refresh token de l'utilisateur afin d'obtenir
 	// les évènements Outlook à l'aide de celui-ci plus tard
-	services.UpdateUserRefreshToken(userInDb.Id, &userAzure.RefreshToken)
+	services.UpdateUserGraphAccessToken(userInDb.Id, &userAzure.AccessToken)
 
 	// cookie pour l'authentification de l'utilisateur
 	http.SetCookie(c.Writer, &http.Cookie{

@@ -1,3 +1,3 @@
 -- Migration Up
 ALTER TABLE `users`
-ADD COLUMN `refresh_token` TEXT NULL
+ADD COLUMN `graph_access_token` TEXT NULL
