@@ -54,5 +54,6 @@ func GetActivitiesCountFromCategoryId(categoryId string) (int, error) {
 	var activities []*DAOs.Activity
 
 	err := database.DB.Where("category_id = ?", categoryId).Find(&activities).Error
+
 	return len(activities), DBErrorManager(err)
 }

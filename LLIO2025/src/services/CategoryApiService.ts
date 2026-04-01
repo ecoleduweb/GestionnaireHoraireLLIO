@@ -1,6 +1,6 @@
 // src/services/CategoryApiService.ts
 import type { Category } from "../Models/index";
-import { GET, POST } from "../ts/server";
+import { DELETE, GET, POST } from "../ts/server";
 
 interface CategoriesResponse {
   categories: Category[];
@@ -77,9 +77,19 @@ const createCategory = async (
   }
 };
 
+// Récupérer les catégories d'un projet spécifique
+const deleteCategory = async (categoryId: number): Promise<void> => {
+  try {
+    await DELETE(`/category/${categoryId}`);
+  } catch (error) {
+    throw new Error(`Erreur lors de la suppression de la catégorie (ID: ${categoryId}):`, error)
+  }
+};
+
 export const CategoryApiService = {
   getAllCategories,
   getCategoryById,
+  deleteCategory,
   createCategory,
   getCategoriesByProject
 };

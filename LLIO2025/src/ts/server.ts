@@ -5,17 +5,23 @@ const getHeaders = (token = localStorage.getItem("token")) => ({
     Authorization: token || "",
 })
 
-const handleResponse = async <T>(response: Response, redirectToLoginOn401 = true): Promise<T | undefined> => {
+const handleResponse = async <T>(response: Response, redirectToLoginOn401 = true, redirectTo500 = true): Promise<T | undefined> => {
     if (!response.ok) {
         const statusCodeRedirects = {
             500: "/500",
             401: "/",
         }
 
-        if (redirectToLoginOn401 && statusCodeRedirects[response.status]) {
-            window.location.href = statusCodeRedirects[response.status]
-            ReadableStreamDefaultController
+        const shouldRedirect =
+            (response.status === 401 && redirectToLoginOn401) ||
+            (response.status === 500 && redirectTo500);
+
+        if (shouldRedirect && statusCodeRedirects[response.status]) {
+            window.location.href = statusCodeRedirects[response.status];
+            return undefined; // type hint for TS
         }
+
+        if (response.status === 403) throw new Error("Erreur - forbidden")
 
         if (response.status === 404) return undefined as T
 
@@ -52,7 +58,8 @@ const request = async <T>(
     method: string,
     url: string,
     body?: any,
-    redirectToLoginOn401 = true
+    redirectToLoginOn401 = true,
+    redirectTo500 = true
 ): Promise<T> =>{
     try {
         const options: RequestInit = {
@@ -66,7 +73,7 @@ const request = async <T>(
         }
 
         const response = await fetch(`${VITE_API_BASE_URL}${url}`, options)
-        const data = await handleResponse<T>(response, redirectToLoginOn401)
+        const data = await handleResponse<T>(response, redirectToLoginOn401, redirectTo500)
         return data as T
     } catch (error) {
         console.error(`Error ${method}ing:`, error)
@@ -80,8 +87,8 @@ export const GET = <T>(url: string, redirectToLoginOn401?: boolean): Promise<T> 
 export const POST = <T, R>(url: string, body: T, redirectToLoginOn401?: boolean): Promise<R> =>
     request<R>("POST", url, body, redirectToLoginOn401)
 
-export const DELETE = (url: string): Promise<void> =>
-    request<void>("DELETE", url)
+export const DELETE = (url: string, redirectToLoginOn401?: boolean, redirectTo500?: boolean): Promise<void> =>
+    request<void>("DELETE", url, undefined, redirectToLoginOn401, redirectTo500)
 
 export const PUT = <T, R>(url: string, body: T, redirectToLoginOn401?: boolean): Promise<R> =>
     request<R>("PUT", url, body, redirectToLoginOn401)
