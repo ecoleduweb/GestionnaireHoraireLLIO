@@ -75,3 +75,19 @@ func UserHasPermissionToInteractWithActivity(user *DTOs.UserDTO, activityId stri
 
 	return count > 0, nil
 }
+
+func UpdateUserTimeBankConfig(user *DAOs.User) (*DAOs.User, error) {
+	tx := database.DB.Model(&DAOs.User{}).
+		Where("id = ?", user.Id).
+		Updates(map[string]interface{}{
+			"time_bank_start_date":     user.TimeBankStartDate,
+			"time_bank_hours_per_week": user.TimeBankHoursPerWeek,
+			"time_bank_balance_offset": user.TimeBankBalanceOffset,
+		})
+
+	if tx.Error != nil {
+		return nil, DBErrorManager(tx.Error)
+	}
+
+	return user, nil
+}
