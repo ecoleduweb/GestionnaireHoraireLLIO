@@ -55,16 +55,9 @@ func GetAuthCallback(c *gin.Context) {
 	}
 	isRunningSecure := useful.IsRunningSecure()
 
-	// cookie pour le graphapi!
-	// Utilisé quand on va importer les valeurs du calendrier de l'utilisateur
-	// http.SetCookie(c.Writer, &http.Cookie{
-	// 	Name:     "graphapi_access_token",
-	// 	Value:    user.AccessToken,
-	// 	Path:     "/",
-	// 	HttpOnly: true,
-	// 	Secure:   isRunningSecure,
-	// 	SameSite: http.SameSiteStrictMode,
-	// })
+	// On sauvegarde le refresh token de l'utilisateur afin d'obtenir
+	// les évènements Outlook à l'aide de celui-ci plus tard
+	services.UpdateUserRefreshToken(userInDb.Id, &userAzure.RefreshToken)
 
 	// cookie pour l'authentification de l'utilisateur
 	http.SetCookie(c.Writer, &http.Cookie{
