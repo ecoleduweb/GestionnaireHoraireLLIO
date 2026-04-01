@@ -94,8 +94,8 @@
     await Promise.all([loadProjects(), loadUsers()]);
   });
 
-  const handleDateChange = () => {
-    loadProjects();
+  const handleDateChange = async () => {
+    await loadProjects();
   }
 
   $effect(() => { // si le search est update, le fonction est rééxecutée 
