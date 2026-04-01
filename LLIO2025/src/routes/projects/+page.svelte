@@ -15,6 +15,8 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let projectFilter = $state('');
+  let startDate = $state('');
+  let endDate = $state('');
 
   let currentUser = $state<UserInfo | null>(null);
 
@@ -42,7 +44,7 @@
     try {
       isLoading = true;
       error = null;
-      projects = await ProjectApiService.getDetailedProjects();
+      projects = await ProjectApiService.getDetailedProjects(startDate, endDate);
     } catch (err) {
       console.error('Erreur lors de la récupération des projets:', err);
       error = "Impossible de charger les projets. Veuillez réessayer plus tard.";
@@ -92,6 +94,10 @@
     await Promise.all([loadProjects(), loadUsers()]);
   });
 
+  const handleDateChange = () => {
+    loadProjects();
+  }
+
   $effect(() => { // si le search est update, le fonction est rééxecutée 
     const filter = projectFilter.toLowerCase().trim();
     filteredProjects = projects.filter(project =>
@@ -113,8 +119,8 @@
     <div class="p-4">
       <h1 class="text-2xl font-medium text-gray-800">Vos projets en cours</h1>
     </div>
-    <div class="px-4 pb-4">
-      <div class="relative">
+    <div class="px-4 pb-4 flex flex-wrap gap-4 items-center">
+      <div class="relative flex-1">
         <input
           data-testid="project-search"
           type="text"
@@ -123,9 +129,31 @@
           class="w-full px-4 py-3 pl-12 text-gray-800 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:border-gray-400"
         />
         <img
-        src={searchIcon}
-        alt="Rechercher"
-        class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
+          src={searchIcon}
+          alt="Rechercher"
+          class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
+        />
+      </div>
+      <!-- Date Range -->
+      <div class="flex items-center gap-2">
+        <label for="startDate" class="text-sm font-medium text-gray-700">Début</label>
+        <input
+          type="date"
+          id="startDate"
+          onchange={handleDateChange}
+          bind:value={startDate}
+          class="px-4 py-3 text-gray-800 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:border-gray-400"
+        />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label for="endDate" class="text-sm font-medium text-gray-700">Fin</label>
+        <input
+          type="date"
+          id="endDate"
+          onchange={handleDateChange}
+          bind:value={endDate}
+          class="px-4 py-3 text-gray-800 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:border-gray-400"
         />
       </div>
     </div>

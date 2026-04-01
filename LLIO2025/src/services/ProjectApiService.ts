@@ -67,9 +67,19 @@ const getProject = async(id: number): Promise<Project> => {
   }
 }
 
-const getDetailedProjects = async(): Promise<DetailedProject[]> => {
+const getDetailedProjects = async(from?: string, to?: string): Promise<DetailedProject[]> => {
   try {
-    const response = await GET<{projects:   DetailedProject[]}>("/projects/detailed");
+    let url = "/projects/detailed";
+    const params = new URLSearchParams();
+    
+    if (from) params.append("from", from);
+    if (to) params.append("to", to);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+
+    const response = await GET<{projects: DetailedProject[]}>(url);
     return response.projects;
   } catch (error) {
     console.error("Erreur lors de la récupération des projets:", error);
@@ -77,9 +87,19 @@ const getDetailedProjects = async(): Promise<DetailedProject[]> => {
   }
 }
 
-const getCurrentUserProjects = async(): Promise<DetailedProject[]> => {
+const getCurrentUserProjects = async(from?: string, to?: string): Promise<DetailedProject[]> => {
   try {
-    const response = await GET<{projects: DetailedProject[]}>("/projects/me/detailed");
+    let url = "/projects/me/detailed";
+    const params = new URLSearchParams();
+    
+    if (from) params.append("from", from);
+    if (to) params.append("to", to);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+
+    const response = await GET<{projects: DetailedProject[]}>(url);
     return response.projects;
   } catch (error) {
     console.error("Erreur lors de la récupération des projets:", error);
