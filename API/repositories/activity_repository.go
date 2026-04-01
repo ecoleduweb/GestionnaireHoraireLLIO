@@ -31,8 +31,12 @@ func GetDetailedActivityById(id int) (*DAOs.Activity, error) {
 	return &activity, DBErrorManager(err)
 }
 
+//Par defaut, GO n'update pas les champs vides, null donc le Select(*) force à mettre tous les champs à jours
 func UpdateActivity(ActivityDAO *DAOs.Activity) (*DAOs.Activity, error) {
-	err := database.DB.Updates(ActivityDAO).Error
+	err := database.DB.Model(&DAOs.Activity{}).
+	Where("id = ?", ActivityDAO.Id).
+	Select("*").
+	Updates(ActivityDAO).Error
 	return ActivityDAO, DBErrorManager(err)
 }
 
