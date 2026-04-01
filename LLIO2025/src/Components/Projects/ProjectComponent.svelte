@@ -28,10 +28,10 @@
   data-testid="project-item"
   data-project-name={project.name}
 >
-  <!-- Contenu du dashboard -->
+ 
   <div class="project-content">
     <div>
-      <!-- Bordure gauche de couleur -->
+     
       <div class="border-l-12 rounded" style="border-left-color: {project.color}">
         <div class="p-4">
           <div class="flex justify-between items-center">
@@ -42,7 +42,7 @@
             </div>
           </div>
           <div class="flex mt-1">
-            <!-- Section gauche de la ligne (20% width) -->
+            
             <div class="w-1/5 flex-shrink-0">
               <div class="mt-1 text-xs text-gray-400">Chargé·e de projet</div>
               <div class="text-sm wrap-normal">{project.lead}</div>
@@ -64,10 +64,10 @@
               </button>
             </div>
 
-            <!-- <vr/> -->
+           
             <div class="ml-4 border-l border-gray-300 h-auto"></div>
 
-            <!-- Section droite de la ligne -->
+           
             <div class="flex-1 pl-4">
               <div class="flex justify-end pr-2 mb-1">
                 <div class="w-1/2"></div>
@@ -130,7 +130,7 @@
                 {/if}
               {/each}
 
-              <!-- Bouton pour ajouter un employé -->
+             
               <div class="py-2 pl-4 mt-2">
                 <button
                   class="inline-flex items-center bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs"
@@ -139,7 +139,7 @@
                 </button>
               </div>
 
-              <!-- Total du projet -->
+            
               <div
                 class="w-full p-3 flex items-center justify-between bg-gray-100 mt-3 font-medium"
               >
