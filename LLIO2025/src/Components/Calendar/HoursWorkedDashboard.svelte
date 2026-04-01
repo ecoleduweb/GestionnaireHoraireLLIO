@@ -25,7 +25,7 @@
     try {
       const config = await UserApiService.getTimeBankConfig();
 
-      Object.assign(timeBankConfig, config); // ✅ PROF STYLE
+      Object.assign(timeBankConfig, config);
       displayedHoursTotal = config.offset;
     } catch (err) {
       console.error(err);
