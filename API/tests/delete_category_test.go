@@ -41,6 +41,7 @@ func TestDeleteCategory(t *testing.T) {
 
 	idToDelete := strconv.Itoa(responseBody.Category.Id)
 
+	//Suppression d'une catégorie
 	g := sendRequest(router, "DELETE", "/category/"+idToDelete, nil, &doNotDeleteUser.Id)
 	assertResponse(t, g, http.StatusOK, nil)
 
@@ -75,6 +76,7 @@ func TestDeleteCategoryAlreadyLinked(t *testing.T) {
 
 	idToDelete := strconv.Itoa(responseBody.Category.Id)
 
+	// Création d'une activité
 	activity := DTOs.ActivityDTO{
 		Name:        "Test tâche",
 		Description: "Test automatique de la création de tâche",
@@ -108,8 +110,9 @@ func TestDeleteCategoryAlreadyLinked(t *testing.T) {
 	assert.NoError(t, errDB2)
 	assert.Equal(t, activity.Name, createdActivity.Name)
 
+	//Supression de la catégorie
 	g := sendRequest(router, "DELETE", "/category/"+idToDelete, nil, &doNotDeleteUser4.Id)
-	assertResponse(t, g, http.StatusForbidden, nil)
+	assertResponse(t, g, http.StatusBadRequest, nil)
 
 	var createdCategory DAOs.Category
 	errDB := database.DB.Where("id = ?", idToDelete).First(&createdCategory).Error

@@ -45,7 +45,7 @@ export const categoryMocks = {
     url: "/category/1",
     method: "DELETE",
     response: {
-      status: 403,
+      status: 400,
       json: {}
     },
   },

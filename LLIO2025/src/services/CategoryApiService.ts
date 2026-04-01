@@ -80,7 +80,7 @@ const createCategory = async (
 // Récupérer les catégories d'un projet spécifique
 const deleteCategory = async (categoryId: number): Promise<void> => {
   try {
-    await DELETE(`/category/${categoryId}`);
+    await DELETE(`/category/${categoryId}`, false, false);
   } catch (error) {
     throw new Error(`Erreur lors de la suppression de la catégorie (ID: ${categoryId}):`, error)
   }

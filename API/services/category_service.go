@@ -114,7 +114,7 @@ func DeleteCategory(id string) error {
 
 	if activitiesCount > 0 {
 		log.Printf("Il y a déjà une activité liée à cette catégorie.")
-		return customs_errors.ErrUserHasActivities
+		return customs_errors.ErrCategoryHasActivities
 	}
 
 	return repositories.DeleteCategory(id)
