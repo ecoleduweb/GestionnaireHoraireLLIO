@@ -60,3 +60,10 @@ func GetActivitiesFromRange(from string, to string, idUser int) ([]*DAOs.Activit
 		fromWithTime, toWithTime, idUser).Find(&activities).Error
 	return activities, DBErrorManager(err)
 }
+
+func GetActivitiesCountFromCategoryId(categoryId string) (int64, error) {
+	var count int64
+	err := database.DB.Model(&DAOs.Activity{}).Where("category_id = ?", categoryId).Count(&count).Error
+
+	return count, DBErrorManager(err)
+}

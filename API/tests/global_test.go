@@ -30,6 +30,7 @@ var (
 	doNotDeleteUser      DAOs.User
 	doNotDeleteUser2     DAOs.User
 	doNotDeleteUser3     DAOs.User
+	doNotDeleteUser4     DAOs.User
 	pleaseDeleteUser     DAOs.User
 	pleaseDeleteProject  DAOs.Project
 	doNotDeleteCategory  DAOs.Category
@@ -105,6 +106,14 @@ func prepareTestData() {
 	}
 	database.DB.Create(&testUser4)
 	doNotDeleteUser3 = testUser4
+	testUser5 := DAOs.User{
+		FirstName: "Gabe",
+		LastName:  "Doe",
+		Email:     "gabe.doe@example.com",
+		Role:      enums.Employee,
+	}
+	database.DB.Create(&testUser5)
+	doNotDeleteUser4 = testUser5
 	testProject := DAOs.Project{
 		Id:             1, // Assurez-vous que l'ID est unique pour le test
 		UniqueId:       "Interne-1234",

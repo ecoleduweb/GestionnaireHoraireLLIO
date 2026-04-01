@@ -12,7 +12,7 @@
     applyEndTime as applyEndTimeUtil,
   } from '../../utils/date';
   import '../../style/app.css';
-  import { ChevronDown, X, Plus } from 'lucide-svelte';
+  import { ChevronDown, X, Plus, Trash2 } from 'lucide-svelte';
   import SearchSelect from "../Global/SearchSelect.svelte";
   import ConfirmationModal from '../ConfirmationModal.svelte';
 
@@ -232,6 +232,24 @@
         onClose();
       } catch (error) {
         console.error('Erreur lors de la suppression', error);
+      }
+    }
+  };
+
+  const deleteCategoryFromList = (category: Category) => {
+    projectCategories = projectCategories.filter((cat) => cat != category);
+  }
+
+  const handleDeleteCategory = async (category: Category) => {
+    if (!category) return;
+
+    if (confirm('Supprimer la catégorie ' + category.name + ' ?')) {
+      try {
+        await CategoryApiService.deleteCategory(category.id);
+        deleteCategoryFromList(category);
+      } catch (error) {
+        alert("Erreur lors de la suppression de la catégorie");
+        console.error('Erreur lors de la suppression de la catégorie', error);
       }
     }
   };
@@ -550,6 +568,15 @@
                             }}
                           >
                             {category.name}
+                            {#if category.name !== "Par défaut"}
+                              <button
+                                class="justify-end p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                                onclick={() => handleDeleteCategory(category)}
+                                aria-label="Supprimer le projet"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            {/if}
                           </div>
                         {/each}
                       {/if}
