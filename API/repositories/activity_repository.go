@@ -52,8 +52,7 @@ func GetActivitiesFromRange(from string, to string, idUser int) ([]*DAOs.Activit
 
 func GetActivitiesCountFromCategoryId(categoryId string) (int64, error) {
 	var count int64
-	//.Count(&activities).Error
-	err := database.DB.Model(&DAOs.Activity{}).Where("category_id = ?", categoryId).Find(&count).Error
+	err := database.DB.Model(&DAOs.Activity{}).Where("category_id = ?", categoryId).Count(&count).Error
 
 	return count, DBErrorManager(err)
 }
