@@ -49,6 +49,7 @@
   let isSubmitting = $state(false);
   let showCategoryConfirmModal = $state(false);
   let categoryToAdd = $state('');
+  let isProjectSelectFocused = $state(true);
 
   if (selectedDate && selectedDate.start) {
     const { startDate, endDate } = initializeActivityDates(selectedDate.start);
@@ -393,6 +394,10 @@
                 bind:selectedValue={activity.projectId}
                 placeholder="Sélectionner un projet"
                 setFields={setFields}
+                bind:focused={isProjectSelectFocused}
+                onSubmit={()=>{
+                  const form = document.querySelector('form');
+                  form?.requestSubmit();}}
                 required
               />
               {#if $errors.projectId}
