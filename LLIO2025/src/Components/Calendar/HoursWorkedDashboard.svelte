@@ -1,7 +1,6 @@
 ﻿<script lang="ts">
   import { onMount } from 'svelte';
   import { UserApiService } from '../../services/UserApiService';
-  import { formatDateHoursWorked, areDatesEqual } from '../../utils/date';
   import HoursWorkedConfigModal from './HoursWorkedConfigModal.svelte';
 
   type Props = {
@@ -16,14 +15,24 @@
   let displayedHoursTotal = $state<number | null>(hoursTotal ?? null);
   let showModal = $state(false);
 
-  onMount(async () => {
-    try {
-      const bank = await UserApiService.getTimeInBank();
-      displayedHoursTotal = bank.timeInBank;
-    } catch (err) {
-      console.error(err);
-    }
+  
+  let timeBankConfig = $state({
+    startDate: '',
+    hoursPerWeek: 0,
+    offset: 0,
   });
+
+  onMount(async () => {
+  try {
+    const config = await UserApiService.getTimeBankConfig();
+
+    Object.assign(timeBankConfig, config);
+
+    displayedHoursTotal = config.offset;
+  } catch (err) {
+    console.error(err);
+  }
+});
 
   const openConfigModal = () => {
     showModal = true;
@@ -33,14 +42,11 @@
     showModal = false;
   };
 
-  const handleSave = async () => {
-    try {
-      const bank = await UserApiService.getTimeInBank();
-      displayedHoursTotal = bank.timeInBank;
-      showModal = false;
-    } catch (err) {
-      alert("Erreur lors de la configuration");
-    }
+ 
+  const handleSave = (values) => {
+    Object.assign(timeBankConfig, values); 
+    displayedHoursTotal = values.offset; 
+    showModal = false;
   };
 </script>
 
@@ -76,8 +82,7 @@
 
 <div class="card">
 
- 
-  {#if displayedHoursTotal === null}
+  {#if displayedHoursTotal === null || displayedHoursTotal === 0}
 
     <div class="section">
       <p>
@@ -91,10 +96,7 @@
 
   {:else}
 
-    
     <div class="section">
-      
-
       <p>
         Vous avez 
         <button
@@ -116,6 +118,7 @@
 {#if showModal}
   <HoursWorkedConfigModal 
     onClose={closeConfigModal} 
-    onSave={handleSave} 
+    onSave={handleSave}
+    initialConfig={timeBankConfig}
   />
 {/if}
