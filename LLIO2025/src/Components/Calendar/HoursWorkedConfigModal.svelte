@@ -46,7 +46,7 @@ let { onClose, onSave, initialConfig }: Props = $props();
 
       await UserApiService.saveTimeBankConfig(values);
 
-      onSave(values); // 🔥 MODIFIÉ
+      onSave(values); 
       onClose();
     } catch (err) {
       console.error(err);
