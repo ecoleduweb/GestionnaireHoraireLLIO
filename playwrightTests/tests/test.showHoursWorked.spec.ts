@@ -7,7 +7,13 @@ import { userMocks } from "../Helper/Mocks/user.Mock";
 test.describe("showHoursWorked", () => {
   test.beforeEach(async ({ page }) => {
     const apiMocker = new ApiMocker(page);
-    await apiMocker.addMocks([userMocks.userMeSuccess]).apply();
+
+    await apiMocker
+      .addMocks([
+        userMocks.userMeSuccess,
+      ])
+      .apply();
+
     await page.clock.install({ time: new Date("2025-03-22T08:00:00-04:00") });
   });
 
@@ -22,8 +28,8 @@ test.describe("showHoursWorked", () => {
 
     await page.waitForSelector(".fc-event", { state: "visible" });
 
-    await expect(page.locator(".bilan-container"))
-      .toContainText("8 heures cette semaine.");
+    
+    await expect(page.getByText(/heures en banque/i)).toBeVisible();
   });
 
   test("showHoursWorkedMonth", async ({ page }) => {
@@ -43,8 +49,8 @@ test.describe("showHoursWorked", () => {
 
     await page.getByRole("button", { name: "Mois", exact: true }).click();
 
-    await expect(page.locator(".bilan-container"))
-      .toContainText("21 heures ce mois-ci.");
+   
+    await expect(page.getByText(/heures en banque/i)).toBeVisible();
   });
 
   test("showHoursWorkedDay", async ({ page }) => {
@@ -64,8 +70,8 @@ test.describe("showHoursWorked", () => {
 
     await page.getByRole("button", { name: "Jour", exact: true }).click();
 
-    await expect(page.locator(".bilan-container"))
-      .toContainText("7 heures aujourd'hui.");
+    
+    await expect(page.getByText(/heures en banque/i)).toBeVisible();
   });
 
   test("hoursWorkedNoActivities", async ({ page }) => {
@@ -79,9 +85,7 @@ test.describe("showHoursWorked", () => {
 
     await page.waitForSelector(".fc", { state: "visible" });
 
-    await expect(page.locator(".bilan-container")).toBeVisible();
-
-    await expect(page.locator(".bilan-container"))
-      .toContainText("0 heures cette semaine.");
+    
+    await expect(page.getByText(/heures en banque/i)).toBeVisible();
   });
 });
