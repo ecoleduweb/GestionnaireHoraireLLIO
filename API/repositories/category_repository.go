@@ -31,12 +31,16 @@ func UpdateCategory(categoryDAO *DAOs.Category) (*DAOs.Category, error) {
 
 func GetCategoriesByProjectId(projectId string) ([]*DAOs.Category, error) {
 	var categories []*DAOs.Category
-	
+
 	projectIdInt, err := strconv.Atoi(projectId)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	err = database.DB.Where("project_id = ?", projectIdInt).Find(&categories).Error
 	return categories, DBErrorManager(err)
+}
+
+func DeleteCategory(id string) error {
+	return DBErrorManager(database.DB.Delete(&DAOs.Category{}, id).Error)
 }

@@ -44,13 +44,13 @@ test.describe('showActivities', () => {
 
         // Vérifie les activités de la semaine
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(2);
+        await expect(activities.length).toBe(2);
         await page.getByText('Toute la journée').click();
         // remets le tableau vide
         await page.waitForSelector('.fc-event', { state: 'visible' });
         activities = []; 
         activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(3);
+        await expect(activities.length).toBe(3);
 
     });
     
@@ -67,12 +67,12 @@ test.describe('showActivities', () => {
         await page.getByRole('button', { name: 'Jour', exact : true }).click();
         // Vérifie les activités de la journee
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(1);
+        await expect(activities.length).toBe(1);
         await page.getByText('Toute la journée').click();
         // remets le tableau vide
         activities = []; 
         activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(2);
+        await expect(activities.length).toBe(2);
 
     });
     test('showActivitiesMonth', async ({ page }) => {
@@ -88,7 +88,7 @@ test.describe('showActivities', () => {
         await page.getByRole('button', { name: 'Mois', exact : true }).click();
         // Vérifie les activités de la mois
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(5);
+        await expect(activities.length).toBe(5);
     
     });
     test('showActivitiesPreviousWeek', async ({ page }) => {
@@ -104,7 +104,7 @@ test.describe('showActivities', () => {
         await page.locator('button:has(.lucide-chevron-left)').click();
         // Vérifie les activités de la semaine
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(1);
+        await expect(activities.length).toBe(1);
     
     });
     test('showActivitiesNextWeek', async ({ page }) => {
@@ -139,7 +139,7 @@ test.describe('showActivities', () => {
         // Vérifie les activités de la mois
         await page.waitForSelector('.fc-event', { state: 'visible' });
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(1);
+        await expect(activities.length).toBe(1);
     
     });
     test('showActivitiesNextMonth', async ({ page }) => {
@@ -158,7 +158,7 @@ test.describe('showActivities', () => {
         // Vérifie les activités de la mois
         await page.waitForSelector('.fc-event', { state: 'visible' });
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(1);
+        await expect(activities.length).toBe(1);
     
     });
     test('showActivitiesPreviousDay', async ({ page }) => {
@@ -177,13 +177,13 @@ test.describe('showActivities', () => {
         // Vérifie les activités de la journee
         await page.waitForSelector('.fc-event', { state: 'visible' });
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(1);
+        await expect(activities.length).toBe(1);
         await page.getByText('Toute la journée').click();
         // remets le tableau vide
         await page.waitForSelector('.fc-event', { state: 'visible' });
         activities = []; 
         activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(2);
+        await expect(activities.length).toBe(2);
     
     });
     test('showActivitiesNextDay', async ({ page }) => {
@@ -201,13 +201,13 @@ test.describe('showActivities', () => {
         // Vérifie les activités de la journee
         await page.waitForSelector('.fc-event', { state: 'visible' });
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(1);
+        await expect(activities.length).toBe(1);
         await page.getByText('Toute la journée').click();
         // remets le tableau vide
         await page.waitForSelector('.fc-event', { state: 'visible' });
         activities = []; 
         activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(2);
+        await expect(activities.length).toBe(2);
     
     });
     test('showActivitiesToday', async ({ page }) => {
@@ -224,7 +224,7 @@ test.describe('showActivities', () => {
         await page.locator('button:has(.lucide-chevron-right)').click();
         
         let activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(0);
+        await expect(activities.length).toBe(0);
     
         await page.getByRole('button', { name: 'Aujourd\'hui', exact : true }).click();
         await page.getByRole('button', { name: 'Jour', exact : true }).click();
@@ -232,13 +232,13 @@ test.describe('showActivities', () => {
         await page.waitForSelector('.fc-event', { state: 'visible' });
         activities = [];
         activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(1);
+        await expect(activities.length).toBe(1);
         await page.getByText('Toute la journée').click();
         // remets le tableau vide
         await page.waitForSelector('.fc-event', { state: 'visible' });
         activities = []; 
         activities = await page.locator('.fc-event').all();
-        expect(activities.length).toBe(2);
+        await expect(activities.length).toBe(2);
     });
 
 
