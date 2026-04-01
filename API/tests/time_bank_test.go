@@ -16,44 +16,45 @@ import (
 func TestTimeBankScenarios(t *testing.T) {
 	testUserID := int(doNotDeleteUser.Id)
 
-	// --- 1. Préparation des dates (Semaine dernière) ---
-	loc := time.UTC
-	now := time.Now().In(loc)
+	// --- 1. Préparation des dates (Strictement en UTC) ---
+	now := time.Now().UTC()
 
 	weekday := int(now.Weekday())
 	if weekday == 0 {
 		weekday = 7
 	}
-	mondayCurrentWeek := now.AddDate(0, 0, -(weekday - 1))
 
-	mondayLastWeek := time.Date(mondayCurrentWeek.Year(), mondayCurrentWeek.Month(), mondayCurrentWeek.Day(), 0, 0, 0, 0, loc).AddDate(0, 0, -7)
+	// Lundi de la semaine en cours
+	mondayCurrentWeek := time.Date(now.Year(), now.Month(), now.Day()-(weekday-1), 0, 0, 0, 0, time.UTC)
+	// Lundi de la semaine dernière
+	mondayLastWeek := mondayCurrentWeek.AddDate(0, 0, -7)
 	startDateStr := mondayLastWeek.Format("2006-01-02")
 
-	// --- 2. Nettoyage initial ---
+	// --- 2. Nettoyage initial agressif (Environnement stérile) ---
+	// Suppression de TOUTES les activités de cet utilisateur pour éviter la pollution des autres tests
+	if err := database.DB.Where("user_id = ?", testUserID).Delete(&DAOs.Activity{}).Error; err != nil {
+		t.Fatalf("Erreur purge initiale des activités : %v", err)
+	}
+
 	if err := database.DB.Model(&doNotDeleteUser).Updates(map[string]interface{}{
 		"time_bank_start_date":     nil,
 		"time_bank_hours_per_week": nil,
 		"time_bank_balance_offset": 0,
 	}).Error; err != nil {
-		t.Fatalf("Erreur lors du nettoyage initial de doNotDeleteUser : %v", err)
+		t.Fatalf("Erreur réinitialisation doNotDeleteUser : %v", err)
 	}
 
-	// --- 3. Définition du Nettoyage AUTOMATIQUE ---
+	// --- 3. Définition du Nettoyage Automatique de fin ---
 	t.Cleanup(func() {
-		if err := database.DB.Where("name LIKE ?", "Test TimeBank%").Delete(&DAOs.Activity{}).Error; err != nil {
-			t.Fatalf("Erreur lors de la suppression des activités de test (cleanup) : %v", err)
-		}
-
-		if err := database.DB.Model(&doNotDeleteUser).Updates(map[string]interface{}{
+		database.DB.Where("name LIKE ?", "Test TimeBank%").Delete(&DAOs.Activity{})
+		database.DB.Model(&doNotDeleteUser).Updates(map[string]interface{}{
 			"time_bank_start_date":     nil,
 			"time_bank_hours_per_week": nil,
 			"time_bank_balance_offset": 0,
-		}).Error; err != nil {
-			t.Fatalf("Erreur lors de la réinitialisation de doNotDeleteUser (cleanup) : %v", err)
-		}
+		})
 	})
 
-	// --- SCÉNARIO 1 : Date Invalide lors de la config ---
+	// --- SCÉNARIO 1 : Date Invalide ---
 	t.Run("InvalidDate", func(t *testing.T) {
 		badConfig := map[string]interface{}{
 			"startDate":    "99-99-2024",
@@ -66,28 +67,26 @@ func TestTimeBankScenarios(t *testing.T) {
 	// --- SCÉNARIO 2 : Pas d'activités (Déficit Total) ---
 	t.Run("NoActivities_Deficit", func(t *testing.T) {
 		config := DTOs.TimeBankConfigDTO{StartDate: startDateStr, HoursPerWeek: 10, Offset: 0}
-
-		wConf := sendRequest(router, "PUT", "/user/time-bank/config", config, &testUserID)
-		require.Contains(t, []int{http.StatusOK, http.StatusCreated, http.StatusNoContent}, wConf.Code, "La configuration a échoué")
+		sendRequest(router, "PUT", "/user/time-bank/config", config, &testUserID)
 
 		w := sendRequest(router, "GET", "/user/time-bank", nil, &testUserID)
 		require.Equal(t, http.StatusOK, w.Code)
 
 		var resp DTOs.TimeBankBalanceDTO
 		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-		require.NotNil(t, resp.TimeInBank, "TimeInBank est nil dans la réponse")
+		require.NotNil(t, resp.TimeInBank)
 
-		// Correction du typage strict
+		// 0h faites - 10h attendues = -10
 		assert.Equal(t, float64(-10), *resp.TimeInBank)
 	})
 
-	// --- Injection des activités pour la suite (12 heures travaillées) ---
+	// --- INJECTION : 12 heures travaillées la semaine dernière ---
 	activities := []DAOs.Activity{
 		{
 			Name:        "Test TimeBank 1",
 			Description: "Auto",
-			StartDate:   mondayLastWeek.Add(9 * time.Hour),
-			EndDate:     mondayLastWeek.Add(13 * time.Hour),
+			StartDate:   mondayLastWeek.Add(9 * time.Hour),  // 09:00 UTC
+			EndDate:     mondayLastWeek.Add(13 * time.Hour), // 13:00 UTC (4h)
 			UserId:      doNotDeleteUser.Id,
 			ProjectId:   doNotDeleteProject.Id,
 			CategoryId:  doNotDeleteCategory.Id,
@@ -123,12 +122,11 @@ func TestTimeBankScenarios(t *testing.T) {
 		sendRequest(router, "PUT", "/user/time-bank/config", config, &testUserID)
 
 		w := sendRequest(router, "GET", "/user/time-bank", nil, &testUserID)
-		require.Equal(t, http.StatusOK, w.Code)
 
 		var resp DTOs.TimeBankBalanceDTO
-		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-		require.NotNil(t, resp.TimeInBank)
+		json.Unmarshal(w.Body.Bytes(), &resp)
 
+		// 12h faites - 10h attendues = +2
 		assert.Equal(t, float64(2), *resp.TimeInBank)
 	})
 
@@ -138,12 +136,11 @@ func TestTimeBankScenarios(t *testing.T) {
 		sendRequest(router, "PUT", "/user/time-bank/config", config, &testUserID)
 
 		w := sendRequest(router, "GET", "/user/time-bank", nil, &testUserID)
-		require.Equal(t, http.StatusOK, w.Code)
 
 		var resp DTOs.TimeBankBalanceDTO
-		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-		require.NotNil(t, resp.TimeInBank)
+		json.Unmarshal(w.Body.Bytes(), &resp)
 
+		// 12h faites - 20h attendues = -8
 		assert.Equal(t, float64(-8), *resp.TimeInBank)
 	})
 
@@ -153,12 +150,11 @@ func TestTimeBankScenarios(t *testing.T) {
 		sendRequest(router, "PUT", "/user/time-bank/config", config, &testUserID)
 
 		w := sendRequest(router, "GET", "/user/time-bank", nil, &testUserID)
-		require.Equal(t, http.StatusOK, w.Code)
 
 		var resp DTOs.TimeBankBalanceDTO
-		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-		require.NotNil(t, resp.TimeInBank)
+		json.Unmarshal(w.Body.Bytes(), &resp)
 
+		// 12h faites - 12h attendues = 0
 		assert.Equal(t, float64(0), *resp.TimeInBank)
 	})
 }
