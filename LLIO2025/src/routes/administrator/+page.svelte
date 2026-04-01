@@ -50,7 +50,7 @@
         </button>
         <button 
           onclick={() => ReportApiService.getReportExcel()}
-          id="user-button"
+          id="excel-button"
           type="button" 
           class="w-full mt-4 py-2 px-4 text-sm font-medium transition-colors bg-[#e6f0f0] text-[#005e61] rounded-md hover:bg-[#d0e6e6] flex items-center justify-center cursor-pointer"
           >
