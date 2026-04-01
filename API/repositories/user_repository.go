@@ -33,7 +33,7 @@ func GetAllUsers() ([]*DAOs.User, error) {
 	return users, DBErrorManager(err)
 }
 
-func UpdateUserRole(user *DAOs.User) (*DAOs.User, error) {
+func UpdateUser(user *DAOs.User) (*DAOs.User, error) {
 	err := database.DB.Save(user).Error
 	return user, DBErrorManager(err)
 }
