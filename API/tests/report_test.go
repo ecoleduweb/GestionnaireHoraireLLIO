@@ -7,7 +7,7 @@ import (
 )
 
 func TestExportExcelAsAdmin(t *testing.T) {
-	w := sendRequest(router, "GET", "/report/excel", nil, enums.Administrator)
+	w := sendRequest(router, "GET", "/report/excel", nil, nil, enums.Administrator)
 
 	assertResponse(t, w, http.StatusOK, nil)
 
@@ -22,7 +22,7 @@ func TestExportExcelAsAdmin(t *testing.T) {
 }
 
 func TestExportExcelAsNoAdministratorForbidden(t *testing.T) {
-	w := sendRequest(router, "GET", "/report/excel", nil, enums.Employee)
+	w := sendRequest(router, "GET", "/report/excel", nil, nil, enums.Employee)
 
 	assertResponse(t, w, http.StatusForbidden, nil)
 }
