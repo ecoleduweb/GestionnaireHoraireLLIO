@@ -75,3 +75,18 @@ func TestUpdateActivityWithInvalidId(t *testing.T) {
 	w := sendRequest(router, "PUT", "/activity", updateActivity, nil)
 	assertResponse(t, w, http.StatusNotFound, nil)
 }
+func TestUpdateActivityAfterRemoveNameAndOrDescription(t *testing.T){
+	updateActivity := DTOs.ActivityDTO{
+		Id:          99999,
+		Name:        "",
+		Description: "",
+		StartDate:   time.Now(),
+		EndDate:     time.Now().Add(48 * time.Hour),
+		UserId:      doNotDeleteUser.Id,
+		ProjectId:   doNotDeleteProject.Id,
+		CategoryId:  doNotDeleteCategory.Id,
+	}
+	w := sendRequest(router, "PUT", "/activity", updateActivity, nil)
+	assertResponse(t, w, http.StatusNotFound, nil)
+}
+
