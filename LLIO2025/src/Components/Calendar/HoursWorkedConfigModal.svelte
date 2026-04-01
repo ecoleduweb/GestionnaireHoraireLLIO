@@ -5,19 +5,25 @@
   import type { TimeBankConfig } from '../../Models/index';
   import { validateTimeBankForm } from '../../Validation/TimeBank';
 
- type Props = {
-  onClose: () => void;
-  onSave: (values: TimeBankConfig) => void;
-  initialConfig: TimeBankConfig;
-};
+  type Props = {
+    onClose: () => void;
+    onSave: (values: TimeBankConfig) => void;
+    initialConfig: TimeBankConfig;
+  };
 
-let { onClose, onSave, initialConfig }: Props = $props();
+  let { onClose, onSave, initialConfig }: Props = $props();
+
 
   const config = $state<TimeBankConfig>({
-    startDate: initialConfig?.startDate ?? '',
-    hoursPerWeek: initialConfig?.hoursPerWeek ?? 0,
-    offset: initialConfig?.offset ?? 0,
+    startDate: '',
+    hoursPerWeek: 0,
+    offset: 0,
   });
+
+  
+  if (initialConfig) {
+    Object.assign(config, initialConfig);
+  }
 
   let isSubmitting = $state(false);
   let isLoading = $state(true);
@@ -27,9 +33,7 @@ let { onClose, onSave, initialConfig }: Props = $props();
       const data = await UserApiService.getTimeBankConfig();
 
       if (data) {
-        config.startDate = data.startDate;
-        config.hoursPerWeek = data.hoursPerWeek;
-        config.offset = data.offset;
+        Object.assign(config, data); 
       }
     } catch (err) {
       console.error(err);
@@ -46,11 +50,11 @@ let { onClose, onSave, initialConfig }: Props = $props();
 
       await UserApiService.saveTimeBankConfig(values);
 
-      onSave(values); 
+      onSave(values);
       onClose();
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de la configuration de la banque d'heure");
+      alert("Erreur lors de la configuration");
     } finally {
       isSubmitting = false;
     }
@@ -58,6 +62,71 @@ let { onClose, onSave, initialConfig }: Props = $props();
 
   const { form, errors } = validateTimeBankForm(handleSubmit, config);
 </script>
+
+<div class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Configuration des heures en banque</h3>
+      <button class="close-btn" onclick={onClose}>
+        <X size={18} />
+      </button>
+    </div>
+
+    <div class="modal-body">
+      {#if isLoading}
+        <p>Chargement...</p>
+      {:else}
+        
+        <form use:form>
+
+          <div class="form-group">
+            <label>Début de la période</label>
+            <input type="date" name="startDate" bind:value={config.startDate} />
+            {#if $errors.startDate}
+              <span class="error-text">{$errors.startDate}</span>
+            {/if}
+          </div>
+
+          <div class="form-group">
+            <label>Heures par semaine</label>
+            <input type="number" name="hoursPerWeek" bind:value={config.hoursPerWeek} />
+            {#if $errors.hoursPerWeek}
+              <span class="error-text">{$errors.hoursPerWeek}</span>
+            {/if}
+          </div>
+
+          <div class="form-group">
+            <label>Heure en banque</label>
+            <input type="number" name="offset" bind:value={config.offset} />
+            {#if $errors.offset}
+              <span class="error-text">{$errors.offset}</span>
+            {/if}
+          </div>
+
+        
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn-secondary"
+              onclick={onClose}
+            >
+              Annuler
+            </button>
+
+            <button
+              type="submit"
+              class="btn-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "En cours..." : "Enregistrer"}
+            </button>
+          </div>
+
+        </form>
+      {/if}
+    </div>
+  </div>
+</div>
 
 <style>
   .modal-overlay {
@@ -109,24 +178,6 @@ let { onClose, onSave, initialConfig }: Props = $props();
     margin-top: 1rem;
   }
 
-  .modal-footer button {
-    padding: 0.6rem 1.4rem;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-  }
-
-  .modal-footer button[type='button'] {
-    background: #f3f4f6;
-  }
-
-  .modal-footer button[type='submit'] {
-    background: #015e61;
-    color: white;
-  }
-
   .error-text {
     color: red;
     font-size: 0.8rem;
@@ -137,50 +188,44 @@ let { onClose, onSave, initialConfig }: Props = $props();
     border: none;
     cursor: pointer;
   }
+
+ 
+  .btn-secondary {
+    padding: 0.6rem 1.4rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    background: #f3f4f6;
+    color: #374151;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+  }
+
+  .btn-primary {
+    padding: 0.6rem 1.4rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: #015e61;
+    color: white;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background: #014446;
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 </style>
-
-<div class="modal-overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Configuration des heures en banque</h3>
-      <button class="close-btn" onclick={onClose}>
-        <X size={18} />
-      </button>
-    </div>
-
-    <div class="modal-body">
-      {#if isLoading}
-        <p>Chargement...</p>
-      {:else}
-        <form use:form onsubmit={(e) => e.preventDefault()}>
-          <div class="form-group">
-            <label>Début de la période</label>
-            <input type="date" name="startDate" bind:value={config.startDate} />
-          </div>
-
-          <div class="form-group">
-            <label>Heures par semaine</label>
-            <input
-              type="number"
-              name="hoursPerWeek"
-              bind:value={config.hoursPerWeek}
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Heure en banque</label>
-            <input type="number" name="offset" bind:value={config.offset} />
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" onclick={onClose}>Annuler</button>
-
-            <button type="submit" disabled={isSubmitting}>
-              Enregistrer
-            </button>
-          </div>
-        </form>
-      {/if}
-    </div>
-  </div>
-</div>

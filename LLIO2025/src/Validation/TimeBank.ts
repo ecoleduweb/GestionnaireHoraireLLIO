@@ -4,12 +4,10 @@ import type { TimeBankConfig } from '../Models';
 
 const schema = yup.object().shape({
   startDate: yup
-    .date()
-    .typeError("Veuillez entrer une date valide")
+    .string()
     .required("La date de début est requise"),
 
   hoursPerWeek: yup
-
     .number()
     .typeError("Veuillez entrer un nombre")
     .min(0, "Les heures ne peuvent pas être négatives")
@@ -23,7 +21,7 @@ const schema = yup.object().shape({
 });
 
 export const validateTimeBankForm = (
-  handleSubmit: (values) => void,
+  handleSubmit: (values: TimeBankConfig) => void,
   config: TimeBankConfig
 ) => {
   return createForm({
@@ -33,11 +31,13 @@ export const validateTimeBankForm = (
       try {
         await schema.validate(values, { abortEarly: false });
         return {};
-      } catch (err) {
-        const errors = {};
+      } catch (err: any) {
+        const errors: Record<string, string> = {};
+
         err.inner.forEach((value) => {
           errors[value.path] = value.message;
         });
+
         return errors;
       }
     },

@@ -10,12 +10,11 @@
     textHoursWorked: string;
   };
 
-  let { hoursTotal, dateStart, dateEnd, textHoursWorked }: Props = $props();
+  let { hoursTotal }: Props = $props();
 
   let displayedHoursTotal = $state<number | null>(hoursTotal ?? null);
   let showModal = $state(false);
 
-  
   let timeBankConfig = $state({
     startDate: '',
     hoursPerWeek: 0,
@@ -23,16 +22,15 @@
   });
 
   onMount(async () => {
-  try {
-    const config = await UserApiService.getTimeBankConfig();
+    try {
+      const config = await UserApiService.getTimeBankConfig();
 
-    Object.assign(timeBankConfig, config);
-
-    displayedHoursTotal = config.offset;
-  } catch (err) {
-    console.error(err);
-  }
-});
+      Object.assign(timeBankConfig, config); // ✅ PROF STYLE
+      displayedHoursTotal = config.offset;
+    } catch (err) {
+      console.error(err);
+    }
+  });
 
   const openConfigModal = () => {
     showModal = true;
@@ -42,10 +40,9 @@
     showModal = false;
   };
 
- 
   const handleSave = (values) => {
-    Object.assign(timeBankConfig, values); 
-    displayedHoursTotal = values.offset; 
+    Object.assign(timeBankConfig, values);
+    displayedHoursTotal = values.offset;
     showModal = false;
   };
 </script>
@@ -62,62 +59,34 @@
     margin-bottom: 1rem;
   }
 
-  .label {
-    font-size: 0.75rem;
-    letter-spacing: 1px;
-    color: #999;
-    margin-bottom: 0.5rem;
-  }
-
   .link {
     color: #2563eb;
     text-decoration: underline;
     cursor: pointer;
     background: none;
     border: none;
-    font: inherit;
-    padding: 0;
   }
 </style>
 
 <div class="card">
-
-  {#if displayedHoursTotal === null || displayedHoursTotal === 0}
-
-    <div class="section">
-      <p>
-        Vous avez 
-        <button class="link" on:click={openConfigModal}>
-          configurer
-        </button>
-        heures en banque.
-      </p>
-    </div>
-
-  {:else}
-
-    <div class="section">
-      <p>
-        Vous avez 
-        <button
-          class="link"
-          on:click={openConfigModal}
-          data-testid="total-hours"
-          title="Modifier les heures"
-        >
+  <div class="section">
+    <p>
+      Vous avez
+      {#if displayedHoursTotal === null || displayedHoursTotal === 0}
+        <button class="link" on:click={openConfigModal}> configurer </button>
+      {:else}
+        <button class="link" on:click={openConfigModal} data-testid="total-hours">
           {displayedHoursTotal}
         </button>
-        heures en banque.
-      </p>
-    </div>
-
-  {/if}
-
+      {/if}
+      heures en banque.
+    </p>
+  </div>
 </div>
 
 {#if showModal}
-  <HoursWorkedConfigModal 
-    onClose={closeConfigModal} 
+  <HoursWorkedConfigModal
+    onClose={closeConfigModal}
     onSave={handleSave}
     initialConfig={timeBankConfig}
   />
