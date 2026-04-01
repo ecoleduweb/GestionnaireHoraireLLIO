@@ -5,6 +5,8 @@
   import DashboardProjectItem from "../Projects/DashboardPaneProjectItem.svelte";
   import type { DetailedProject, UserInfo } from '../../Models/index.ts';
   import { UserRole } from '../../lib/types/enums';
+  import NavButton from "../NavButton.svelte";
+  
 
 
   type Props = {
@@ -29,37 +31,9 @@
   <div class="dashboard-content">
     <!-- Contenu à venir -->
     <div class="dashboard-item">
-      <div class="inline-flex rounded-md shadow-xs" role="group">
-        <button
-          type="button"
-          class="px-4 py-2 text-sm transition-colors font-semibold bg-[#014446] text-white rounded-l-lg"
-        >
-          Calendrier
-        </button>
-        <button 
-          onclick={() => goto('./projects')}
-          type="button" 
-          class="py-2 px-4 text-sm transition-colors font-semibold bg-gray-200 text-gray-900 rounded-r-lg hover:bg-[#014446] hover:text-white cursor-pointer"
-        >
-          Projets
-        </button>
-      </div>
-      <div class="mt-4">
-        {#if currentUser.role === UserRole.Admin}
-          <button 
-            onclick={() => goto('./users')}
-            id="user-button"
-            type="button" 
-            class="w-full py-2 px-4 text-sm font-medium transition-colors bg-[#e6f0f0] text-[#005e61] rounded-md hover:bg-[#d0e6e6] flex items-center justify-center cursor-pointer"
-          >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-            </svg>
-            Utilisateurs
-          </button>
-        {/if}
-      </div>
+      <NavButton currentUserRole = {currentUser.role} />
     </div>
+
 
     <!-- Projets en cours -->
     <div>
