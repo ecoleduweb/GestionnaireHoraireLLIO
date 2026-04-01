@@ -118,3 +118,48 @@ func TestUpdateActivityWithEndDateBeforeStartDate(t *testing.T) {
 	
 	assertResponse(t, w, http.StatusBadRequest, expectedErrors)
 }
+
+func TestUpdateActivityAfterRemoveNameAndOrDescription(t *testing.T){
+	initialActivity := DTOs.ActivityDTO{
+		Name:        "Original Activity",
+		Description: "Original Description",
+		StartDate:   time.Now(),
+		EndDate:     time.Now().Add(24 * time.Hour),
+		UserId:      doNotDeleteUser.Id,
+		ProjectId:   doNotDeleteProject.Id,
+		CategoryId:  doNotDeleteCategory.Id,
+	}
+
+	// Création de l'acitivité
+	createW := sendRequest(router, "POST", "/activity", initialActivity, nil)
+	assertResponse(t, createW, http.StatusCreated, nil)
+
+	var createResponseBody struct {
+		Reponse  string        `json:"reponse"`
+		Activity DAOs.Activity `json:"activity"`
+	}
+	err := json.Unmarshal(createW.Body.Bytes(), &createResponseBody)
+	assert.NoError(t, err)
+	updateActivity := DTOs.ActivityDTO{
+		Id:          createResponseBody.Activity.Id,
+		Name:        "",
+		Description: "",
+		StartDate:   time.Now(),
+		EndDate:     time.Now().Add(48 * time.Hour),
+		UserId:      doNotDeleteUser.Id,
+		ProjectId:   doNotDeleteProject.Id,
+		CategoryId:  doNotDeleteCategory.Id,
+	}
+
+	w := sendRequest(router, "PUT", "/activity", updateActivity, nil)
+	assertResponse(t, w, http.StatusOK, nil)
+
+	var updateResponseBody struct {
+		UpdatedActivity DTOs.DetailedActivityDTO `json:"updated_activity"`
+	}
+	err = json.Unmarshal(w.Body.Bytes(), &updateResponseBody)
+	assert.NoError(t, err)
+	assert.Empty(t, updateResponseBody.UpdatedActivity.Name)
+	assert.Empty(t, updateResponseBody.UpdatedActivity.Description)
+	assert.Equal(t, doNotDeleteProject.Name, updateResponseBody.UpdatedActivity.ProjectName)
+}
