@@ -35,41 +35,28 @@ test("filtre les projets avec les dates de début et de fin via l'API", async ({
     const testStartDate = "2025-01-01";
     const testEndDate = "2025-01-31";
 
-    // Étape 1 : On cible UNIQUEMENT la requête avec les deux paramètres.
-    // Les requêtes intermédiaires seront gérées silencieusement par le ApiMocker du beforeEach.
-    await page.route(`**/projects/detailed?from=${testStartDate}&to=${testEndDate}`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          projects: [
-            {
-              id: 999,
-              uniqueId: "JAN-2025",
-              name: "Projet de Janvier",
-              status: 1,
-              managerId: 1,
-              coLeads: []
-            }
-          ]
-        })
-      });
-    });
+    const mockFilteredProject = projectMocks.getDetailedProjectsSuccess.response.json.projects[0];
 
-    // Étape 2 : Attendre que l'interface initiale (les 8 projets du mock par défaut) soit chargée
+    const dynamicMocker = new ApiMocker(page);
+    await dynamicMocker.addMock({
+      url: `/projects/detailed?from=${testStartDate}&to=${testEndDate}`,
+      method: "GET",
+      response: {
+        status: 200,
+        json: {
+          projects: [mockFilteredProject]
+        }
+      }
+    }).apply();
+
     await page.waitForSelector('[data-testid="project-item"]');
 
-    // Étape 3 : Remplir les dates
     await page.locator('#startDate').fill(testStartDate);
     await page.locator('#endDate').fill(testEndDate);
-    
-    // Étape 4 : Forcer la perte de focus du dernier champ pour garantir le déclenchement du onchange Svelte
-    await page.locator('#endDate').blur();
+    await page.locator('#endDate').blur(); 
 
-    // Étape 5 : Vérification (sans cliquer sur un bouton inutile)
     const visibleProjects = page.locator('[data-testid="project-item"]');
     await expect(visibleProjects).toHaveCount(1, { timeout: 10000 });
-    await expect(visibleProjects.first()).toContainText("JAN-2025");
-    await expect(visibleProjects.first()).toContainText("Projet de Janvier");
+    await expect(visibleProjects.first()).toContainText(mockFilteredProject.name);
   });
 });
