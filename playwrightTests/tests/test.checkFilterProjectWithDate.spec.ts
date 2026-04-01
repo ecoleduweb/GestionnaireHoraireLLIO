@@ -30,18 +30,14 @@ test.describe("Recherche et filtrage de projets", () => {
     await expect(visibleProjects).toHaveCount(1);
     await expect(visibleProjects.first()).toContainText("AT-123");
   });
-  
-test("filtre les projets avec les dates de début et de fin via l'API", async ({ page }) => {
-  const testStartDate = "2025-01-01";
-  const testEndDate = "2025-01-31";
 
-  await page.route('**/projects/detailed*', async (route) => {
-    const url = new URL(route.request().url());
-    
-    if (
-      url.searchParams.get('from') === testStartDate &&
-      url.searchParams.get('to') === testEndDate
-    ) {
+test("filtre les projets avec les dates de début et de fin via l'API", async ({ page }) => {
+    const testStartDate = "2025-01-01";
+    const testEndDate = "2025-01-31";
+
+    // Étape 1 : On cible UNIQUEMENT la requête avec les deux paramètres.
+    // Les requêtes intermédiaires seront gérées silencieusement par le ApiMocker du beforeEach.
+    await page.route(`**/projects/detailed?from=${testStartDate}&to=${testEndDate}`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -58,19 +54,22 @@ test("filtre les projets avec les dates de début et de fin via l'API", async ({
           ]
         })
       });
-    } else {
-      await route.continue();
-    }
+    });
+
+    // Étape 2 : Attendre que l'interface initiale (les 8 projets du mock par défaut) soit chargée
+    await page.waitForSelector('[data-testid="project-item"]');
+
+    // Étape 3 : Remplir les dates
+    await page.locator('#startDate').fill(testStartDate);
+    await page.locator('#endDate').fill(testEndDate);
+    
+    // Étape 4 : Forcer la perte de focus du dernier champ pour garantir le déclenchement du onchange Svelte
+    await page.locator('#endDate').blur();
+
+    // Étape 5 : Vérification (sans cliquer sur un bouton inutile)
+    const visibleProjects = page.locator('[data-testid="project-item"]');
+    await expect(visibleProjects).toHaveCount(1, { timeout: 10000 });
+    await expect(visibleProjects.first()).toContainText("JAN-2025");
+    await expect(visibleProjects.first()).toContainText("Projet de Janvier");
   });
-
-  await page.waitForSelector('[data-testid="project-item"]');
-
-  await page.locator('#startDate').fill(testStartDate);
-  await page.locator('#endDate').fill(testEndDate);
-
-  const visibleProjects = page.locator('[data-testid="project-item"]');
-  await expect(visibleProjects).toHaveCount(1, { timeout: 10000 });
-  await expect(visibleProjects.first()).toContainText("JAN-2025");
-  await expect(visibleProjects.first()).toContainText("Projet de Janvier");
-});
 });
