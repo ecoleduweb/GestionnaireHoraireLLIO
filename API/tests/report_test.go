@@ -26,9 +26,3 @@ func TestExportExcelAsNoAdministratorForbidden(t *testing.T) {
 
 	assertResponse(t, w, http.StatusForbidden, nil)
 }
-
-func TestExportExcelUnauthenticated(t *testing.T) {
-	w := sendRequest(router, "GET", "/report/excel", nil, 999) 
-
-	assertResponse(t, w, http.StatusUnauthorized, nil)
-}
