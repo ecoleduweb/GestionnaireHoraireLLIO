@@ -3,6 +3,7 @@
   import { Pencil, User, Trash2 } from 'lucide-svelte';
   import type { Project, UserInfo } from '../../Models';
   import { UserRole } from '$lib/types/enums';
+  import { getHoursColor } from '../../utils/displayUtils';
 
   type Props = {
     project: Project;
@@ -72,12 +73,8 @@
         <span>Temps restant</span>
         <hr class="my-1" />
         {#if project.totalTimeRemaining < 0}
-          <div class="font-medium text-red-700">
-            {formatHours(project.totalTimeRemaining)}
-          </div>
-        {:else}
-          <div class="text-gray-400">
-            {formatHours(project.totalTimeRemaining)}
+          <div class="font-medium {getHoursColor(project.totalTimeSpent, project.totalTimeEstimated)}">
+          {formatHours(project.totalTimeRemaining)}
           </div>
         {/if}
       </div>

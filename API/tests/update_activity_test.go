@@ -25,7 +25,7 @@ func TestUpdateActivity(t *testing.T) {
 	}
 
 	// Création de l'acitivité
-	createW := sendRequest(router, "POST", "/activity", initialActivity)
+	createW := sendRequest(router, "POST", "/activity", initialActivity, nil)
 	assertResponse(t, createW, http.StatusCreated, nil)
 
 	var createResponseBody struct {
@@ -47,7 +47,7 @@ func TestUpdateActivity(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w := sendRequest(router, "PUT", "/activity", updateActivity)
+	w := sendRequest(router, "PUT", "/activity", updateActivity, nil)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var updateResponseBody struct {
@@ -72,6 +72,49 @@ func TestUpdateActivityWithInvalidId(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	w := sendRequest(router, "PUT", "/activity", updateActivity)
+	w := sendRequest(router, "PUT", "/activity", updateActivity, nil)
 	assertResponse(t, w, http.StatusNotFound, nil)
+}
+
+func TestUpdateActivityWithEndDateBeforeStartDate(t *testing.T) {
+	// activité à modifier
+	initialActivity := DTOs.ActivityDTO{
+		Name:        "Original Activity",
+		Description: "Original Description",
+		StartDate:   time.Now(),
+		EndDate:     time.Now().Add(24 * time.Hour),
+		UserId:      doNotDeleteUser.Id,
+		ProjectId:   doNotDeleteProject.Id,
+		CategoryId:  doNotDeleteCategory.Id,
+	}
+
+	// Création de l'acitivité
+	createW := sendRequest(router, "POST", "/activity", initialActivity, nil)
+	assertResponse(t, createW, http.StatusCreated, nil)
+
+	var createResponseBody struct {
+		Reponse  string        `json:"reponse"`
+		Activity DAOs.Activity `json:"activity"`
+	}
+	err := json.Unmarshal(createW.Body.Bytes(), &createResponseBody)
+	assert.NoError(t, err)
+	
+	updateActivity := DTOs.ActivityDTO{
+		Id:          createResponseBody.Activity.Id,
+		Name:        "Updated Activity",
+		Description: "Updated Description",
+		StartDate:   time.Now(),
+		EndDate:     time.Now().Add(-48 * time.Hour),
+		UserId:      doNotDeleteUser.Id,
+		ProjectId:   doNotDeleteProject.Id,
+		CategoryId:  doNotDeleteCategory.Id,
+	}
+
+	w := sendRequest(router, "PUT", "/activity", updateActivity, nil)
+
+	expectedErrors := []DTOs.FieldErrorDTO{
+		{Field: "startDate", Message: "La date de début doit être avant la date de fin"},
+	}
+	
+	assertResponse(t, w, http.StatusBadRequest, expectedErrors)
 }

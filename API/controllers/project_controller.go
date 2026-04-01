@@ -48,6 +48,46 @@ func CreatedProject(c *gin.Context) {
 	})
 }
 
+func AddCoManager(c *gin.Context) {
+	projectId := c.Param("projectId")
+	projectIdInt, err := strconv.Atoi(projectId)
+	if err != nil {
+		handleError(c, err, projectSTR)
+		return
+	}
+
+	userId := c.Param("userId")
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		handleError(c, err, userSTR)
+		return
+	}
+
+	coManagerDTO := DTOs.CoManagerDTO{
+		UserId:    userIdInt,
+		ProjectId: projectIdInt,
+	}
+
+	currentUser, exists := c.Get("current_user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+
+	currentUserDTO := currentUser.(*DTOs.UserDTO)
+
+	coManagerAdded, err := services.AddCoManager(&coManagerDTO, currentUserDTO)
+	if err != nil {
+		handleError(c, err, "co-chargé de projet")
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"response":  "Le co-chargé de projet a bien été ajouté à la base de données",
+		"coManager": coManagerAdded,
+	})
+}
+
 func GetProjectById(c *gin.Context) {
 	id := c.Param("id")
 
@@ -83,7 +123,7 @@ func GetDetailedProjects(c *gin.Context) {
 
 	switch user.Role {
 	case enums.Administrator:
-		projects, err = services.GetDetailedProjects(from, to)
+		projects, err = services.GetDetailedProjects(from, to, user.Id)
 	case enums.ProjectManager:
 		projects, err = services.GetDetailedProjectsByManagerId(user.Id, from, to)
 	case enums.Employee:
@@ -105,19 +145,30 @@ func GetDetailedProjects(c *gin.Context) {
 }
 
 func GetProjects(c *gin.Context) {
-	projects, err := services.GetProjects()
-	if err != nil {
-		handleError(c, err, projectSTR)
-		return
-	}
+    currentUser, exists := c.Get("current_user")
+    if !exists {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+        return
+    }
 
-	if projects == nil {
-		// Retourner une liste vide au lieu de null
-		c.JSON(http.StatusOK, gin.H{"projects": []DTOs.ProjectDTO{}})
-		return
-	}
+    user, ok := currentUser.(*DTOs.UserDTO)
+    if !ok {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur interne du serveur"})
+        return
+    }
 
-	c.JSON(http.StatusOK, gin.H{"projects": projects})
+    projects, err := services.GetProjects(user.Id)
+    if err != nil {
+        handleError(c, err, projectSTR)
+        return
+    }
+
+    if projects == nil {
+        c.JSON(http.StatusOK, gin.H{"projects": []DTOs.ProjectDTO{}})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"projects": projects})
 }
 
 func UpdateProject(c *gin.Context) {
@@ -137,6 +188,14 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
+	currentUser, exists := c.Get("current_user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+
+	currentUserDTO := currentUser.(*DTOs.UserDTO)
+
 	id := strconv.Itoa(projectToUpdate.Id)
 	_, err := services.GetProjectById(id)
 	if err != nil {
@@ -150,7 +209,7 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
-	updatedProjectDTO, err := services.UpdateProject(&projectToUpdate)
+	updatedProjectDTO, err := services.UpdateProject(&projectToUpdate, currentUserDTO)
 	if err != nil {
 		handleError(c, err, projectSTR)
 		return

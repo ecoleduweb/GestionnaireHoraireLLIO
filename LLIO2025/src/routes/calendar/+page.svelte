@@ -296,6 +296,7 @@
       activity.endDate = getDateOrDefault(activity.endDate, defaultEndDate);
 
       const updatedActivity = await ActivityApiService.updateActivity(activity);
+      calendarService.updateEvent(updatedActivity);
       await refreshDashboardData();
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);

@@ -27,7 +27,7 @@ func TestDeleteActivity(t *testing.T) {
 		CategoryId:  doNotDeleteCategory.Id,
 	}
 
-	createW := sendRequest(router, "POST", "/activity", activityToDelete)
+	createW := sendRequest(router, "POST", "/activity", activityToDelete, nil)
 	assertResponse(t, createW, http.StatusCreated, nil)
 
 	var createResponseBody struct {
@@ -39,7 +39,7 @@ func TestDeleteActivity(t *testing.T) {
 
 	idToDelete := strconv.Itoa(createResponseBody.Activity.Id)
 
-	w := sendRequest(router, "DELETE", "/activity/"+idToDelete, nil)
+	w := sendRequest(router, "DELETE", "/activity/"+idToDelete, nil, &doNotDeleteUser.Id)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var deletedActivity DAOs.Activity
@@ -48,9 +48,42 @@ func TestDeleteActivity(t *testing.T) {
 	assert.True(t, errors.Is(errDB, gorm.ErrRecordNotFound))
 }
 
+func TestDeleteActivityWrongUser(t *testing.T) {
+
+	activityToDelete := DTOs.ActivityDTO{
+		Name:        "Activity to Delete",
+		Description: "This activity will be deleted",
+		StartDate:   time.Now(),
+		EndDate:     time.Now().Add(24 * time.Hour),
+		UserId:      doNotDeleteUser2.Id,
+		ProjectId:   doNotDeleteProject.Id,
+		CategoryId:  doNotDeleteCategory.Id,
+	}
+
+	createW := sendRequest(router, "POST", "/activity", activityToDelete, &doNotDeleteUser2.Id)
+	assertResponse(t, createW, http.StatusCreated, nil)
+
+	var createResponseBody struct {
+		Reponse  string        `json:"reponse"`
+		Activity DAOs.Activity `json:"activity"`
+	}
+	err := json.Unmarshal(createW.Body.Bytes(), &createResponseBody)
+	assert.NoError(t, err)
+
+	idToDelete := strconv.Itoa(createResponseBody.Activity.Id)
+
+	w := sendRequest(router, "DELETE", "/activity/"+idToDelete, nil, &doNotDeleteUser.Id)
+	assertResponse(t, w, http.StatusForbidden, nil)
+
+	var createdActivity DAOs.Activity
+	errDB := database.DB.Where("id = ? AND user_id = ?", idToDelete, doNotDeleteUser2.Id).First(&createdActivity).Error
+	assert.NoError(t, errDB)
+	assert.Equal(t, activityToDelete.Name, createdActivity.Name)
+}
+
 func TestDeleteNonExistentActivity(t *testing.T) {
 	nonExistentId := "99999"
 
-	w := sendRequest(router, "DELETE", "/activity/"+nonExistentId, nil)
+	w := sendRequest(router, "DELETE", "/activity/"+nonExistentId, nil, nil)
 	assertResponse(t, w, http.StatusNotFound, nil)
 }

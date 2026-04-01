@@ -13,8 +13,8 @@
   } from '../../utils/date';
   import '../../style/app.css';
   import { ChevronDown, X, Plus } from 'lucide-svelte';
-  import ConfirmationCreateCategory from './ConfirmModal.svelte';
   import SearchSelect from "../Global/SearchSelect.svelte";
+  import ConfirmationModal from '../ConfirmationModal.svelte';
 
   type Props = {
     show: boolean;
@@ -49,6 +49,7 @@
   let isSubmitting = $state(false);
   let showCategoryConfirmModal = $state(false);
   let categoryToAdd = $state('');
+  let isProjectSelectFocused = $state(true);
 
   if (selectedDate && selectedDate.start) {
     const { startDate, endDate } = initializeActivityDates(selectedDate.start);
@@ -275,24 +276,14 @@
     }
   };
 
-  const getTruncatedDisplayText = (uniqueId, name, maxLength = 30) => {
+  const getDisplayText = (uniqueId, name) => {
     const separator = " | ";
-    const availableForName = maxLength - uniqueId.length - separator.length;
+    const availableForName = uniqueId.length - separator.length;
     if (name === undefined || name === null || name.trim() === "") {
       return uniqueId; // Si le nom est vide, retourner uniquement l'uniqueId
     }
 
-    if (availableForName <= 0) {
-      // Si l'uniqueId est déjà trop long, on le tronque aussi
-      return uniqueId.substring(0, maxLength - 3) + "...";
-    }
-
-    if (name.length <= availableForName) {
-      return `${uniqueId}${separator}${name}`;
-    }
-
-    const truncatedName = name.substring(0, availableForName - 3) + "...";
-    return `${uniqueId}${separator}${truncatedName}`;
+    return `${uniqueId}${separator}${name}`;
   };
 
   $effect(() => {
@@ -398,11 +389,15 @@
                 id="activity-project"
                 name="projectId"
                 items={projects.map((value) => {
-                  return { value: value.id, label: getTruncatedDisplayText(value.uniqueId, value.name) };
+                  return { value: value.id, label: getDisplayText(value.uniqueId, value.name) };
                 })}
                 bind:selectedValue={activity.projectId}
                 placeholder="Sélectionner un projet"
                 setFields={setFields}
+                bind:focused={isProjectSelectFocused}
+                onSubmit={()=>{
+                  const form = document.querySelector('form');
+                  form?.requestSubmit();}}
                 required
               />
               {#if $errors.projectId}
@@ -619,18 +614,20 @@
       </div>
     </div>
   </div>
-  <ConfirmationCreateCategory
-    show={showCategoryConfirmModal}
-    title="Confirmer l'ajout"
-    message={`Voulez-vous ajouter la catégorie "<strong>${categoryToAdd}</strong>" ?`}
-    onConfirm={() => {
-      showCategoryConfirmModal = false;
-      confirmAddCategory();
-    }}
-    onCancel={() => {
-      showCategoryConfirmModal = false;
-    }}
-  />
+  {#if showCategoryConfirmModal}
+    <ConfirmationModal
+      modalTitle="Confirmer l'ajout"
+      modalText={`Voulez-vous ajouter la catégorie "<strong>${categoryToAdd}</strong>" ?`}
+      errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"
+      onSuccess={() => {
+        showCategoryConfirmModal = false;
+        confirmAddCategory();
+      }}
+      onClose={() => {
+        showCategoryConfirmModal = false;
+      }}
+    />
+  {/if}
 {/if}
 
 

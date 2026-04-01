@@ -3,20 +3,13 @@
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   import { formatHours } from '../../utils/date';
+  import { getHoursColor } from '../../utils/displayUtils';
+   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
 
-  let { project } = $props();
+  let { project, onClickAddCoManager = () => {} }: { project: any; onClickAddCoManager?: () => void } = $props();
   let isDetailsVisible = $state([]);
 
-  const calculateRemainingTime = (timeSpent: number, timeEstimated: number): number =>{
-    return timeEstimated - timeSpent;
-  }
-
-  const calculateEmployeeTime = (employee: any, type: 'spent' | 'estimated'): number =>{
-    return employee.categories.reduce(
-      (sum: number, cat: any) => sum + (type === 'spent' ? cat.timeSpent : cat.timeEstimated),
-      0
-    );
-  }
+ 
 </script>
 
 <style>
@@ -60,10 +53,11 @@
               <hr class="mt-2 text-xs text-gray-400" />
               <div class="mt-1 text-xs text-gray-400">Co-chargé·e de projet</div>
               {#each project.coLeads as coLead}
-                <div class="text-sm wrap-normal">{coLead}</div>
+                <div class="text-sm wrap-normal">{coLead.name}</div>
               {/each}
               <button
                 class="mt-2 inline-flex items-center bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs"
+                onclick={onClickAddCoManager}
               >
                 <Plus class="w-3 h-3" />
               </button>
@@ -97,13 +91,10 @@
                         employee.categories.reduce((sum, cat) => sum + cat.timeEstimated, 0)
                       )}
                     </div>
-                    <div
-                      class="w-1/3 text-right text-sm"
-                      class:text-red-500={calculateRemainingTime(
+                    <div class="w-1/3 text-right text-sm {getHoursColor(
                         calculateEmployeeTime(employee, 'spent'),
                         calculateEmployeeTime(employee, 'estimated')
-                      ) < 0}
-                    >
+                      )}">
                       {formatHours(
                         calculateRemainingTime(
                         calculateEmployeeTime(employee, 'spent'),
@@ -147,12 +138,10 @@
                               >{formatHours(category.timeEstimated)}</td
                             >
                             <td
-                              class="py-2 text-right w-1/6"
-                              class:text-red-500={category.timeEstimated - category.timeSpent < 0}
-                            >
-                              {formatHours(category.timeEstimated - category.timeSpent)}
+                                class="py-2 text-right w-1/6 {getHoursColor(category.timeSpent, category.timeEstimated)}"
+                              >{formatHours(category.timeEstimated - category.timeSpent)}
                             </td>
-                          </tr>
+                          </tr> 
                         {/each}
                         <tr>
                           <td colspan="4" class="py-2 pl-4">
@@ -190,12 +179,9 @@
                   <div class="w-1/3 text-right text-sm font-normal">
                     {formatHours(project.totalTimeEstimated)}
                   </div>
-                  <div
-                    class="w-1/3 text-right text-sm font-normal"
-                    class:text-red-500={project.totalTimeRemaining < 0}
-                  >
+                  <div class="w-1/3 text-right text-sm font-normal {getHoursColor(project.totalTimeSpent, project.totalTimeEstimated)}">
                     {formatHours(project.totalTimeRemaining)}
-                  </div>
+                    </div>
                 </div>
               </div>
             </div>
