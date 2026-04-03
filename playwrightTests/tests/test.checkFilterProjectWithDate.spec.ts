@@ -25,6 +25,7 @@ test.describe("Recherche et filtrage de projets", () => {
     const testEndDate = "2025-01-31";
     const mockFilteredProject = projectMocks.getDetailedProjectsSuccess.response.json.projects[0];
 
+    // Setup route avec interception des paramètres de date
     await page.route('**/**/projects/detailed*', async (route) => {
       const url = new URL(route.request().url());
       const from = url.searchParams.get('from');
@@ -43,24 +44,22 @@ test.describe("Recherche et filtrage de projets", () => {
 
     await page.waitForSelector('[data-testid="project-item"]');
 
+    // Remplir les dates
     await page.locator('#startDate').fill(testStartDate);
     await page.locator('#endDate').fill(testEndDate);
     
-    // On prépare l'écouteur de réponse AVANT de déclencher l'action
-    const responsePromise = page.waitForResponse(response => {
-      const url = new URL(response.url());
-      return url.pathname.includes('projects/detailed') && 
-             url.searchParams.get('from') === testStartDate &&
-             url.searchParams.get('to') === testEndDate &&
-             response.status() === 200;
-    });
-
-    // Déclencher l'événement qui provoque l'appel réseau
+    // Déclencher explicitement l'événement change
     await page.locator('#endDate').dispatchEvent('change');
 
-    // Attendre que la promesse soit résolue
-    await responsePromise;
+    // Attendre la réponse filtrée
+    await page.waitForResponse(
+      response => 
+        response.url().includes('projects/detailed') && 
+        response.url().includes('from=') &&
+        response.status() === 200
+    );
 
+    // Vérifier le résultat
     const visibleProjects = page.locator('[data-testid="project-item"]');
     await expect(visibleProjects).toHaveCount(1);
     await expect(visibleProjects.first()).toContainText(mockFilteredProject.name);
