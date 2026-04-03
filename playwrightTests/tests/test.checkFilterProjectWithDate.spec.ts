@@ -7,6 +7,12 @@ test.describe("Recherche et filtrage de projets", () => {
   
   test.beforeEach(async ({ page }) => {
     const apiMocker = new ApiMocker(page);
+    
+    //  Setup routes AVANT page.goto
+    await page.route('**/projects/detailed**', (route) => {
+      route.continue(); // Let default mock through
+    });
+
     await apiMocker
       .addMocks([
         projectMocks.getDetailedProjectsSuccess,
@@ -20,32 +26,30 @@ test.describe("Recherche et filtrage de projets", () => {
   });
 
   test.afterEach(async ({ page }) => {
-    // Nettoyer les routes interceptées pour éviter les interférences
-    await page.unroute("**/*");
+    //  Unroute seulement ta route custom, pas tout
+    await page.unroute('**/projects/detailed**');
   });
 
-test("filtre les projets avec les dates de début et de fin via l'API", async ({ page }) => {
+  test("filtre les projets avec les dates de début et de fin via l'API", async ({ page }) => {
     const testStartDate = "2025-01-01";
     const testEndDate = "2025-01-31";
-
     const mockFilteredProject = projectMocks.getDetailedProjectsSuccess.response.json.projects[0];
 
-    // Intercept la requête AVANT de modifier les dates
+    //  Re-setup la route DANS le test après beforeEach
+    await page.unroute('**/projects/detailed**');
     await page.route('**/projects/detailed**', (route) => {
-        const url = new URL(route.request().url());
-        const from = url.searchParams.get('from');
-        const to = url.searchParams.get('to');
+      const url = new URL(route.request().url());
+      const from = url.searchParams.get('from');
+      const to = url.searchParams.get('to');
 
-        // Si les dates correspondent, retourner le projet filtré
-        if (from === testStartDate && to === testEndDate) {
-            route.fulfill({
-                status: 200,
-                json: { projects: [mockFilteredProject] }
-            });
-        } else {
-            // Sinon, continuer avec le mock par défaut
-            route.continue();
-        }
+      if (from === testStartDate && to === testEndDate) {
+        route.fulfill({
+          status: 200,
+          json: { projects: [mockFilteredProject] }
+        });
+      } else {
+        route.continue();
+      }
     });
 
     await page.waitForSelector('[data-testid="project-item"]');
@@ -57,5 +61,5 @@ test("filtre les projets avec les dates de début et de fin via l'API", async ({
     const visibleProjects = page.locator('[data-testid="project-item"]');
     await expect(visibleProjects).toHaveCount(1, { timeout: 10000 });
     await expect(visibleProjects.first()).toContainText(mockFilteredProject.name);
-});
+  });
 });
