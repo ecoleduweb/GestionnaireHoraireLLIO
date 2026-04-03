@@ -8,11 +8,6 @@ test.describe("Recherche et filtrage de projets", () => {
   test.beforeEach(async ({ page }) => {
     const apiMocker = new ApiMocker(page);
     
-    //  Setup routes AVANT page.goto
-    await page.route('**/projects/detailed**', (route) => {
-      route.continue(); // Let default mock through
-    });
-
     await apiMocker
       .addMocks([
         projectMocks.getDetailedProjectsSuccess,
@@ -25,41 +20,48 @@ test.describe("Recherche et filtrage de projets", () => {
     await page.waitForLoadState("networkidle");
   });
 
-  test.afterEach(async ({ page }) => {
-    //  Unroute seulement ta route custom, pas tout
-    await page.unroute('**/projects/detailed**');
-  });
-
   test("filtre les projets avec les dates de début et de fin via l'API", async ({ page }) => {
     const testStartDate = "2025-01-01";
     const testEndDate = "2025-01-31";
     const mockFilteredProject = projectMocks.getDetailedProjectsSuccess.response.json.projects[0];
 
-    //  Re-setup la route DANS le test après beforeEach
-    await page.unroute('**/projects/detailed**');
-    await page.route('**/projects/detailed**', (route) => {
+    // Setup route avec interception des paramètres de date
+    await page.route('**/**/projects/detailed*', async (route) => {
       const url = new URL(route.request().url());
       const from = url.searchParams.get('from');
       const to = url.searchParams.get('to');
 
       if (from === testStartDate && to === testEndDate) {
-        route.fulfill({
+        await route.fulfill({
           status: 200,
-          json: { projects: [mockFilteredProject] }
+          contentType: 'application/json',
+          body: JSON.stringify({ projects: [mockFilteredProject] })
         });
       } else {
-        route.continue();
+        await route.continue();
       }
     });
 
     await page.waitForSelector('[data-testid="project-item"]');
 
+    // Remplir les dates
     await page.locator('#startDate').fill(testStartDate);
     await page.locator('#endDate').fill(testEndDate);
-    await page.locator('#endDate').blur();
+    
+    // Déclencher explicitement l'événement change
+    await page.locator('#endDate').dispatchEvent('change');
 
+    // Attendre la réponse filtrée
+    await page.waitForResponse(
+      response => 
+        response.url().includes('projects/detailed') && 
+        response.url().includes('from=') &&
+        response.status() === 200
+    );
+
+    // Vérifier le résultat
     const visibleProjects = page.locator('[data-testid="project-item"]');
-    await expect(visibleProjects).toHaveCount(1, { timeout: 10000 });
+    await expect(visibleProjects).toHaveCount(1);
     await expect(visibleProjects.first()).toContainText(mockFilteredProject.name);
   });
 });
