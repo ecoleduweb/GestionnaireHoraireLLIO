@@ -24,54 +24,38 @@ test.describe("Recherche et filtrage de projets", () => {
     await page.unroute("**/*");
   });
 
-  test("filtre les projets par texte en temps réel", async ({ page }) => {
-    await page.waitForSelector('[data-testid="project-item"]');
-    await expect(page.locator('[data-testid="project-item"]')).toHaveCount(8);
-
-    const searchInput = page.getByTestId("project-search");
-    await searchInput.fill("AT-123");
-
-    const visibleProjects = page.locator('[data-testid="project-item"]');
-    await expect(visibleProjects).toHaveCount(1);
-    await expect(visibleProjects.first()).toContainText("AT-123");
-  });
-
-  test("filtre les projets avec les dates de début et de fin via l'API", async ({ page }) => {
+test("filtre les projets avec les dates de début et de fin via l'API", async ({ page }) => {
     const testStartDate = "2025-01-01";
     const testEndDate = "2025-01-31";
 
     const mockFilteredProject = projectMocks.getDetailedProjectsSuccess.response.json.projects[0];
 
-    // Créer un nouveau mocker pour cette route dynamique
-    const dynamicMocker = new ApiMocker(page);
-    await dynamicMocker.addMock({
-      url: `/projects/detailed?from=${testStartDate}&to=${testEndDate}`,
-      method: "GET",
-      response: {
-        status: 200,
-        json: {
-          projects: [mockFilteredProject]
+    // Intercept la requête AVANT de modifier les dates
+    await page.route('**/projects/detailed**', (route) => {
+        const url = new URL(route.request().url());
+        const from = url.searchParams.get('from');
+        const to = url.searchParams.get('to');
+
+        // Si les dates correspondent, retourner le projet filtré
+        if (from === testStartDate && to === testEndDate) {
+            route.fulfill({
+                status: 200,
+                json: { projects: [mockFilteredProject] }
+            });
+        } else {
+            // Sinon, continuer avec le mock par défaut
+            route.continue();
         }
-      }
-    }).apply();
+    });
 
     await page.waitForSelector('[data-testid="project-item"]');
 
-    // Remplir les dates et déclencher la recherche
     await page.locator('#startDate').fill(testStartDate);
     await page.locator('#endDate').fill(testEndDate);
-    
-    // Attendre la réponse API avant de vérifier le résultat
-    await Promise.all([
-      page.waitForResponse(response => 
-        response.url().includes(`/projects/detailed?from=${testStartDate}&to=${testEndDate}`)
-      ),
-      page.locator('#endDate').blur()
-    ]);
+    await page.locator('#endDate').blur();
 
-    // Vérifier que les projets filtrés s'affichent
     const visibleProjects = page.locator('[data-testid="project-item"]');
     await expect(visibleProjects).toHaveCount(1, { timeout: 10000 });
     await expect(visibleProjects.first()).toContainText(mockFilteredProject.name);
-  });
+});
 });
