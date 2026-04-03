@@ -1,62 +1,58 @@
 import { test, expect } from "@playwright/test";
-import { ApiMocker } from "../Helper/mockApi";
 import { projectMocks } from "../Helper/Mocks/project.mock";
 import { userMocks } from "../Helper/Mocks/user.Mock";
-import { activityMocks } from "../Helper/Mocks/activity.mock";
 
-test.describe("checkRemainingHoursColor", () => {
-  test.beforeEach(async ({ page }) => {
-    const apiMocker = new ApiMocker(page);
-    await apiMocker
-      .addMocks([
-        userMocks.userMeSuccess,
-        activityMocks.getAllActivitiesDefaultWeekSuccess,
-        projectMocks.getProjectsListSuccess,
-        projectMocks.getDetailedProjectsByUserSuccess,
-      ])
-      .apply();
-    await page.clock.install({ time: new Date("2025-03-22T08:00:00") });
-    await page.goto("http://localhost:5002/calendar");
-    await page.waitForLoadState("networkidle");
+test.describe("Filtrage par date isolé", () => {
+  
+  test("filtre les projets via API en utilisant les mocks", async ({ page }) => {
+    const testStartDate = "2025-01-01";
+    const testEndDate = "2025-01-31";
+    
+    // On extrait le tout premier projet de ton mock officiel pour simuler le résultat de la recherche
+    const mockProject = projectMocks.getDetailedProjectsSuccess.response.json.projects[0];
+
+    // 1. Mock de l'utilisateur (nécessaire pour accéder à la page)
+    await page.route("**/user/me", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(userMocks.userMeSuccess.response.json),
+      });
+    });
+
+    // 2. Mock de la requête avec les paramètres de date
+    await page.route(`**/projects/detailed?from=${testStartDate}&to=${testEndDate}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ projects: [mockProject] }),
+      });
+    });
+
+    // 3. Mock du chargement initial (URL stricte sans paramètres)
+    await page.route("**/projects/detailed", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(projectMocks.getDetailedProjectsSuccess.response.json),
+      });
+    });
+
+    // 4. Exécution du test
+    await page.goto("http://localhost:5002/projects");
+
+    // Attente des 8 projets de base
+    await page.waitForSelector('[data-testid="project-item"]');
+
+    // Remplissage des champs de date
+    await page.locator('#startDate').fill(testStartDate);
+    await page.locator('#endDate').fill(testEndDate);
+    await page.locator('#endDate').blur(); // Force le déclenchement de onchange
+
+    // Vérification stricte
+    const visibleProjects = page.locator('[data-testid="project-item"]');
+    await expect(visibleProjects).toHaveCount(1, { timeout: 5000 });
+    await expect(visibleProjects.first()).toContainText(mockProject.name);
   });
 
-  test("negativeRemainingHours", async ({ page }) => {
-    await page.getByRole("button", { name: "new-1 | new commut" }).click();
-    await page.waitForSelector(".text-red-700", { state: "visible" });
-
-    const redValues = page
-      .locator(".text-red-700")
-      .filter({ hasText: "-4h00" });
-    await expect(redValues).toHaveCount(2);
-    await expect(redValues.first()).toBeVisible();
-  });
-  test("positiveRemainingHours", async ({ page }) => {
-    await page.getByRole("button", { name: "migr-2 | projet ! apre" }).click();
-    await page.waitForSelector(".text-gray-700", { state: "visible" });
-    const greyValues = page
-      .locator(".text-gray-700")
-      .filter({ hasText: "-1h00" });
-    await expect(greyValues).toHaveCount(2);
-    await expect(greyValues.first()).toBeVisible();
-  });
-
-  test("noEstimatedHours", async ({ page }) => {
-    await page.getByRole("button", { name: "-mmm | le nom !" }).click();
-    await page.waitForSelector(".text-gray-700", { state: "visible" });
-    const greyValues = page
-      .locator(".text-gray-700")
-      .filter({ hasText: "-2h30" });
-    await expect(greyValues).toHaveCount(2);
-    await expect(greyValues.first()).toBeVisible();
-  });
-
-  test("noRemainingHasEstimate", async ({ page }) => {
-    await page
-      .getByRole("button", { name: "10htotal | 10 heures au total" })
-      .click();
-    await page.waitForSelector(".text-gray-700", { state: "visible" });
-    const NoneValues = page.locator(".text-gray-400").filter({ hasText: "-" });
-    await expect(NoneValues).toHaveCount(2);
-    await expect(NoneValues.first()).toBeVisible();
-  });
 });
