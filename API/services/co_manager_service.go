@@ -74,3 +74,39 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 	err = copier.Copy(coManagerDTOResponse, coManagerAdded)
 	return coManagerDTOResponse, err
 }
+func DeleteCoManager(projectId int, userId int, author *DTOs.UserDTO) error {
+	project, err := GetProjectById(strconv.Itoa(projectId))
+	if err != nil {
+		return err
+	}
+
+	isCoManager, err := repositories.IsUserCoManager(projectId, userId)
+	if err != nil {
+		return err
+	}
+	if !isCoManager {
+		return customs_errors.ErrUserNotCoManager
+	}
+
+	// Empêche de supprimer le manager
+	if userId == project.ManagerId {
+		return customs_errors.ErrUserIsManager
+	}
+
+	// Permissions (exactement comme ADD)
+	if author.Role < enums.Administrator {
+		if project.ManagerId != author.Id {
+			isCoManager, err := repositories.IsUserCoManager(project.Id, author.Id)
+			if err != nil {
+				return err
+			}
+
+			if !isCoManager {
+				return customs_errors.ErrUserForbidden
+			}
+		}
+	}
+
+	// Delete
+	return repositories.DeleteCoManager(projectId, userId)
+}

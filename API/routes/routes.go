@@ -72,6 +72,7 @@ func RegisterRoutes(r *gin.Engine) {
 		projectGroup.DELETE("/:id", middleware.RoleValidationMiddleware(enums.Administrator), controllers.DeleteProject)
 		projectGroup.GET("/:id/categories", middleware.RoleValidationMiddleware(enums.Employee), controllers.GetCategoriesByProjectId)
 		projectGroup.POST("/:projectId/coManager/:userId", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.AddCoManager)
+		projectGroup.DELETE("/:id/coManager/:userId", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.DeleteCoManager)
 	}
 
 	projectsGroup := r.Group("/projects", middleware.RoleValidationMiddleware(enums.Employee))
