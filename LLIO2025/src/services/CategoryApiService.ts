@@ -95,7 +95,7 @@ const changeCategoryName = async (newName: string, category: Category): Promise<
       description: category.description,
       billable: category.billable,
       timeSpent: category.timeSpent,
-      timeEstimated: category.timeSpent
+      timeEstimated: category.timeEstimated
     }
 
     await PUT<Category, Category>(`/category`, newCategory);

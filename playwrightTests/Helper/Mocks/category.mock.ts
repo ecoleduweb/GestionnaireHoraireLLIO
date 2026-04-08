@@ -50,7 +50,7 @@ export const categoryMocks = {
     },
   },
   renameCategoryFailed: {
-    url: "/category/1",
+    url: "/category",
     method: "PUT",
     response: {
       status: 400,
