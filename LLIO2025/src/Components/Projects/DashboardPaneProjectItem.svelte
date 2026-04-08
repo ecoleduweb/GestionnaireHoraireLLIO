@@ -2,9 +2,13 @@
   import { formatHours } from '../../utils/date';
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import { ChevronDown } from 'lucide-svelte';
+  import { ChevronDown, Pencil } from 'lucide-svelte';
   import { getHoursColor } from '../../utils/displayUtils';
   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
+  import type { Category } from '../../Models';
+  import TextInputModal from '../TextInputModal.svelte';
+  import DOMPurify from 'dompurify';
+  import { CategoryApiService } from '../../services/CategoryApiService';
 
   let { project } = $props();
 
@@ -15,7 +19,28 @@
     open = !open;
   }
 
+  let categories: Category[] = $state(project.employees[selectedEmployee].categories);
 
+  let hoveredCategoryName: string = $state("");
+
+  let selectedCategory: Category = $state();
+  let enablePrompt = $state(false);
+
+  function handleRenameCategory(category: Category) 
+  {
+    selectedCategory = category;
+    enablePrompt = true;
+  }
+
+  async function sendRenameCategory(category: Category, newName: string) {
+    try {
+      return await CategoryApiService.changeCategoryName(newName, category);
+    }
+    catch (error) {
+      alert("Erreur - impossible de modifier le nom de la catégorie")
+    }
+    return false;
+  }
 
 </script>
 
@@ -60,10 +85,22 @@
       </thead>
 
       <tbody>
-        {#each project.employees[selectedEmployee].categories as category}
-          <tr class="bg-gray-50">
+        {#each categories as category}
+          <tr class="bg-gray-50"
+            onmouseenter={() => hoveredCategoryName = category.name }
+            onmouseleave={() => hoveredCategoryName = "" }
+          >
             <td class="py-2 pl-4 text-left">
               {category.name}
+              {#if category.name !== "Par défaut" && category.name == hoveredCategoryName}
+                        <button
+                            class="justify-end p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                            onclick={() => handleRenameCategory(category)}
+                            aria-label="Renommer la catégorie"
+                        >
+                        <Pencil size={10} />
+                    </button>
+                {/if}
             </td>
 
 
@@ -114,3 +151,22 @@
 
   </div>
 </div>
+
+
+{#if enablePrompt}
+    <TextInputModal
+      modalTitle="Modification du nom de la catégorie"
+      modalText={`Renommez la catégorie "<strong>` + DOMPurify.sanitize(selectedCategory.name) + `</strong>"`}
+      errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"
+      defaultTextInValue={DOMPurify.sanitize(selectedCategory.name)}
+      onSuccess={async (val: string) => {
+        if (await sendRenameCategory(selectedCategory, val)) {
+          categories = categories.map((cat) => cat.id === selectedCategory.id ? {...cat, name: val} : cat);
+        }
+        enablePrompt = false;
+      }}
+      onClose={() => {
+        enablePrompt = false;
+      }}
+    />
+{/if}
