@@ -1,6 +1,7 @@
-﻿<script lang="ts">
+<script lang="ts">
   import { onMount } from 'svelte';
   import { UserApiService } from '../../services/UserApiService';
+  import type { TimeBankConfig } from '../../Models/index';
   import HoursWorkedConfigModal from './HoursWorkedConfigModal.svelte';
 
   type Props = {
@@ -10,23 +11,41 @@
     textHoursWorked: string;
   };
 
-  let { hoursTotal }: Props = $props();
+  let { hoursTotal, textHoursWorked }: Props = $props();
 
-  let displayedHoursTotal = $state<number | null>(hoursTotal ?? null);
+  let displayedHoursTotal = $state<number | null>(null);
+  let isConfigured = $state(false);
   let showModal = $state(false);
 
-  let timeBankConfig = $state({
+  let timeBankConfig = $state<TimeBankConfig>({
     startDate: '',
     hoursPerWeek: 0,
     offset: 0,
   });
 
+  const refreshTimeBankBalance = async () => {
+    try {
+      const balance = await UserApiService.getTimeInBank();
+      isConfigured = balance.isConfigured;
+      displayedHoursTotal = balance.timeInBank ?? null;
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   onMount(async () => {
     try {
-      const config = await UserApiService.getTimeBankConfig();
+      const [config, balance] = await Promise.all([
+        UserApiService.getTimeBankConfig(),
+        UserApiService.getTimeInBank(),
+      ]);
 
-      Object.assign(timeBankConfig, config);
-      displayedHoursTotal = config.offset;
+      if (config) {
+        Object.assign(timeBankConfig, config);
+      }
+
+      isConfigured = balance.isConfigured;
+      displayedHoursTotal = balance.timeInBank ?? null;
     } catch (err) {
       console.error(err);
     }
@@ -40,12 +59,34 @@
     showModal = false;
   };
 
-  const handleSave = (values) => {
+  const handleSave = async (values: TimeBankConfig) => {
     Object.assign(timeBankConfig, values);
-    displayedHoursTotal = values.offset;
+    await refreshTimeBankBalance();
     showModal = false;
   };
 </script>
+
+<div class="card">
+  <div class="section">
+    <p>
+      Vous avez{' '}
+      {#if !isConfigured}
+        <button class="link" on:click={openConfigModal}>configurer</button>
+      {:else}
+        <button class="link" on:click={openConfigModal} data-testid="total-hours">{displayedHoursTotal ?? 0}</button>
+      {/if}
+      {' '}heures en banque.
+    </p>
+  </div>
+</div>
+
+{#if showModal}
+  <HoursWorkedConfigModal
+    onClose={closeConfigModal}
+    onSave={handleSave}
+    initialConfig={timeBankConfig}
+  />
+{/if}
 
 <style>
   .card {
@@ -65,29 +106,7 @@
     cursor: pointer;
     background: none;
     border: none;
+    display: inline;
+    padding: 0;
   }
 </style>
-
-<div class="card">
-  <div class="section">
-    <p>
-      Vous avez
-      {#if displayedHoursTotal === null || displayedHoursTotal === 0}
-        <button class="link" on:click={openConfigModal}> configurer </button>
-      {:else}
-        <button class="link" on:click={openConfigModal} data-testid="total-hours">
-          {displayedHoursTotal}
-        </button>
-      {/if}
-      heures en banque.
-    </p>
-  </div>
-</div>
-
-{#if showModal}
-  <HoursWorkedConfigModal
-    onClose={closeConfigModal}
-    onSave={handleSave}
-    initialConfig={timeBankConfig}
-  />
-{/if}
