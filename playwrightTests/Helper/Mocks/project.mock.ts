@@ -844,4 +844,14 @@ export const projectMocks = {
       },
     },
   },
+  getDetailedProjectsFilteredSuccess: {
+    url: "/projects/detailed?from=2025-01-01&to=2025-01-31",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        projects: [detailedProjectsBase[0]], 
+      },
+    },
+  },
 } satisfies Record<string, MockConfig>;
