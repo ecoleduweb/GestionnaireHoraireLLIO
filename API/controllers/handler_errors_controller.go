@@ -56,9 +56,9 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		log.Printf("ERREUR - Ajout du co-chargé impossible: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
 
-	case customs_errors.ErrUserNotCoManager:
-		errorMsg := fmt.Sprintf("L'utilisateur sélectionné n'est pas co-chargé de ce projet.")
-		log.Printf("ERREUR - Ajout du co-chargé impossible: %s - %v", errorMsg, err)
+	case customs_errors.ErrSelectedUserIsNotCoManager:
+		errorMsg := fmt.Sprintf("L'utilisateur sélectionné n'est pas co-chargé de ce projet")
+		log.Printf("ERREUR - Suppression du co-chargé impossible: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusNotFound, gin.H{"error": errorMsg})
 
 	case customs_errors.ErrUserRoleBelowManager:

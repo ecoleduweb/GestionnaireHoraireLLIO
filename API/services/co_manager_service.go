@@ -30,25 +30,9 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 		return nil, customs_errors.ErrUserIsManager
 	}
 
-	// Ici, on vérifie les permissions pour que seulement les personnes
-	// suivantes puissent ajouter un co-chargé de projet :
-	//
-	// - Tous les administrateurs
-	// - Tout chargé de projet étant chargé ou co-chargé de ce projet en spécifique.
-	//
-	// Toutes les autres personnes (utilisateur régulier ou chargé de projet non-attribué)
-	//	ne peuvent pas modifier les co-chargés du projet
-	if author.Role < enums.Administrator {
-		if project.ManagerId != author.Id {
-			isCoManager, err := repositories.IsUserCoManager(project.Id, author.Id)
-			if err != nil {
-				return nil, err
-			}
-
-			if !isCoManager {
-				return nil, customs_errors.ErrUserForbidden
-			}
-		}
+	err = validateCoManagerManagementPermission(project, author)
+	if err != nil {
+		return nil, err
 	}
 
 	coManagerDAO := &DAOs.CoManager{}
@@ -74,8 +58,14 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 	err = copier.Copy(coManagerDTOResponse, coManagerAdded)
 	return coManagerDTOResponse, err
 }
+
 func DeleteCoManager(projectId int, userId int, author *DTOs.UserDTO) error {
 	project, err := GetProjectById(strconv.Itoa(projectId))
+	if err != nil {
+		return err
+	}
+
+	err = validateCoManagerManagementPermission(project, author)
 	if err != nil {
 		return err
 	}
@@ -85,28 +75,24 @@ func DeleteCoManager(projectId int, userId int, author *DTOs.UserDTO) error {
 		return err
 	}
 	if !isCoManager {
-		return customs_errors.ErrUserNotCoManager
+		return customs_errors.ErrSelectedUserIsNotCoManager
 	}
 
-	// Empêche de supprimer le manager
-	if userId == project.ManagerId {
-		return customs_errors.ErrUserIsManager
-	}
-
-	// Permissions (exactement comme ADD)
-	if author.Role < enums.Administrator {
-		if project.ManagerId != author.Id {
-			isCoManager, err := repositories.IsUserCoManager(project.Id, author.Id)
-			if err != nil {
-				return err
-			}
-
-			if !isCoManager {
-				return customs_errors.ErrUserForbidden
-			}
-		}
-	}
-
-	// Delete
 	return repositories.DeleteCoManager(projectId, userId)
+}
+
+func validateCoManagerManagementPermission(project *DTOs.ProjectDTO, author *DTOs.UserDTO) error {
+	if author.Role >= enums.Administrator || project.ManagerId == author.Id {
+		return nil
+	}
+
+	isCoManager, err := repositories.IsUserCoManager(project.Id, author.Id)
+	if err != nil {
+		return err
+	}
+	if !isCoManager {
+		return customs_errors.ErrUserForbidden
+	}
+
+	return nil
 }
