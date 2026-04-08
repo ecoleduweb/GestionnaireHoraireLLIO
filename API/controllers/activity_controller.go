@@ -85,6 +85,20 @@ func GetActivityById(c *gin.Context) {
 }
 
 func GetUsersOutlookCalendar(c *gin.Context) {
+	dateParam := c.Query("date")
+	var date time.Time
+	if dateParam != "" {
+		var err error
+		date, err = time.Parse(time.DateOnly, dateParam)
+		if err != nil {
+			log.Printf("Erreur de format de date : %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Date invalide"})
+			return
+		}
+	} else {
+		date = time.Now()
+	}
+
 	userDto, shouldReturn := getUserFromContext(c)
 	if shouldReturn {
 		return
@@ -109,13 +123,13 @@ func GetUsersOutlookCalendar(c *gin.Context) {
 		return
 	}
 
-	events, err := services.GetCalendarEvents(*graphToken, time.Now())
+	events, err := services.GetCalendarEvents(*graphToken, date)
 	if err != nil {
 		handleError(c, err, activiteSTR)
 		return
 	}
-	
-	c.JSON(http.StatusOK, gin.H{"events": events})
+
+	c.JSON(http.StatusOK, gin.H{"date": date.Format(time.DateOnly), "events": events})
 }
 
 func UpdateActivity(c *gin.Context) {
