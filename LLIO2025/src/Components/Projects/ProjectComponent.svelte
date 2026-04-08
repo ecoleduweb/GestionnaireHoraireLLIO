@@ -6,10 +6,10 @@
   import { getHoursColor } from '../../utils/displayUtils';
    import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
 
-  let { project, onClickAddCoManager = () => {} }: { project: any; onClickAddCoManager?: () => void } = $props();
+  let {project, onClickAddCoManager = () => {},onClickReassignManager = () => {}}: {project: any;onClickAddCoManager?: () => void;onClickReassignManager?: () => void;} = $props();
   let isDetailsVisible = $state([]);
 
- 
+
 </script>
 
 <style>
@@ -48,7 +48,7 @@
               <button
                 class="mt-2 inline-flex items-center px-3 py-1.5 bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs font-medium"
               >
-                <span class="text-xs">Réattribuer</span>
+                <span class="text-xs" onclick="{onClickReassignManager}">Réattribuer </span>
               </button>
               <hr class="mt-2 text-xs text-gray-400" />
               <div class="mt-1 text-xs text-gray-400">Co-chargé·e de projet</div>

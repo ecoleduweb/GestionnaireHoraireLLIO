@@ -559,4 +559,14 @@ export const projectMocks = {
       },
     },
   },
+  reassignManagerSuccess: {
+    url: "/project/*/manager/*",
+    method: "POST",
+    response: {
+      status: 200,
+      json: {
+        response: "Le chargé de projet a bien été mis à jour",
+      },
+    },
+  },
 } satisfies Record<string, MockConfig>;

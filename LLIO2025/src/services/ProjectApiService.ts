@@ -1,7 +1,7 @@
 // ProjectApiService.ts
-import { ProjectStatus } from "$lib/types/enums";
-import type { ProjectBase, Project, DetailedProject } from "../Models/index";
-import { DELETE, GET, POST, PUT } from "../ts/server";
+import { ProjectStatus } from '$lib/types/enums';
+import type { ProjectBase, Project, DetailedProject } from '../Models/index';
+import { DELETE, GET, POST, PUT } from '../ts/server';
 
 interface ProjectDeleteResponse {
   deleted: boolean;
@@ -16,11 +16,11 @@ const createProject = async (project: ProjectBase): Promise<Project> => {
     project.status = ProjectStatus.InProgress;
   }
   try {
-    const response = await POST<ProjectBase, ProjectResponse>("/project", project);
+    const response = await POST<ProjectBase, ProjectResponse>('/project', project);
     return response.project;
   } catch (error) {
-    console.error("Erreur lors de la création du projet:", error);
-    throw new Error("Échec de la création du projet. Veuillez réessayer.");
+    console.error('Erreur lors de la création du projet:', error);
+    throw new Error('Échec de la création du projet. Veuillez réessayer.');
   }
 };
 
@@ -29,11 +29,11 @@ const updateProject = async (project: ProjectBase): Promise<Project> => {
     project.status = ProjectStatus.InProgress;
   }
   try {
-    const response = await PUT<ProjectBase, ProjectResponse>("/project", project);
+    const response = await PUT<ProjectBase, ProjectResponse>('/project', project);
     return response.project;
   } catch (error) {
-    console.error("Erreur lors de la création du projet:", error);
-    throw new Error("Échec de la mise à jour du projet. Veuillez réessayer.");
+    console.error('Erreur lors de la création du projet:', error);
+    throw new Error('Échec de la mise à jour du projet. Veuillez réessayer.');
   }
 };
 
@@ -42,52 +42,52 @@ const deleteProject = async (projectId: number): Promise<void> => {
     const response = await DELETE(`/project/${projectId}`);
     return response;
   } catch (error) {
-    console.error("Erreur lors de la suppression du projet:", error);
-    throw new Error("Erreur lors de la suppression du projet. Veuillez réessayer.");
+    console.error('Erreur lors de la suppression du projet:', error);
+    throw new Error('Erreur lors de la suppression du projet. Veuillez réessayer.');
   }
 };
 
-const getProjects = async(): Promise<Project[]> => {
+const getProjects = async (): Promise<Project[]> => {
   try {
-    const response = await GET<{projects: Project[]}>("/projects");
+    const response = await GET<{ projects: Project[] }>('/projects');
     return response.projects;
   } catch (error) {
-    console.error("Erreur lors de la récupération des projets:", error);
-    throw new Error("Échec de la récupération des projets. Veuillez réessayer.");
+    console.error('Erreur lors de la récupération des projets:', error);
+    throw new Error('Échec de la récupération des projets. Veuillez réessayer.');
   }
-}
+};
 
-const getProject = async(id: number): Promise<Project> => {
+const getProject = async (id: number): Promise<Project> => {
   try {
-    const response = await GET<{project: Project}>(`/project/${id}`);
+    const response = await GET<{ project: Project }>(`/project/${id}`);
     return response.project;
   } catch (error) {
-    console.error("Erreur lors de la récupération du projet:", error);
-    throw new Error("Échec de la récupération du projet. Veuillez réessayer.");
+    console.error('Erreur lors de la récupération du projet:', error);
+    throw new Error('Échec de la récupération du projet. Veuillez réessayer.');
   }
-}
+};
 
-const getDetailedProjects = async(): Promise<DetailedProject[]> => {
+const getDetailedProjects = async (): Promise<DetailedProject[]> => {
   try {
-    const response = await GET<{projects:   DetailedProject[]}>("/projects/detailed");
+    const response = await GET<{ projects: DetailedProject[] }>('/projects/detailed');
     return response.projects;
   } catch (error) {
-    console.error("Erreur lors de la récupération des projets:", error);
-    throw new Error("Échec de la récupération des projets. Veuillez réessayer.");
+    console.error('Erreur lors de la récupération des projets:', error);
+    throw new Error('Échec de la récupération des projets. Veuillez réessayer.');
   }
-}
+};
 
-const getCurrentUserProjects = async(): Promise<DetailedProject[]> => {
+const getCurrentUserProjects = async (): Promise<DetailedProject[]> => {
   try {
-    const response = await GET<{projects: DetailedProject[]}>("/projects/me/detailed");
+    const response = await GET<{ projects: DetailedProject[] }>('/projects/me/detailed');
     return response.projects;
   } catch (error) {
-    console.error("Erreur lors de la récupération des projets:", error);
-    throw new Error("Échec de la récupération des projets. Veuillez réessayer.");
+    console.error('Erreur lors de la récupération des projets:', error);
+    throw new Error('Échec de la récupération des projets. Veuillez réessayer.');
   }
-}
+};
 
-const addCoManagerToProject = async(projectId: number, userId: number): Promise<void> => {
+const addCoManagerToProject = async (projectId: number, userId: number): Promise<void> => {
   try {
     await POST(`/project/${projectId}/coManager/${userId}`, {});
   } catch (error) {
@@ -96,7 +96,18 @@ const addCoManagerToProject = async(projectId: number, userId: number): Promise<
       "Erreur à l'ajout du co-chargé : " + (error instanceof Error ? error.message : String(error))
     );
   }
-}
+};
+const reassignManagerToProject = async (projectId: number, userId: number): Promise<void> => {
+  try {
+    await POST(`/project/${projectId}/reassignManager/${userId}`, {});
+  } catch (error) {
+    console.error('Erreur lors de la réattribution du chargé au projet:', error);
+    throw new Error(
+      'Erreur à la réattribution du chargé de projet: ' +
+        (error instanceof Error ? error.message : String(error))
+    );
+  }
+};
 
 export const ProjectApiService = {
   createProject,
@@ -106,5 +117,6 @@ export const ProjectApiService = {
   getProject,
   getDetailedProjects,
   getCurrentUserProjects,
-  addCoManagerToProject
+  addCoManagerToProject,
+  reassignManagerToProject,
 };
