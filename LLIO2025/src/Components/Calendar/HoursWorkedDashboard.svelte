@@ -35,17 +35,13 @@
 
   onMount(async () => {
     try {
-      const [config, balance] = await Promise.all([
-        UserApiService.getTimeBankConfig(),
-        UserApiService.getTimeInBank(),
-      ]);
+      const config = await UserApiService.getTimeBankConfig();
 
       if (config) {
         Object.assign(timeBankConfig, config);
       }
 
-      isConfigured = balance.isConfigured;
-      displayedHoursTotal = balance.timeInBank ?? null;
+      await refreshTimeBankBalance();
     } catch (err) {
       console.error(err);
     }
@@ -68,15 +64,16 @@
 
 <div class="card">
   <div class="section">
-    <p>
-      Vous avez{' '}
-      {#if !isConfigured}
-        <button class="link" on:click={openConfigModal}>configurer</button>
-      {:else}
+    {#if !isConfigured}
+      <button class="link" on:click={openConfigModal}>Configurer votre banque d'heures</button>
+    {:else}
+      <p>
+        Vous avez
+        {' '}
         <button class="link" on:click={openConfigModal} data-testid="total-hours">{displayedHoursTotal ?? 0}</button>
-      {/if}
-      {' '}heures en banque.
-    </p>
+        {' '}heures en banque.
+      </p>
+    {/if}
   </div>
 </div>
 
