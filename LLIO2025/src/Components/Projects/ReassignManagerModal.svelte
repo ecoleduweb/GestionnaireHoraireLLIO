@@ -1,11 +1,10 @@
 <script lang="ts">
-  // Propriétés du composant
   import type {DetailedProject, User} from '../../Models';
+  import { ProjectApiService } from '../../services/ProjectApiService';
 
   type Props = {
     show: boolean;
     project: DetailedProject;
-    users: User[];
     onAdd: (userId : number, projectId : number) => void;
     onCancel: () => void;
   };
@@ -13,13 +12,22 @@
   let {
     show,
     project,
-    users,
     onAdd,
     onCancel,
   }: Props = $props();
 
+  let users: User[] = $state([]);
   let valueSelected : string = $state("");
   let valueSelectedInt : number = $derived(parseInt(valueSelected, 10));
+    $effect(() => {
+    if (show && project.id) {
+      (async () => {
+        users = await ProjectApiService.getAvailableManagers(project.id);
+        console.log('managers reçus:', users);
+        valueSelected = "";
+      })();
+    }
+  });
 </script>
 
 {#if show}

@@ -3,6 +3,7 @@ package controllers
 import (
 	"llio-api/models/DTOs"
 	"llio-api/models/enums"
+	"llio-api/repositories"
 	"llio-api/services"
 	"log"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 )
 
 var projectSTR = "projet"
+
 
 func CreatedProject(c *gin.Context) {
 	var projetDTO DTOs.ProjectDTO
@@ -85,6 +87,49 @@ func AddCoManager(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"response":  "Le co-chargé de projet a bien été ajouté à la base de données",
 		"coManager": coManagerAdded,
+	})
+}
+func GetAvailableManagers(c *gin.Context) {
+	projectIdStr := c.Query("excludeProjectManagerId") 
+	var projectId int
+	var err error
+
+	if projectIdStr != "" {
+		projectId, err = strconv.Atoi(projectIdStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID du projet invalide"})
+			return
+		}
+	}
+
+	managers, err := services.GetAvailableManagers(projectId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"managers": managers})
+}
+func ReassignManager(c *gin.Context) {
+	projectId, err := strconv.Atoi(c.Param("projectId"))
+	if err != nil {
+		handleError(c, err, "projet")
+		return
+	}
+
+	newManagerId, err := strconv.Atoi(c.Param("newManagerId"))
+	if err != nil {
+		handleError(c, err, "utilisateur")
+		return
+	}
+	err = repositories.ReassignManager(projectId, newManagerId)
+	if err != nil {
+		handleError(c, err, "réattribution du manager")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"response": "Le manager a bien été réattribué",
 	})
 }
 
@@ -269,3 +314,4 @@ func GetDetailedProjectsByUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"projects": projects})
 }
+

@@ -174,5 +174,5 @@
   <AddCoManagerModal show={showAddCoManagerModal} users={usersToDisplay} project={selectedProject} onAdd={handleAddCoManager} onCancel={() => showAddCoManagerModal = false} />
 {/if}
 {#if showReassignManagerModal}
-  <ReassignManagerModal show={showReassignManagerModal} users={usersToDisplay} project={selectedProject} onAdd={handleReassignManager} onCancel={() => showReassignManagerModal = false} />
+  <ReassignManagerModal show={showReassignManagerModal} project={selectedProject} onAdd={handleReassignManager} onCancel={() => showReassignManagerModal = false} />
 {/if}

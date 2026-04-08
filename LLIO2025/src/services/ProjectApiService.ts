@@ -1,6 +1,6 @@
 // ProjectApiService.ts
 import { ProjectStatus } from '$lib/types/enums';
-import type { ProjectBase, Project, DetailedProject } from '../Models/index';
+import type { ProjectBase, Project, DetailedProject, User } from '../Models/index';
 import { DELETE, GET, POST, PUT } from '../ts/server';
 
 interface ProjectDeleteResponse {
@@ -99,13 +99,24 @@ const addCoManagerToProject = async (projectId: number, userId: number): Promise
 };
 const reassignManagerToProject = async (projectId: number, userId: number): Promise<void> => {
   try {
-    await POST(`/project/${projectId}/reassignManager/${userId}`, {});
+    await PUT(`/project/${projectId}/reassignManager/${userId}`, {});
   } catch (error) {
     console.error('Erreur lors de la réattribution du chargé au projet:', error);
     throw new Error(
       'Erreur à la réattribution du chargé de projet: ' +
         (error instanceof Error ? error.message : String(error))
     );
+  }
+};
+const getAvailableManagers = async (projectId: number): Promise<User[]> => {
+  try {
+    const response = await GET<{ managers: User[] }>(
+      `/project/availableManagers?excludeProjectManagerId=${projectId}`
+    );
+    return response?.managers ?? [];
+  } catch (error) {
+    console.error('Erreur lors de la récupération des managers disponibles:', error);
+    return [];
   }
 };
 
@@ -119,4 +130,5 @@ export const ProjectApiService = {
   getCurrentUserProjects,
   addCoManagerToProject,
   reassignManagerToProject,
+  getAvailableManagers,
 };
