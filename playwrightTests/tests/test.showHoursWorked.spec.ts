@@ -11,6 +11,8 @@ test.describe("showHoursWorked", () => {
     await apiMocker
       .addMocks([
         userMocks.userMeSuccess,
+        userMocks.getTimeBankConfigNotConfigured,
+        userMocks.getTimeBankNotConfiguredSuccess,
       ])
       .apply();
 
@@ -29,7 +31,7 @@ test.describe("showHoursWorked", () => {
     await page.waitForSelector(".fc-event", { state: "visible" });
 
     
-    await expect(page.getByText(/heures en banque/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Configurer votre banque d'heures", exact: true })).toBeVisible();
   });
 
   test("showHoursWorkedMonth", async ({ page }) => {
@@ -50,7 +52,7 @@ test.describe("showHoursWorked", () => {
     await page.getByRole("button", { name: "Mois", exact: true }).click();
 
    
-    await expect(page.getByText(/heures en banque/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Configurer votre banque d'heures", exact: true })).toBeVisible();
   });
 
   test("showHoursWorkedDay", async ({ page }) => {
@@ -71,7 +73,7 @@ test.describe("showHoursWorked", () => {
     await page.getByRole("button", { name: "Jour", exact: true }).click();
 
     
-    await expect(page.getByText(/heures en banque/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Configurer votre banque d'heures", exact: true })).toBeVisible();
   });
 
   test("hoursWorkedNoActivities", async ({ page }) => {
@@ -86,6 +88,6 @@ test.describe("showHoursWorked", () => {
     await page.waitForSelector(".fc", { state: "visible" });
 
     
-    await expect(page.getByText(/heures en banque/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Configurer votre banque d'heures", exact: true })).toBeVisible();
   });
 });
