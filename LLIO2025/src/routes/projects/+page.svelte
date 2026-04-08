@@ -17,6 +17,7 @@
   let projectFilter = $state('');
   let startDate = $state('');
   let endDate = $state('');
+  let dateError = $state<string | null>(null);
 
   let currentUser = $state<UserInfo | null>(null);
 
@@ -94,8 +95,13 @@
     await Promise.all([loadProjects(), loadUsers()]);
   });
 
-  const handleDateChange = async () => {
-    await loadProjects();
+  const handleDateChange = () => {
+    if (startDate && endDate && startDate > endDate) {
+      dateError = "La date de fin ne peut pas être antérieure à la date de début.";
+      return;
+    }
+    dateError = null;
+    loadProjects();
   }
 
   $effect(() => { // si le search est update, le fonction est rééxecutée 
@@ -121,6 +127,7 @@
     </div>
     <div class="px-4 pb-4 flex flex-wrap gap-4 items-center">
       
+      <!-- Date Filter -->
       <div class="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border-2 border-gray-300 shadow-sm hover:border-gray-400 transition-all duration-200">
         
         <div class="flex items-center gap-2">
