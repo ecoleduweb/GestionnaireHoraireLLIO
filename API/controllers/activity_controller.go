@@ -5,6 +5,7 @@ import (
 	"llio-api/services"
 	"log"
 	"strconv"
+	"time"
 
 	"net/http"
 
@@ -81,6 +82,40 @@ func GetActivityById(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"activity": activity})
+}
+
+func GetUsersOutlookCalendar(c *gin.Context) {
+	userDto, shouldReturn := getUserFromContext(c)
+	if shouldReturn {
+		return
+	}
+
+	graphToken, err := services.GetUserGraphAccessToken(userDto.Id)
+	if err != nil {
+		handleError(c, err, activiteSTR)
+		return
+	}
+
+	if graphToken == nil {
+		log.Printf("La connexion Microsoft de l'utilisateur est invalide ou inexistante. : %v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Votre compte n'est pas connecté à votre compte Microsoft. Veuillez vous reconnecter et réessayer."})
+		return
+	}
+
+	isGraphTokenExpired, err := services.IsJWTExpired(*graphToken)
+	if (err != nil) || isGraphTokenExpired {
+		log.Printf("La connexion Microsoft de l'utilisateur est invalide ou inexistante. : %v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Votre compte Microsoft s'est déconnecté. Veuillez vous reconnecter et réessayer."})
+		return
+	}
+
+	events, err := services.GetCalendarEvents(*graphToken, time.Now())
+	if err != nil {
+		handleError(c, err, activiteSTR)
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"events": events})
 }
 
 func UpdateActivity(c *gin.Context) {
