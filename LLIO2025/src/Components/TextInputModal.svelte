@@ -6,7 +6,6 @@
     modalText: string;
     confirmText?: string;
     cancelText?: string;
-    errorText: string;
     defaultTextInValue: string;
     onClose: () => void;
     onSuccess: (value: string) => void;
@@ -17,7 +16,6 @@
     modalText,
     confirmText = 'Confirmer',
     cancelText = 'Annuler',
-    errorText,
     defaultTextInValue,
     onClose, 
     onSuccess 
@@ -34,7 +32,6 @@
       await onSuccess(textValue);
       onClose();
     } catch (err) {
-        if (errorText != "") alert(errorText);
     } finally {
     }
   };

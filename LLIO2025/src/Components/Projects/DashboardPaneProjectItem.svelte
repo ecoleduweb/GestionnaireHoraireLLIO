@@ -21,15 +21,15 @@
 
   let categories: Category[] = $state(project.employees[selectedEmployee].categories);
 
-  let hoveredCategoryName: string = $state("");
+  let hoveredCategoryId: number = $state(-1);
 
   let selectedCategory: Category = $state();
-  let enablePrompt = $state(false);
+  let enableRenameCategoryPrompt = $state(false);
 
   function handleRenameCategory(category: Category) 
   {
     selectedCategory = category;
-    enablePrompt = true;
+    enableRenameCategoryPrompt = true;
   }
 
   async function sendRenameCategory(category: Category, newName: string) {
@@ -87,12 +87,12 @@
       <tbody>
         {#each categories as category}
           <tr class="bg-gray-50"
-            onmouseenter={() => hoveredCategoryName = category.name }
-            onmouseleave={() => hoveredCategoryName = "" }
+            onmouseenter={() => hoveredCategoryId = category.id }
+            onmouseleave={() => hoveredCategoryId = -1 }
           >
             <td class="py-2 pl-4 text-left">
               {category.name}
-              {#if category.name !== "Par défaut" && category.name == hoveredCategoryName}
+              {#if category.name !== "Par défaut" && category.id === hoveredCategoryId}
                         <button
                             class="justify-end p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
                             onclick={() => handleRenameCategory(category)}
@@ -153,20 +153,19 @@
 </div>
 
 
-{#if enablePrompt}
+{#if enableRenameCategoryPrompt}
     <TextInputModal
       modalTitle="Modification du nom de la catégorie"
       modalText={`Renommez la catégorie "<strong>` + DOMPurify.sanitize(selectedCategory.name) + `</strong>"`}
-      errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"
       defaultTextInValue={DOMPurify.sanitize(selectedCategory.name)}
       onSuccess={async (val: string) => {
         if (await sendRenameCategory(selectedCategory, val)) {
           categories = categories.map((cat) => cat.id === selectedCategory.id ? {...cat, name: val} : cat);
         }
-        enablePrompt = false;
+        enableRenameCategoryPrompt = false;
       }}
       onClose={() => {
-        enablePrompt = false;
+        enableRenameCategoryPrompt = false;
       }}
     />
 {/if}
