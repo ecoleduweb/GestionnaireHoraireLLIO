@@ -6,7 +6,7 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import NavButton from "../../Components/NavButton.svelte";
-  import ExcelButton from "../../Components/Administrator/ExcelButton.svelte"
+  import GlobalReportButton from "../../Components/Administrator/GlobalReportButton.svelte"
   
   let currentUser = $state<UserInfo | null>(null);
   let isLoading = $state(false);    
@@ -48,7 +48,7 @@
           </svg>
           Gestion des utilisateurs
         </button>
-        <ExcelButton/>
+        <GlobalReportButton/>
     </div>
   </div>
   </div>    
