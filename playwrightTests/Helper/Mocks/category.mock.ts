@@ -23,6 +23,32 @@ export const categoryMocks = {
       },
     },
   },
+  getCategoriesByProjectDeletedSuccess: {
+    url: "/project/*/categories",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        categories: [],
+      },
+    },
+  },
+  deleteCategorySuccess: {
+    url: "/category/1",
+    method: "DELETE",
+    response: {
+      status: 200,
+      json: {}
+    },
+  },
+  deleteCategoryFailed: {
+    url: "/category/1",
+    method: "DELETE",
+    response: {
+      status: 400,
+      json: {}
+    },
+  },
   getCategoryForProject1Success: {
     url: "/project/1/categories",
     method: "GET",

@@ -17,6 +17,12 @@ func RegisterRoutes(r *gin.Engine) {
 		userGroup.DELETE("/:id", middleware.RoleValidationMiddleware(enums.Administrator), controllers.DeleteUserById)
 		userGroup.PATCH("/:id/role", middleware.RoleValidationMiddleware(enums.Administrator), controllers.UpdateUserRole)
 	}
+	timeBankGroup := userGroup.Group("/time-bank")
+	{
+		timeBankGroup.GET("", controllers.GetTimeBankBalance)
+		timeBankGroup.GET("/config", controllers.GetTimeBankConfig)
+		timeBankGroup.PUT("/config", controllers.SaveTimeBankConfig)
+	}
 
 	usersGroup := r.Group("/users", middleware.RoleValidationMiddleware(enums.ProjectManager))
 	{
@@ -50,6 +56,7 @@ func RegisterRoutes(r *gin.Engine) {
 		categoryGroup.POST("", controllers.CreateCategory)
 		categoryGroup.GET("/:id", controllers.GetCategoryById)
 		categoryGroup.PUT("", controllers.UpdateCategory)
+		categoryGroup.DELETE("/:id", controllers.DeleteCategory)
 	}
 
 	categoriesGroup := r.Group("/categories", middleware.RoleValidationMiddleware(enums.Employee))
