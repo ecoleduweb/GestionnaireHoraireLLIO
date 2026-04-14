@@ -11,10 +11,17 @@
     textHoursWorked: string;
   };
 
+  interface TimeBalance {
+    isConfigured: boolean;
+    displayedHoursTotal: number | null;
+  }
+
   let { hoursTotal, textHoursWorked }: Props = $props();
 
-  let displayedHoursTotal = $state<number | null>(null);
-  let isConfigured = $state(false);
+  let timeBalance = $state<TimeBalance>({
+    isConfigured: false,
+    displayedHoursTotal: null,
+  });
   let showModal = $state(false);
 
   let timeBankConfig = $state<TimeBankConfig>({
@@ -26,8 +33,8 @@
   const refreshTimeBankBalance = async () => {
     try {
       const balance = await UserApiService.getTimeInBank();
-      isConfigured = balance.isConfigured;
-      displayedHoursTotal = balance.timeInBank ?? null;
+      timeBalance.isConfigured = balance.isConfigured;
+      timeBalance.displayedHoursTotal = balance.timeInBank ?? null;
     } catch (err) {
       console.error(err);
     }
@@ -64,13 +71,13 @@
 
 <div class="card">
   <div class="section">
-    {#if !isConfigured}
+    {#if !timeBalance.isConfigured}
       <button class="link" on:click={openConfigModal}>Configurer votre banque d'heures</button>
     {:else}
       <p>
         Vous avez
         {' '}
-        <button class="link" on:click={openConfigModal} data-testid="total-hours">{displayedHoursTotal ?? 0}</button>
+        <button class="link" on:click={openConfigModal} data-testid="total-hours">{timeBalance.displayedHoursTotal ?? 0}</button>
         {' '}heures en banque.
       </p>
     {/if}
