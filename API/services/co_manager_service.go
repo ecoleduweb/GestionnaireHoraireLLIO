@@ -30,7 +30,7 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 		return nil, customs_errors.ErrUserIsManager
 	}
 
-	err = validateCoManagerManagementPermission(project, author)
+	err = canUserManageProject(project, author)
 	if err != nil {
 		return nil, err
 	}
@@ -59,18 +59,18 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 	return coManagerDTOResponse, err
 }
 
-func DeleteCoManager(projectId int, userId int, author *DTOs.UserDTO) error {
+func DeleteCoManager(projectId int, coManagerToDeleteUserId int, author *DTOs.UserDTO) error {
 	project, err := GetProjectById(strconv.Itoa(projectId))
 	if err != nil {
 		return err
 	}
 
-	err = validateCoManagerManagementPermission(project, author)
+	err = canUserManageProject(project, author)
 	if err != nil {
 		return err
 	}
 
-	isCoManager, err := repositories.IsUserCoManager(projectId, userId)
+	isCoManager, err := repositories.IsUserCoManager(projectId, coManagerToDeleteUserId)
 	if err != nil {
 		return err
 	}
@@ -78,10 +78,10 @@ func DeleteCoManager(projectId int, userId int, author *DTOs.UserDTO) error {
 		return customs_errors.ErrSelectedUserIsNotCoManager
 	}
 
-	return repositories.DeleteCoManager(projectId, userId)
+	return repositories.DeleteCoManager(projectId, coManagerToDeleteUserId)
 }
 
-func validateCoManagerManagementPermission(project *DTOs.ProjectDTO, author *DTOs.UserDTO) error {
+func canUserManageProject(project *DTOs.ProjectDTO, author *DTOs.UserDTO) error {
 	if author.Role >= enums.Administrator || project.ManagerId == author.Id {
 		return nil
 	}
