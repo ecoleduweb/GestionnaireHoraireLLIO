@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { goto } from "$app/navigation"
-  import { quintOut } from "svelte/easing";
-  import { slide } from "svelte/transition";
-  import DashboardProjectItem from "../Projects/DashboardPaneProjectItem.svelte";
+  import { goto } from '$app/navigation';
+  import { quintOut } from 'svelte/easing';
+  import { slide } from 'svelte/transition';
+  import DashboardProjectItem from '../Projects/DashboardPaneProjectItem.svelte';
   import type { DetailedProject, UserInfo } from '../../Models/index.ts';
   import { UserRole } from '../../lib/types/enums';
-  import NavButton from "../NavButton.svelte";
-  
+  import NavButton from '../NavButton.svelte';
+  import HoursWorkedDashboard from './HoursWorkedDashboard.svelte';
 
+  import TimeBank from './TimeBank.svelte';
 
   type Props = {
     detailedProjects: DetailedProject[];
@@ -17,12 +18,19 @@
     dateEnd: string;
     textHoursWorked: string;
   };
-  
-  
-  import HoursWorkedDashboard from "./HoursWorkedDashboard.svelte";
-  const { totalHours, detailedProjects = [], dateStart, dateEnd, textHoursWorked, currentUser } : Props = $props();
+
+  const {
+    totalHours,
+    detailedProjects = [],
+    dateStart,
+    dateEnd,
+    textHoursWorked,
+    currentUser,
+  }: Props = $props();
   let isArchivedVisible = $state(false);
 </script>
+
+
 
 <div class="dashboard-container">
   <!-- En-tête du dashboard -->
@@ -32,53 +40,67 @@
   <div class="dashboard-content">
     <!-- Contenu à venir -->
     <div class="dashboard-item">
-      <NavButton currentUserRole = {currentUser.role} />
+      <NavButton currentUserRole={currentUser.role} />
     </div>
-
 
     <!-- Projets en cours -->
     <div>
-      {#each detailedProjects.filter(x => !x.isArchived) as project}
-        <DashboardProjectItem project={project} />
+      {#each detailedProjects.filter((x) => !x.isArchived) as project}
+        <DashboardProjectItem {project} />
       {/each}
 
       <!-- Projets archivés -->
-      {#if detailedProjects.some(x => x.isArchived)}
-      <div>
-        <button
-          class="w-full p-4 flex items-center justify-between text-gray-600 hover:bg-gray-50 cursor-pointer"
-          onclick={() => isArchivedVisible = !isArchivedVisible}
-        >
-          <span class="font-medium">Projets archivés ({detailedProjects.filter(x => x.isArchived).length})</span>
-          <svg
-            class="w-5 h-5 transform transition-transform {isArchivedVisible ? 'rotate-180' : ''}"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      {#if detailedProjects.some((x) => x.isArchived)}
+        <div>
+          <button
+            class="w-full p-4 flex items-center justify-between text-gray-600 hover:bg-gray-50 cursor-pointer"
+            onclick={() => (isArchivedVisible = !isArchivedVisible)}
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+            <span class="font-medium"
+              >Projets archivés ({detailedProjects.filter((x) => x.isArchived).length})</span
+            >
+            <svg
+              class="w-5 h-5 transform transition-transform {isArchivedVisible ? 'rotate-180' : ''}"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
+            </svg>
+          </button>
 
-        {#if isArchivedVisible}
-          <div transition:slide={{ duration: 300, easing: quintOut }}>
-            {#each detailedProjects.filter(x => x.isArchived) as project}
-              <DashboardProjectItem project={project} />
-            {/each}
-          </div>
-        {/if}
-      </div>
+          {#if isArchivedVisible}
+            <div transition:slide={{ duration: 300, easing: quintOut }}>
+              {#each detailedProjects.filter((x) => x.isArchived) as project}
+                <DashboardProjectItem {project} />
+              {/each}
+            </div>
+          {/if}
+        </div>
       {/if}
     </div>
   </div>
-  <HoursWorkedDashboard 
-  hoursTotal={totalHours}
-  dateStart={dateStart}
-  dateEnd={dateEnd}
-  textHoursWorked = {textHoursWorked} />
+  
+ <div class="dashboard-card">
+
+  <HoursWorkedDashboard hoursTotal={totalHours} {dateStart} {dateEnd} {textHoursWorked} />
+  <TimeBank />
+  </div>
 </div>
 
+
 <style>
+ .dashboard-card {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+  }
   .dashboard-container {
     width: 300px;
     height: 100vh;

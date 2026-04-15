@@ -32,7 +32,7 @@
   };
 </script>
 
-<div class="dashboard-card">
+
   <div class="bilan-container">
     <div class="header" data-testid="hours-worked-period">
       <h2>
@@ -49,17 +49,8 @@
     </p>
   </div>
 
-  <TimeBank />
-</div>
 
 <style>
-  .dashboard-card {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
   .bilan-container {
     padding: 1rem;
   }
