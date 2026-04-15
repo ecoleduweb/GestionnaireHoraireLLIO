@@ -28,6 +28,7 @@ func GetCalendarEvents(accessToken string, date time.Time) ([]GraphEvent, error)
 
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Prefer", "outlook.body-content-type=\"text\"")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
