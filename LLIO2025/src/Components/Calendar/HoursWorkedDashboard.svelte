@@ -34,7 +34,7 @@
 
 <div class="dashboard-card">
   <div class="bilan-container">
-    <div class="header">
+    <div class="header" data-testid="hours-worked-period">
       <h2>
         {#if areDatesEqual()}
           Bilan du {formatDate(dateStart)}
@@ -44,7 +44,7 @@
       </h2>
     </div>
 
-    <p class="summary-text">
+    <p class="summary-text" data-testid="hours-worked-summary">
       Vous avez travaillé <strong>{hoursTotal.toFixed(2)}</strong> heures {textHoursWorked}.
     </p>
   </div>
