@@ -106,9 +106,14 @@ export interface OutlookEventTime {
   timeZone: string;
 }
 
+export interface OutlookEventBody {
+  content: string;
+}
+
 export interface OutlookEventRaw {
   id: string;
   subject: string;
+  body: OutlookEventBody;
   start: OutlookEventTime;
   end: OutlookEventTime;
   isAllDay: boolean;
