@@ -6,6 +6,7 @@ import (
 	"llio-api/models/DTOs"
 	"llio-api/repositories"
 	"log"
+	"strconv"
 
 	"github.com/jinzhu/copier"
 )
@@ -103,7 +104,7 @@ func GetDetailedActivityById(id int) (*DTOs.DetailedActivityDTO, error) {
 	return detailedActivityDTO, err
 }
 
-func UpdateActivity(activityDTO *DTOs.ActivityDTO) (*DTOs.DetailedActivityDTO, error) {
+func UpdateActivity(activityDTO *DTOs.ActivityDTO, user *DTOs.UserDTO) (*DTOs.DetailedActivityDTO, error) {
 
 	activityDAO := &DAOs.Activity{}
 	err := copier.Copy(activityDAO, activityDTO)
@@ -111,12 +112,20 @@ func UpdateActivity(activityDTO *DTOs.ActivityDTO) (*DTOs.DetailedActivityDTO, e
 		return nil, err
 	}
 
-	activityDAOUpdated, err := repositories.UpdateActivity(activityDAO)
+	canDelete, err := repositories.UserHasPermissionToInteractWithActivity(user, strconv.Itoa(activityDAO.Id))
 	if err != nil {
 		return nil, err
 	}
 
-	return GetDetailedActivityById(activityDAOUpdated.Id)
+	if canDelete {
+		activityDAOUpdated, err := repositories.UpdateActivity(activityDAO)
+		if err != nil {
+			return nil, err
+		}
+		return GetDetailedActivityById(activityDAOUpdated.Id)
+	}
+
+	return nil, customs_errors.ErrUserForbidden
 }
 
 func DeleteActivity(id string, user *DTOs.UserDTO) error {
