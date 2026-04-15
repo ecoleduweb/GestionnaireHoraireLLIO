@@ -32,6 +32,26 @@
   };
 </script>
 
+<style>
+  .card {
+    background: #f5f5f5;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 500px;
+  }
+
+  .section {
+    margin-bottom: 1rem;
+  }
+
+  .link {
+    color: #2563eb;
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+</style>
 
   <div class="bilan-container">
     <div class="header" data-testid="hours-worked-period">
