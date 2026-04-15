@@ -131,5 +131,41 @@ export const userMocks = {
           "L'utilisateur a une ou des activités associées, suppression impossible",
       },
     },
-  },
+   
+   saveTimeBankConfigSuccess: {
+      url: '/user/time-bank/config',
+        method: 'POST',
+        response: {
+            status: 200,
+            json: {
+                "startDate": "2025-03-01",
+                "hoursPerWeek": 40,
+                "offset": 0
+            }
+        }
+    },
+    getTimeBankConfigSuccess: {
+      url: '/user/time-bank/config',
+        method: 'GET',
+        response: {
+            status: 200,
+            json: {
+                "startDate": "2025-03-01",
+                "hoursPerWeek": 40,
+                "offset": 0
+            }
+        }
+    },
+    getTimeBankSuccess: {
+        url: '/user/time-bank',
+        method: 'GET',
+        response: {
+            status: 200,
+            json: {
+                "isConfigured": true,
+                "timeInBank": 40
+            }
+        }
+    },
+
 } satisfies Record<string, MockConfig>;

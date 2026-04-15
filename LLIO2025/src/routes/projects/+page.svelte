@@ -16,6 +16,9 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let projectFilter = $state('');
+  let startDate = $state('');
+  let endDate = $state('');
+  let dateError = $state<string | null>(null);
 
   let currentUser = $state<UserInfo | null>(null);
 
@@ -48,7 +51,7 @@
     try {
       isLoading = true;
       error = null;
-      projects = await ProjectApiService.getDetailedProjects();
+      projects = await ProjectApiService.getDetailedProjects(startDate, endDate);
     } catch (err) {
       console.error('Erreur lors de la récupération des projets:', err);
       error = "Impossible de charger les projets. Veuillez réessayer plus tard.";
@@ -114,6 +117,15 @@
     await Promise.all([loadProjects(), loadUsers()]);
   });
 
+  const handleDateChange = () => {
+    if (startDate && endDate && startDate > endDate) {
+      dateError = "La date de fin ne peut pas être antérieure à la date de début.";
+      return;
+    }
+    dateError = null;
+    loadProjects();
+  }
+
   $effect(() => { // si le search est update, le fonction est rééxecutée 
     const filter = projectFilter.toLowerCase().trim();
     filteredProjects = projects.filter(project =>
@@ -135,21 +147,52 @@
     <div class="p-4">
       <h1 class="text-2xl font-medium text-gray-800">Vos projets en cours</h1>
     </div>
-    <div class="px-4 pb-4">
-      <div class="relative">
+    <div class="px-4 pb-4 flex flex-wrap gap-4 items-center">
+      
+      <!-- Date Filter -->
+      <div class="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border-2 border-gray-300 shadow-sm hover:border-gray-400 transition-all duration-200">
+        
+        <div class="flex items-center gap-2">
+          <label for="startDate" class="text-xs font-bold text-gray-500 uppercase tracking-wide cursor-pointer">Début</label>
+          <input
+            type="date"
+            id="startDate"
+            bind:value={startDate}
+            onchange={handleDateChange}
+            class="text-sm text-gray-800 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer p-0"
+          />
+        </div>
+
+        <div class="w-px h-6 bg-gray-300 mx-1"></div>
+
+        <div class="flex items-center gap-2">
+          <label for="endDate" class="text-xs font-bold text-gray-500 uppercase tracking-wide cursor-pointer">Fin</label>
+          <input
+            type="date"
+            id="endDate"
+            bind:value={endDate}
+            onchange={handleDateChange}
+            class="text-sm text-gray-800 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer p-0"
+          />
+        </div>
+        
+      </div>
+
+      <div class="relative flex-1 min-w-[200px]">
         <input
           data-testid="project-search"
           type="text"
           bind:value={projectFilter}
           placeholder="Rechercher un projet..."
-          class="w-full px-4 py-3 pl-12 text-gray-800 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:border-gray-400"
+          class="w-full px-4 py-2 pl-10 text-sm text-gray-800 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm hover:border-gray-400"
         />
         <img
-        src={searchIcon}
-        alt="Rechercher"
-        class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
+          src={searchIcon}
+          alt="Rechercher"
+          class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-70"
         />
       </div>
+      
     </div>
   
 

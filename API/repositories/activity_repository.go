@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"llio-api/customs_errors"
 	"llio-api/database"
 	"llio-api/models/DAOs"
 )
@@ -32,17 +31,14 @@ func GetDetailedActivityById(id int) (*DAOs.Activity, error) {
 	return &activity, DBErrorManager(err)
 }
 
-//Par defaut, GO n'update pas les champs vides, null donc le Select(*) force à mettre tous les champs à jours
+// Par defaut, GO n'update pas les champs vides, null donc le Select(*) force à mettre tous les champs à jours
 func UpdateActivity(ActivityDAO *DAOs.Activity) (*DAOs.Activity, error) {
 	result := database.DB.Model(&DAOs.Activity{}).
-	Where("id = ?", ActivityDAO.Id).
-	Select("*").
-	Updates(ActivityDAO)
+		Where("id = ?", ActivityDAO.Id).
+		Select("*").
+		Updates(ActivityDAO)
 	if result.Error != nil {
 		return ActivityDAO, DBErrorManager(result.Error)
-	}
-	if result.RowsAffected == 0 {
-		return ActivityDAO, customs_errors.ErrNotFound
 	}
 	return ActivityDAO, nil
 }
@@ -59,4 +55,11 @@ func GetActivitiesFromRange(from string, to string, idUser int) ([]*DAOs.Activit
 	err := database.DB.Where("End_Date >= ? AND Start_Date <= ? AND User_Id = ?",
 		fromWithTime, toWithTime, idUser).Find(&activities).Error
 	return activities, DBErrorManager(err)
+}
+
+func GetActivitiesCountFromCategoryId(categoryId string) (int64, error) {
+	var count int64
+	err := database.DB.Model(&DAOs.Activity{}).Where("category_id = ?", categoryId).Count(&count).Error
+
+	return count, DBErrorManager(err)
 }
