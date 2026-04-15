@@ -74,6 +74,8 @@
     time.endHours = getHoursFromDate(activityToEdit.endDate);
     time.endMinutes = getMinutesFromDate(activityToEdit.endDate);
   }
+
+   // InitialProjectId permet de fermer la modale quand on n'a pas effectué de modification.
   const initialProjectId = activity.projectId;
 
   const {
@@ -263,10 +265,7 @@
 const handleOverlayClick = (e) => {
   if (e) e.stopPropagation();
 
-  const projectIdStr = String(activity.projectId ?? '').trim();
-  const hasProject = projectIdStr !== '' && projectIdStr !== 'undefined' && projectIdStr !== 'null';
-
-  if (hasProject && activity.projectId !== initialProjectId) {
+  if (activity.projectId && activity.projectId !== initialProjectId) {
     showCloseConfirmModal = true;
   } else {
     onClose();
