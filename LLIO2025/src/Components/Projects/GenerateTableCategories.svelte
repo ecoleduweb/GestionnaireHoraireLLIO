@@ -3,17 +3,13 @@
   import type { Category } from "../../Models";
   import { formatHours } from '../../utils/date';
   import { getHoursColor } from '../../utils/displayUtils';
-  import TextInputModal from "../TextInputModal.svelte";
-  import Renamer from "../Renamer.svelte";
+  import TextInputModal from "../Modal/TextInputModal.svelte";
+  import CategoryRenamer from "../CategoryRenamer.svelte";
 
-  let { categories, sendRenameCategory }: { categories: Category[], sendRenameCategory: (category: Category, newName: string) => Promise<boolean> } = $props(); //employee.categories
+  let { categories }: { categories: Category[] } = $props(); //employee.categories
   let listCategories = $state(categories);
 
-  function getCategories() {
-    return listCategories;
-  }
-
-  function setNewCategories(catList: Category[]) {
+  function handledUpdateCategories(catList: Category[]) {
     listCategories = catList;
   }
 
@@ -27,7 +23,7 @@
                 ? 'bg-white'
                 : 'bg-gray-50'}"
             >
-                <td class="py-2 text-left w-1/2 pl-4">{category.name} <Renamer category={category} sendRenameCategory={sendRenameCategory} setNewCategories={setNewCategories} getCategories={getCategories} /> </td>
+                <td class="py-2 text-left w-1/2 pl-4">{category.name} <CategoryRenamer category={category} onUpdatedCategories={handledUpdateCategories} categories={listCategories} /> </td>
                 <td class="py-2 text-right w-1/6">{formatHours(category.timeSpent)}</td>
                     <td class="py-2 text-right w-1/6">{formatHours(category.timeEstimated)}</td>
                     <td class="py-2 text-right w-1/6 {getHoursColor(category.timeSpent, category.timeEstimated)}">{formatHours(category.timeEstimated - category.timeSpent)}</td>

@@ -89,7 +89,7 @@ const deleteCategory = async (categoryId: number): Promise<void> => {
 
 const changeCategoryName = async (newName: string, category: Category): Promise<boolean> => {
   try {
-    let newCategory = {
+    let updatedCategory = {
       id: category.id,
       name: newName,
       description: category.description,
@@ -98,7 +98,7 @@ const changeCategoryName = async (newName: string, category: Category): Promise<
       timeEstimated: category.timeEstimated
     }
 
-    await PUT<Category, Category>(`/category`, newCategory);
+    await PUT<Category, Category>(`/category`, updatedCategory);
 
     return true;
 

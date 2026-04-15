@@ -17,11 +17,6 @@
   }
 
   let categories: Category[] = $state(project.employees[selectedEmployee].categories);
-
-  let hoveredCategoryId: number = $state(-1);
-
-  let selectedCategory: Category = $state();
-  let enableRenameCategoryPrompt = $state(false);
 </script>
 
 <div class="border-l-10 border-b" style="border-left-color: {project.color}">
@@ -66,10 +61,7 @@
 
       <tbody>
         {#each categories as category}
-          <tr class="bg-gray-50"
-            onmouseenter={() => hoveredCategoryId = category.id }
-            onmouseleave={() => hoveredCategoryId = -1 }
-          >
+          <tr class="bg-gray-50">
             <td class="py-2 pl-4 text-left">
               {category.name}
             </td>

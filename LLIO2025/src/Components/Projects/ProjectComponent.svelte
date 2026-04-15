@@ -11,17 +11,6 @@
 
   let { project, onClickAddCoManager = () => {} }: { project: any; onClickAddCoManager?: () => void } = $props();
   let isDetailsVisible = $state([]);
-
-  async function sendRenameCategory(category: Category, newName: string) {
-    try {
-      return await CategoryApiService.changeCategoryName(newName, category);
-    }
-    catch (error) {
-      alert("Erreur - impossible de modifier le nom de la catégorie")
-    }
-    return false;
-  }
-
 </script>
 
 <style>
@@ -136,7 +125,7 @@
                     class="p-2 bg-white text-sm overflow-hidden"
                     transition:slide={{ duration: 300, easing: quintOut }}
                   >
-                    <GenerateTableCategories categories={employee.categories} sendRenameCategory={sendRenameCategory}/>
+                    <GenerateTableCategories categories={employee.categories} />
                   </div>
                 {/if}
               {/each}

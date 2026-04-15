@@ -14,7 +14,7 @@
   import '../../style/app.css';
   import { ChevronDown, X, Plus, Trash2 } from 'lucide-svelte';
   import SearchSelect from "../Global/SearchSelect.svelte";
-  import ConfirmationModal from '../ConfirmationModal.svelte';
+  import ConfirmationModal from '../Modal/ConfirmationModal.svelte';
 
   type Props = {
     show: boolean;

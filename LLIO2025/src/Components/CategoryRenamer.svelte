@@ -1,9 +1,10 @@
 <script lang="ts">
   import { Pencil } from "lucide-svelte";
   import type { Category } from "../Models";
-  import TextInputModal from "./TextInputModal.svelte";
+  import TextInputModal from "./Modal/TextInputModal.svelte";
+  import { CategoryApiService } from "../services/CategoryApiService";
 
-    let { category, sendRenameCategory, setNewCategories, getCategories } = $props();
+    let { category, onUpdatedCategories, categories } = $props();
 
     let selectedCategory: Category = $state();
     let enableRenameCategoryPrompt = $state(false);
@@ -12,6 +13,16 @@
     {
         selectedCategory = category;
         enableRenameCategoryPrompt = true;
+    }
+
+    async function sendRenameCategory(category: Category, newName: string) {
+        try {
+            return await CategoryApiService.changeCategoryName(newName, category);
+        }
+        catch (error) {
+            alert("Erreur - impossible de modifier le nom de la catégorie")
+        }
+        return false;
     }
 
 </script>
@@ -33,7 +44,7 @@
       defaultTextInValue={selectedCategory.name}
       onSuccess={async (val: string) => {
         if (await sendRenameCategory(selectedCategory, val)) {
-            setNewCategories(getCategories().map((cat) => cat.id === selectedCategory.id ? {...cat, name: val} : cat));
+            onUpdatedCategories(categories.map((cat) => cat.id === selectedCategory.id ? {...cat, name: val} : cat));
         }
         enableRenameCategoryPrompt = false;
       }}
