@@ -44,7 +44,6 @@
   }
  const handleReassignManagerModalOpen = async (projectId: number) => {
     selectedProject = projects.find(p => p.id == projectId);
-    await loadUsers();
     showReassignManagerModal = true;
   }
   const loadProjects = async () => {
@@ -96,7 +95,7 @@
       error= null;
       await ProjectApiService.reassignManagerToProject(projectId, userId);
     } catch (e) {
-      console.error('Erreur lors de la réattribution du chéf de projet :', e);
+      console.error('Erreur lors de la réattribution du chef de projet :', e);
       alert(e instanceof Error ? e.message : 'Erreur inconnue');
     } finally {
       isLoading = false;

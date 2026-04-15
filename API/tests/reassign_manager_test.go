@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"llio-api/database"
 	"llio-api/models/DAOs"
-	"log"
 	"net/http"
 	"strconv"
 	"testing"
@@ -34,7 +33,6 @@ func TestReassignManager(t *testing.T) {
 	err := json.Unmarshal(w.Body.Bytes(), &responseBody)
 	assert.NoError(t, err)
 
-	log.Println("Response:", responseBody.Response)
 
 	assert.Equal(t, "Le manager a bien été réattribué", responseBody.Response)
 

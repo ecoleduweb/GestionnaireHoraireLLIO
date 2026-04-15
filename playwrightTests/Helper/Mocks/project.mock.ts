@@ -561,7 +561,7 @@ export const projectMocks = {
   },
   reassignManagerSuccess: {
     url: "/project/*/manager/*",
-    method: "POST",
+    method: "PUT",
     response: {
       status: 200,
       json: {

@@ -104,7 +104,7 @@ func GetAvailableManagers(c *gin.Context) {
 
 	managers, err := services.GetAvailableManagers(projectId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		handleError(c, err, "liste des chargés de projet")
 		return
 	}
 
@@ -113,13 +113,13 @@ func GetAvailableManagers(c *gin.Context) {
 func ReassignManager(c *gin.Context) {
 	projectId, err := strconv.Atoi(c.Param("projectId"))
 	if err != nil {
-		handleError(c, err, "projet")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID du projet invalide"})
 		return
 	}
 
 	newManagerId, err := strconv.Atoi(c.Param("newManagerId"))
 	if err != nil {
-		handleError(c, err, "utilisateur")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID du gestionnaire invalide"})
 		return
 	}
 	err = repositories.ReassignManager(projectId, newManagerId)

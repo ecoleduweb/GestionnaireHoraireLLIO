@@ -5,7 +5,6 @@ import (
 	"llio-api/database"
 	"llio-api/models/DAOs"
 	"llio-api/models/enums"
-	"log"
 
 	"gorm.io/gorm"
 )
@@ -18,18 +17,16 @@ func GetAvailableManagers(projectId int) ([]*DAOs.User, error) {
 		return nil, DBErrorManager(err)
 	}
 
-	log.Printf("excludedManagerId: %d", project.ManagerId)
 
 	err = database.DB.
 		Where("role IN ?", []enums.UserRole{enums.ProjectManager, enums.Administrator}).
 		Where("id != ?", project.ManagerId).
 		Find(&managers).Error
 
-	log.Printf("managers trouvés: %d", len(managers))
 
 	return managers, DBErrorManager(err)
 }
-//Transactiion pour changer un chargé de projet
+//Transaction pour changer un chargé de projet
 func ReassignManager(projectId int, newManagerId int) error {
     return database.DB.Transaction(func(tx *gorm.DB) error {
 		//Récupère le projet séléctionné

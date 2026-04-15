@@ -29,7 +29,6 @@ test.describe("Réattribution du chargé de projet", () => {
 
     const firstProject = page.getByTestId("project-item").first();
     await firstProject.getByRole("button", { name: "Réattribuer" }).click();
-    await page.waitForTimeout(2000);
     const modal = page.locator("div.shadow-xl").first();
 
     const heading = modal.getByRole("heading", {
@@ -58,7 +57,6 @@ test.describe("Réattribution du chargé de projet", () => {
 
     const confirmButton = modal.getByRole("button", { name: "Ajouter" });
     await expect(confirmButton).toBeEnabled();
-    await page.waitForTimeout(2000);
     await confirmButton.click();
 
     await expect(modal).not.toBeVisible({ timeout: 5000 });

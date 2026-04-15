@@ -65,9 +65,12 @@ const getProject = async (id: number): Promise<Project> => {
     console.error('Erreur lors de la récupération du projet:', error);
     throw new Error('Échec de la récupération du projet. Veuillez réessayer.');
   }
-}
+};
 // Utilitaire pour construire l'URL avec les paramètres dynamiques
-const buildUrlWithParams = (basePath: string, params: Record<string, string | undefined>): string => {
+const buildUrlWithParams = (
+  basePath: string,
+  params: Record<string, string | undefined>
+): string => {
   const urlParams = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value) urlParams.append(key, value);
@@ -76,10 +79,10 @@ const buildUrlWithParams = (basePath: string, params: Record<string, string | un
   return queryString ? `${basePath}?${queryString}` : basePath;
 };
 
-const getDetailedProjects = async(from?: string, to?: string): Promise<DetailedProject[]> => {
+const getDetailedProjects = async (from?: string, to?: string): Promise<DetailedProject[]> => {
   try {
-    const url = buildUrlWithParams("/projects/detailed", { from, to });
-    const response = await GET<{projects: DetailedProject[]}>(url);
+    const url = buildUrlWithParams('/projects/detailed', { from, to });
+    const response = await GET<{ projects: DetailedProject[] }>(url);
     return response.projects;
   } catch (error) {
     console.error('Erreur lors de la récupération des projets:', error);
@@ -87,10 +90,10 @@ const getDetailedProjects = async(from?: string, to?: string): Promise<DetailedP
   }
 };
 
-const getCurrentUserProjects = async(from?: string, to?: string): Promise<DetailedProject[]> => {
+const getCurrentUserProjects = async (from?: string, to?: string): Promise<DetailedProject[]> => {
   try {
-    const url = buildUrlWithParams("/projects/me/detailed", { from, to });
-    const response = await GET<{projects: DetailedProject[]}>(url);
+    const url = buildUrlWithParams('/projects/me/detailed', { from, to });
+    const response = await GET<{ projects: DetailedProject[] }>(url);
     return response.projects;
   } catch (error) {
     console.error('Erreur lors de la récupération des projets:', error);
@@ -127,7 +130,10 @@ const getAvailableManagers = async (projectId: number): Promise<User[]> => {
     return response?.managers ?? [];
   } catch (error) {
     console.error('Erreur lors de la récupération des managers disponibles:', error);
-    return [];
+    throw new Error(
+      'Échec de la récupération des managers disponibles: ' +
+        (error instanceof Error ? error.message : String(error))
+    );
   }
 };
 

@@ -23,7 +23,6 @@
     if (show && project.id) {
       (async () => {
         users = await ProjectApiService.getAvailableManagers(project.id);
-        console.log('managers reçus:', users);
         valueSelected = "";
       })();
     }
