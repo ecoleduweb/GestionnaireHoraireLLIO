@@ -1,116 +1,83 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { UserApiService } from '../../services/UserApiService';
-  import type { TimeBankConfig } from '../../Models/index';
-  import HoursWorkedConfigModal from './HoursWorkedConfigModal.svelte';
+  import TimeBank from './TimeBank.svelte';
 
   type Props = {
-    hoursTotal: number | null;
-    dateStart: Date;
-    dateEnd: Date;
+    hoursTotal: number;
+    dateStart: string;
+    dateEnd: string;
     textHoursWorked: string;
   };
 
-  interface TimeBalance {
-    isConfigured: boolean;
-    displayedHoursTotal: number | null;
-  }
+  const { hoursTotal = 0, dateStart, dateEnd, textHoursWorked }: Props = $props();
 
-  let { hoursTotal, textHoursWorked }: Props = $props();
+  const formatDate = (date: string | Date) => {
+    let dateObj: Date;
 
-  let timeBalance = $state<TimeBalance>({
-    isConfigured: false,
-    displayedHoursTotal: null,
-  });
-  let showModal = $state(false);
-
-  let timeBankConfig = $state<TimeBankConfig>({
-    startDate: '',
-    hoursPerWeek: 0,
-    offset: 0,
-  });
-
-  const refreshTimeBankBalance = async () => {
-    try {
-      const balance = await UserApiService.getTimeInBank();
-      timeBalance.isConfigured = balance.isConfigured;
-      timeBalance.displayedHoursTotal = balance.timeInBank ?? null;
-    } catch (err) {
-      console.error(err);
+    if (date instanceof Date) {
+      dateObj = date;
+    } else {
+      const parts = date.split('-');
+      dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 12, 0, 0);
     }
+
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+    }).format(dateObj);
   };
 
-  onMount(async () => {
-    try {
-      const config = await UserApiService.getTimeBankConfig();
-
-      if (config) {
-        Object.assign(timeBankConfig, config);
-      }
-
-      await refreshTimeBankBalance();
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
-  const openConfigModal = () => {
-    showModal = true;
-  };
-
-  const closeConfigModal = () => {
-    showModal = false;
-  };
-
-  const handleSave = async (values: TimeBankConfig) => {
-    Object.assign(timeBankConfig, values);
-    await refreshTimeBankBalance();
-    showModal = false;
+  const areDatesEqual = () => {
+    if (!dateStart || !dateEnd) return false;
+    return dateStart === dateEnd;
   };
 </script>
 
-<div class="card">
-  <div class="section">
-    {#if !timeBalance.isConfigured}
-      <button class="link" on:click={openConfigModal}>Configurer votre banque d'heures</button>
-    {:else}
-      <p>
-        Vous avez
-        {' '}
-        <button class="link" on:click={openConfigModal} data-testid="total-hours">{timeBalance.displayedHoursTotal ?? 0}</button>
-        {' '}heures en banque.
-      </p>
-    {/if}
+<div class="dashboard-card">
+  <div class="bilan-container">
+    <div class="header">
+      <h2>
+        {#if areDatesEqual()}
+          Bilan du {formatDate(dateStart)}
+        {:else}
+          Bilan du {formatDate(dateStart)} au {formatDate(dateEnd)}
+        {/if}
+      </h2>
+    </div>
+
+    <p class="summary-text">
+      Vous avez travaillé <strong>{hoursTotal.toFixed(2)}</strong> heures {textHoursWorked}.
+    </p>
   </div>
+
+  <TimeBank />
 </div>
 
-{#if showModal}
-  <HoursWorkedConfigModal
-    onClose={closeConfigModal}
-    onSave={handleSave}
-    initialConfig={timeBankConfig}
-  />
-{/if}
-
 <style>
-  .card {
+  .dashboard-card {
     background: #f5f5f5;
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 500px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
   }
 
-  .section {
-    margin-bottom: 1rem;
+  .bilan-container {
+    padding: 1rem;
   }
 
-  .link {
-    color: #2563eb;
-    text-decoration: underline;
-    cursor: pointer;
-    background: none;
-    border: none;
-    display: inline;
-    padding: 0;
+  .header {
+    margin-bottom: 0.75rem;
+  }
+
+  .header h2 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #111827;
+  }
+
+  .summary-text {
+    margin: 0;
+    line-height: 1.6;
+    color: #1f2937;
   }
 </style>

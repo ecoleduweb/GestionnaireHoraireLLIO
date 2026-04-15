@@ -18,6 +18,7 @@
     textHoursWorked: string;
   };
   
+  
   import HoursWorkedDashboard from "./HoursWorkedDashboard.svelte";
   const { totalHours, detailedProjects = [], dateStart, dateEnd, textHoursWorked, currentUser } : Props = $props();
   let isArchivedVisible = $state(false);
@@ -71,9 +72,9 @@
     </div>
   </div>
   <HoursWorkedDashboard 
+  hoursTotal={totalHours}
   dateStart={dateStart}
   dateEnd={dateEnd}
-  hoursTotal={totalHours}
   textHoursWorked = {textHoursWorked} />
 </div>
 

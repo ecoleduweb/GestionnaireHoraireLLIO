@@ -30,7 +30,8 @@ test.describe("showHoursWorked", () => {
 
     await page.waitForSelector(".fc-event", { state: "visible" });
 
-    
+    await expect(page.getByTestId("hours-worked-period")).toHaveText("Bilan du 17 mars au 23 mars");
+    await expect(page.getByTestId("hours-worked-summary")).toHaveText("Vous avez travaillé 8 heures cette semaine.");
     await expect(page.getByRole("button", { name: "Configurer votre banque d'heures", exact: true })).toBeVisible();
   });
 
@@ -51,7 +52,8 @@ test.describe("showHoursWorked", () => {
 
     await page.getByRole("button", { name: "Mois", exact: true }).click();
 
-   
+    await expect(page.getByTestId("hours-worked-period")).toHaveText("Bilan du 1 mars au 31 mars");
+    await expect(page.getByTestId("hours-worked-summary")).toHaveText("Vous avez travaillé 21 heures ce mois-ci.");
     await expect(page.getByRole("button", { name: "Configurer votre banque d'heures", exact: true })).toBeVisible();
   });
 
@@ -72,7 +74,8 @@ test.describe("showHoursWorked", () => {
 
     await page.getByRole("button", { name: "Jour", exact: true }).click();
 
-    
+    await expect(page.getByTestId("hours-worked-period")).toHaveText("Bilan du 22 mars");
+    await expect(page.getByTestId("hours-worked-summary")).toHaveText("Vous avez travaillé 7 heures aujourd'hui.");
     await expect(page.getByRole("button", { name: "Configurer votre banque d'heures", exact: true })).toBeVisible();
   });
 
@@ -87,7 +90,8 @@ test.describe("showHoursWorked", () => {
 
     await page.waitForSelector(".fc", { state: "visible" });
 
-    
+    await expect(page.getByTestId("hours-worked-period")).toHaveText("Bilan du 17 mars au 23 mars");
+    await expect(page.getByTestId("hours-worked-summary")).toHaveText("Vous avez travaillé 0 heures cette semaine.");
     await expect(page.getByRole("button", { name: "Configurer votre banque d'heures", exact: true })).toBeVisible();
   });
 });
