@@ -55,6 +55,7 @@ func RegisterRoutes(r *gin.Engine) {
 		categoryGroup.POST("", controllers.CreateCategory)
 		categoryGroup.GET("/:id", controllers.GetCategoryById)
 		categoryGroup.PUT("", controllers.UpdateCategory)
+		categoryGroup.DELETE("/:id", controllers.DeleteCategory)
 	}
 
 	categoriesGroup := r.Group("/categories", middleware.RoleValidationMiddleware(enums.Employee))
@@ -71,6 +72,7 @@ func RegisterRoutes(r *gin.Engine) {
 		projectGroup.DELETE("/:id", middleware.RoleValidationMiddleware(enums.Administrator), controllers.DeleteProject)
 		projectGroup.GET("/:id/categories", middleware.RoleValidationMiddleware(enums.Employee), controllers.GetCategoriesByProjectId)
 		projectGroup.POST("/:projectId/coManager/:userId", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.AddCoManager)
+		projectGroup.DELETE("/:id/coManager/:userId", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.DeleteCoManager)
 	}
 
 	projectsGroup := r.Group("/projects", middleware.RoleValidationMiddleware(enums.Employee))
@@ -78,6 +80,12 @@ func RegisterRoutes(r *gin.Engine) {
 		projectsGroup.GET("", controllers.GetProjects)
 		projectsGroup.GET("/detailed", controllers.GetDetailedProjects)
 		projectsGroup.GET("/me/detailed", controllers.GetDetailedProjectsByUser)
+	}
+
+	/*------------------- Report -------------------*/
+	reportGroup := r.Group("/report")
+	{
+		reportGroup.GET("/excel", middleware.RoleValidationMiddleware(enums.Administrator), controllers.ExportExcel)
 	}
 
 }

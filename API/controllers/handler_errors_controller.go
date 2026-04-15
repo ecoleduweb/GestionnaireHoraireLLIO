@@ -16,6 +16,11 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		log.Printf("ERREUR - Conflit de données: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusConflict, gin.H{"error": errorMsg})
 
+	case customs_errors.ErrCategoryHasActivities:
+		errorMsg := fmt.Sprintf("La catégorie a une ou des activités associées, suppression impossible")
+		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
+
 	case customs_errors.ErrNotFound:
 		errorMsg := fmt.Sprintf("Le(La) %s n'a pas été trouvé(e)", subject)
 		log.Printf("ERREUR - Ressource non trouvée: %s - %v", errorMsg, err)
@@ -50,6 +55,11 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		errorMsg := fmt.Sprintf("L'utilisateur sélectionné est le chargé du projet, il ne peut donc pas être ajouté comme co-chargé de projet")
 		log.Printf("ERREUR - Ajout du co-chargé impossible: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
+
+	case customs_errors.ErrSelectedUserIsNotCoManager:
+		errorMsg := fmt.Sprintf("L'utilisateur sélectionné n'est pas co-chargé de ce projet")
+		log.Printf("ERREUR - Suppression du co-chargé impossible: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusNotFound, gin.H{"error": errorMsg})
 
 	case customs_errors.ErrUserRoleBelowManager:
 		errorMsg := fmt.Sprintf("L'utilisateur doit avoir le rôle de chargé de projet ou supérieur pour être ajouté comme co-chargé de projet")

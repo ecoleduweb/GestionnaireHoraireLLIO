@@ -110,3 +110,26 @@ func GetCategoriesByProjectId(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"categories": categories})
 }
+
+func DeleteCategory(c *gin.Context) {
+
+	id := c.Param("id")
+	category, err := services.GetCategoryById(id)
+	if err != nil {
+		handleError(c, err, categorieSTR)
+		return
+	}
+	if category == nil {
+		log.Printf("La catégorie à supprimer n'existe pas. : %v", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "La catégorie à supprimer n'existe pas."})
+		return
+	}
+
+	err = services.DeleteCategory(id)
+	if err != nil {
+		handleError(c, err, categorieSTR)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "La suppression de la catégorie est un succès."})
+}

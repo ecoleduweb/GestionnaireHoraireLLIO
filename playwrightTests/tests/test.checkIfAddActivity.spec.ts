@@ -81,7 +81,9 @@ test.describe("checkAddActivity", () => {
     await page.waitForTimeout(2000);
 
     await page.keyboard.press("ArrowDown");
+    await page.waitForTimeout(500);
     await page.keyboard.press("Enter");
+    await page.waitForTimeout(500);
     await page.keyboard.press("Enter");
 
     await expect(page.locator(".fc-event-title-container")).toBeVisible();

@@ -66,10 +66,20 @@ const getProject = async(id: number): Promise<Project> => {
     throw new Error("Échec de la récupération du projet. Veuillez réessayer.");
   }
 }
+// Utilitaire pour construire l'URL avec les paramètres dynamiques
+const buildUrlWithParams = (basePath: string, params: Record<string, string | undefined>): string => {
+  const urlParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value) urlParams.append(key, value);
+  }
+  const queryString = urlParams.toString();
+  return queryString ? `${basePath}?${queryString}` : basePath;
+};
 
-const getDetailedProjects = async(): Promise<DetailedProject[]> => {
+const getDetailedProjects = async(from?: string, to?: string): Promise<DetailedProject[]> => {
   try {
-    const response = await GET<{projects:   DetailedProject[]}>("/projects/detailed");
+    const url = buildUrlWithParams("/projects/detailed", { from, to });
+    const response = await GET<{projects: DetailedProject[]}>(url);
     return response.projects;
   } catch (error) {
     console.error("Erreur lors de la récupération des projets:", error);
@@ -77,9 +87,10 @@ const getDetailedProjects = async(): Promise<DetailedProject[]> => {
   }
 }
 
-const getCurrentUserProjects = async(): Promise<DetailedProject[]> => {
+const getCurrentUserProjects = async(from?: string, to?: string): Promise<DetailedProject[]> => {
   try {
-    const response = await GET<{projects: DetailedProject[]}>("/projects/me/detailed");
+    const url = buildUrlWithParams("/projects/me/detailed", { from, to });
+    const response = await GET<{projects: DetailedProject[]}>(url);
     return response.projects;
   } catch (error) {
     console.error("Erreur lors de la récupération des projets:", error);

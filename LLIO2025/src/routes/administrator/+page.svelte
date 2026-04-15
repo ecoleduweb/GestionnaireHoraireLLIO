@@ -6,6 +6,7 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import NavButton from "../../Components/NavButton.svelte";
+  import GlobalReportButton from "../../Components/Administrator/GlobalReportButton.svelte"
   
   let currentUser = $state<UserInfo | null>(null);
   let isLoading = $state(false);    
@@ -36,19 +37,18 @@
       <NavButton currentUserRole = {currentUser?.role} />
     </div>
     <div class="dashboard-item-button flex-col justify-center-safe content-center">
-      <div class="mt-4">
         <button 
           onclick={() => showUsersModal = !showUsersModal }
           id="user-button"
           type="button" 
-          class="w-full py-2 px-4 text-sm font-medium transition-colors bg-[#e6f0f0] text-[#005e61] rounded-md hover:bg-[#d0e6e6] flex items-center justify-center cursor-pointer"
+          class="w-full mt-4 py-2 px-4 text-sm font-medium transition-colors bg-[#e6f0f0] text-[#005e61] rounded-md hover:bg-[#d0e6e6] flex items-center justify-center cursor-pointer"
           >
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
           </svg>
           Gestion des utilisateurs
         </button>
-      </div>
+        <GlobalReportButton/>
     </div>
   </div>
   </div>    
