@@ -112,14 +112,16 @@ func GetUsersOutlookCalendar(c *gin.Context) {
 
 	if graphToken == nil {
 		log.Printf("La connexion Microsoft de l'utilisateur est invalide ou inexistante. : %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Votre compte n'est pas connecté à votre compte Microsoft. Veuillez vous reconnecter et réessayer."})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Votre compte n'est pas connecté à votre compte Microsoft. Veuillez vous reconnecter et réessayer.",
+			"code": "GRAPH_EXPIRED"})
 		return
 	}
 
 	isGraphTokenExpired, err := services.IsJWTExpired(*graphToken)
 	if (err != nil) || isGraphTokenExpired {
 		log.Printf("La connexion Microsoft de l'utilisateur est invalide ou inexistante. : %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Votre compte Microsoft s'est déconnecté. Veuillez vous reconnecter et réessayer."})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Votre compte Microsoft s'est déconnecté. Veuillez vous reconnecter et réessayer.",
+			"code": "GRAPH_EXPIRED"})
 		return
 	}
 
