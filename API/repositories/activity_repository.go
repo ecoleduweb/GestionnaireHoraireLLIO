@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"llio-api/customs_errors"
 	"llio-api/database"
 	"llio-api/models/DAOs"
 )
@@ -32,17 +31,14 @@ func GetDetailedActivityById(id int) (*DAOs.Activity, error) {
 	return &activity, DBErrorManager(err)
 }
 
-//Par defaut, GO n'update pas les champs vides, null donc le Select(*) force à mettre tous les champs à jours
+// Par defaut, GO n'update pas les champs vides, null donc le Select(*) force à mettre tous les champs à jours
 func UpdateActivity(ActivityDAO *DAOs.Activity) (*DAOs.Activity, error) {
 	result := database.DB.Model(&DAOs.Activity{}).
-	Where("id = ?", ActivityDAO.Id).
-	Select("*").
-	Updates(ActivityDAO)
+		Where("id = ?", ActivityDAO.Id).
+		Select("*").
+		Updates(ActivityDAO)
 	if result.Error != nil {
 		return ActivityDAO, DBErrorManager(result.Error)
-	}
-	if result.RowsAffected == 0 {
-		return ActivityDAO, customs_errors.ErrNotFound
 	}
 	return ActivityDAO, nil
 }
