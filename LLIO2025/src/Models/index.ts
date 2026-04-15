@@ -101,22 +101,7 @@ export interface TimeBalance {
   displayedHoursTotal: number | null;
 }
 
-export interface TimeBankResponse {
-  isConfigured: boolean;
-  timeInBank: number;
-  textHoursWorked: string;
-}
 
-export interface TimeBalance {
-  isConfigured: boolean;
-  displayedHoursTotal: number | null;
-}
-
-export interface TimeBankResponse {
-  isConfigured: boolean;
-  timeInBank: number;
-  textHoursWorked: string;
-}
 export interface CoLead {
     id: number;
     name: string;
