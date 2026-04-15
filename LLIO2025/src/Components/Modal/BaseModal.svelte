@@ -20,9 +20,6 @@
     modalTitle,
     confirmText = 'Confirmer',
     cancelText = 'Annuler',
-    confirmClass = 'py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50',
-    cancelClass = 'py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200',
-    widthClass = 'w-[400px] max-w-[90%]',
     errorText = '',
     onClose,
     onSuccess,
@@ -52,7 +49,7 @@
 </script>
 
 <div class="modal-overlay">
-  <div class={`modal ${widthClass}`}>
+  <div class={`modal w-[400px] max-w-[90%]`}>
     <div class="modal-header">
       <h2 class="modal-title">{modalTitle}</h2>
       <button type="button" class="text-black hover:text-gray-600" onclick={handleClose}>
@@ -78,7 +75,7 @@
           <div class="modal-footer">
             <button
               type="button"
-              class={cancelClass}
+              class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200"
               onclick={handleClose}
               disabled={isSubmitting}
             >
@@ -87,7 +84,7 @@
 
             <button
               type="submit"
-              class={confirmClass}
+              class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
               disabled={isSubmitting}
             >
               {confirmText}
