@@ -55,7 +55,7 @@ func GetAuthCallback(c *gin.Context) {
 	}
 	isRunningSecure := useful.IsRunningSecure()
 
-	// On sauvegarde le refresh token de l'utilisateur afin d'obtenir
+	// On sauvegarde le jeton d'accès Graph API de l'utilisateur afin d'obtenir
 	// les évènements Outlook à l'aide de celui-ci plus tard
 	services.UpdateUserGraphAccessToken(userInDb.Id, &userAzure.AccessToken)
 
