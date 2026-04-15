@@ -1,49 +1,34 @@
-﻿<script lang="ts">
-  import { onMount } from 'svelte';
-  import { UserApiService } from '../../services/UserApiService';
-  import HoursWorkedConfigModal from './HoursWorkedConfigModal.svelte';
+<script lang="ts">
+  import TimeBank from './TimeBank.svelte';
 
   type Props = {
-    hoursTotal: number | null;
-    dateStart: Date;
-    dateEnd: Date;
+    hoursTotal: number;
+    dateStart: string;
+    dateEnd: string;
     textHoursWorked: string;
   };
 
-  let { hoursTotal }: Props = $props();
+  const { hoursTotal = 0, dateStart, dateEnd, textHoursWorked }: Props = $props();
 
-  let displayedHoursTotal = $state<number | null>(hoursTotal ?? null);
-  let showModal = $state(false);
+  const formatDate = (date: string | Date) => {
+    let dateObj: Date;
 
-  let timeBankConfig = $state({
-    startDate: '',
-    hoursPerWeek: 0,
-    offset: 0,
-  });
-
-  onMount(async () => {
-    try {
-      const config = await UserApiService.getTimeBankConfig();
-
-      Object.assign(timeBankConfig, config);
-      displayedHoursTotal = config.offset;
-    } catch (err) {
-      console.error(err);
+    if (date instanceof Date) {
+      dateObj = date;
+    } else {
+      const parts = date.split('-');
+      dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 12, 0, 0);
     }
-  });
 
-  const openConfigModal = () => {
-    showModal = true;
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+    }).format(dateObj);
   };
 
-  const closeConfigModal = () => {
-    showModal = false;
-  };
-
-  const handleSave = (values) => {
-    Object.assign(timeBankConfig, values);
-    displayedHoursTotal = values.offset;
-    showModal = false;
+  const areDatesEqual = () => {
+    if (!dateStart || !dateEnd) return false;
+    return dateStart === dateEnd;
   };
 </script>
 
@@ -68,26 +53,42 @@
   }
 </style>
 
-<div class="card">
-  <div class="section">
-    <p>
-      Vous avez
-      {#if displayedHoursTotal === null || displayedHoursTotal === 0}
-        <button class="link" on:click={openConfigModal}> configurer </button>
-      {:else}
-        <button class="link" on:click={openConfigModal} data-testid="total-hours">
-          {displayedHoursTotal}
-        </button>
-      {/if}
-      heures en banque.
+  <div class="bilan-container">
+    <div class="header" data-testid="hours-worked-period">
+      <h2>
+        {#if areDatesEqual()}
+          Bilan du {formatDate(dateStart)}
+        {:else}
+          Bilan du {formatDate(dateStart)} au {formatDate(dateEnd)}
+        {/if}
+      </h2>
+    </div>
+
+    <p class="summary-text" data-testid="hours-worked-summary">
+      Vous avez travaillé <strong>{hoursTotal.toFixed(2)}</strong> heures {textHoursWorked}.
     </p>
   </div>
-</div>
 
-{#if showModal}
-  <HoursWorkedConfigModal
-    onClose={closeConfigModal}
-    onSave={handleSave}
-    initialConfig={timeBankConfig}
-  />
-{/if}
+
+<style>
+  .bilan-container {
+    padding: 1rem;
+  }
+
+  .header {
+    margin-bottom: 0.75rem;
+  }
+
+  .header h2 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #111827;
+  }
+
+  .summary-text {
+    margin: 0;
+    line-height: 1.6;
+    color: #1f2937;
+  }
+</style>

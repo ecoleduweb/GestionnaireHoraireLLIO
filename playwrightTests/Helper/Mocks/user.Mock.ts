@@ -161,6 +161,14 @@ export const userMocks = {
             }
         }
     },
+    getTimeBankConfigNotConfigured: {
+      url: '/user/time-bank/config',
+        method: 'GET',
+        response: {
+            status: 404,
+            json: {}
+        }
+    },
     getTimeBankSuccess: {
         url: '/user/time-bank',
         method: 'GET',
@@ -169,6 +177,17 @@ export const userMocks = {
             json: {
                 "isConfigured": true,
                 "timeInBank": 40
+            }
+        }
+    },
+    getTimeBankNotConfiguredSuccess: {
+        url: '/user/time-bank',
+        method: 'GET',
+        response: {
+            status: 200,
+            json: {
+                "isConfigured": false,
+                "timeInBank": 0
             }
         }
     },
