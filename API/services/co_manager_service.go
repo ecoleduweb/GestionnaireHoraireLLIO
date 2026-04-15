@@ -30,25 +30,9 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 		return nil, customs_errors.ErrUserIsManager
 	}
 
-	// Ici, on vérifie les permissions pour que seulement les personnes
-	// suivantes puissent ajouter un co-chargé de projet :
-	//
-	// - Tous les administrateurs
-	// - Tout chargé de projet étant chargé ou co-chargé de ce projet en spécifique.
-	//
-	// Toutes les autres personnes (utilisateur régulier ou chargé de projet non-attribué)
-	//	ne peuvent pas modifier les co-chargés du projet
-	if author.Role < enums.Administrator {
-		if project.ManagerId != author.Id {
-			isCoManager, err := repositories.IsUserCoManager(project.Id, author.Id)
-			if err != nil {
-				return nil, err
-			}
-
-			if !isCoManager {
-				return nil, customs_errors.ErrUserForbidden
-			}
-		}
+	err = canUserManageProject(project, author)
+	if err != nil {
+		return nil, err
 	}
 
 	coManagerDAO := &DAOs.CoManager{}
@@ -73,4 +57,42 @@ func AddCoManager(coManagerDTO *DTOs.CoManagerDTO, author *DTOs.UserDTO) (*DTOs.
 	coManagerDTOResponse := &DTOs.CoManagerDTO{}
 	err = copier.Copy(coManagerDTOResponse, coManagerAdded)
 	return coManagerDTOResponse, err
+}
+
+func DeleteCoManager(projectId int, coManagerToDeleteUserId int, author *DTOs.UserDTO) error {
+	project, err := GetProjectById(strconv.Itoa(projectId))
+	if err != nil {
+		return err
+	}
+
+	err = canUserManageProject(project, author)
+	if err != nil {
+		return err
+	}
+
+	isCoManager, err := repositories.IsUserCoManager(projectId, coManagerToDeleteUserId)
+	if err != nil {
+		return err
+	}
+	if !isCoManager {
+		return customs_errors.ErrSelectedUserIsNotCoManager
+	}
+
+	return repositories.DeleteCoManager(projectId, coManagerToDeleteUserId)
+}
+
+func canUserManageProject(project *DTOs.ProjectDTO, author *DTOs.UserDTO) error {
+	if author.Role >= enums.Administrator || project.ManagerId == author.Id {
+		return nil
+	}
+
+	isCoManager, err := repositories.IsUserCoManager(project.Id, author.Id)
+	if err != nil {
+		return err
+	}
+	if !isCoManager {
+		return customs_errors.ErrUserForbidden
+	}
+
+	return nil
 }

@@ -25,6 +25,13 @@ func AddCoManagerToProject(coManager *DAOs.CoManager) (*DAOs.CoManager, error) {
 
 	return coManager, nil
 }
+func DeleteCoManager(projectId int, userId int) error {
+	err := database.DB.
+		Where("project_id = ? AND user_id = ?", projectId, userId).
+		Delete(&DAOs.CoManager{}).Error
+
+	return DBErrorManager(err)
+}
 
 func IsUserCoManager(projectId int, userId int) (bool, error) {
 	var count int64
