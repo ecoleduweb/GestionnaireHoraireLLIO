@@ -291,7 +291,10 @@ func formatProjectWithActivities(project *DAOs.Project, activities []DAOs.Activi
 
 		if !found {
 			categories = append(categories, map[string]any{
+				"id":            category.Id,
 				"name":          category.Name,
+				"description":   category.Description,
+				"billable":      category.Billable,
 				"timeSpent":     activity.TimeSpent,
 				"timeEstimated": 0,
 			})

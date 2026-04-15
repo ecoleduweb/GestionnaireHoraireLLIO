@@ -9,7 +9,7 @@
   import { UserRole } from '$lib/types/enums';
   import NavButton from '../NavButton.svelte';
   import { ProjectApiService } from '../../services/ProjectApiService';
-  import ConfirmationModal from '../ConfirmationModal.svelte';
+  import ConfirmationModal from '../Modal/ConfirmationModal.svelte';
 
   type Props = {
     currentUser: UserInfo;

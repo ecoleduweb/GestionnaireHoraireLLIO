@@ -14,7 +14,7 @@
   import '../../style/app.css';
   import { ChevronDown, X, Plus, Trash2 } from 'lucide-svelte';
   import SearchSelect from "../Global/SearchSelect.svelte";
-  import ConfirmationModal from '../ConfirmationModal.svelte';
+  import ConfirmationModal from '../Modal/ConfirmationModal.svelte';
 
   type Props = {
     show: boolean;
@@ -644,7 +644,7 @@
   {#if showCategoryConfirmModal}
     <ConfirmationModal
       modalTitle="Confirmer l'ajout"
-      modalText={`Voulez-vous ajouter la catégorie "<strong>${categoryToAdd}</strong>" ?`}
+      modalText={`Voulez-vous ajouter la catégorie "${categoryToAdd}" ?`}
       errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"
       onSuccess={() => {
         showCategoryConfirmModal = false;
