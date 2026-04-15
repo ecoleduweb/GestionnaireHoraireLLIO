@@ -74,6 +74,7 @@
     time.endHours = getHoursFromDate(activityToEdit.endDate);
     time.endMinutes = getMinutesFromDate(activityToEdit.endDate);
   }
+  const initialProjectId = activity.projectId;
 
   const {
     time: { hours, minutes },
@@ -260,9 +261,12 @@
   };
 
 const handleOverlayClick = (e) => {
+  if (e) e.stopPropagation();
+
   const projectIdStr = String(activity.projectId ?? '').trim();
   const hasProject = projectIdStr !== '' && projectIdStr !== 'undefined' && projectIdStr !== 'null';
-  if (hasProject) {
+
+  if (hasProject && activity.projectId !== initialProjectId) {
     showCloseConfirmModal = true;
   } else {
     onClose();
