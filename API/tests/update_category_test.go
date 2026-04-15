@@ -2,6 +2,7 @@ package tests
 
 import (
 	"encoding/json"
+	"fmt"
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
 	"net/http"
@@ -65,7 +66,7 @@ func TestUpdateCategoryWithInvalidId(t *testing.T) {
 
 func TestUpdateCategoryWithActivities(t *testing.T) {
 	category := DTOs.CategoryDTO{
-		Name:        "Catégorie à modifier",
+		Name:        "Catégorie à modifier avec activités",
 		Description: "Description de test",
 		ProjectId:   doNotDeleteProject.Id,
 	}
@@ -80,6 +81,8 @@ func TestUpdateCategoryWithActivities(t *testing.T) {
 	}
 	err := json.Unmarshal(w.Body.Bytes(), &responseBody)
 	assert.NoError(t, err)
+	fmt.Println("CATEGORY RESPONSE:", w.Body.String())
+	fmt.Println("CATEGORY ID:", responseBody.Category.Id)
 
 	
 	activity := DTOs.ActivityDTO{
@@ -106,7 +109,7 @@ func TestUpdateCategoryWithActivities(t *testing.T) {
 		// Création d'une catégorie à modifier
 	categoryToUpdate := DTOs.CategoryDTO{
 		Id:          responseBody.Category.Id,
-		Name:        "Catégorie à modifier",
+		Name:        "Catégorie à modifier avec activités",
 		Description: "Description de test",
 	}
 
