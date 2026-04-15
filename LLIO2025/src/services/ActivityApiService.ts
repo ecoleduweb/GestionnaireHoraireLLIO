@@ -1,4 +1,4 @@
-import type { Activity, ActivityUpdateResponse } from '../Models/index';
+import type { Activity, ActivityUpdateResponse, OutlookEvent, OutlookEventRaw } from '../Models/index';
 import { GET, POST, PUT, DELETE } from '../ts/server';
 
 interface RawActivity extends Omit<Activity, 'startDate' | 'endDate'> {
@@ -10,6 +10,12 @@ const transformActivityStringToDates = (activity: RawActivity): Activity => ({
   ...activity,
   startDate: new Date(activity.startDate),
   endDate: new Date(activity.endDate),
+});
+
+const transformEventStringDates = (event: OutlookEventRaw): OutlookEvent => ({
+  ...event,
+  start: new Date(`${event.start.dateTime}${event.start.timeZone === "UTC" ? "Z" : ""}`),
+  end: new Date(`${event.end.dateTime}${event.end.timeZone === "UTC" ? "Z" : ""}`),
 });
 
 const toStringDatesToString = (activity: Activity) => ({
@@ -96,9 +102,35 @@ const getAllActivitesFromRange = async (startDate: string, endDate: string) => {
   ;
 };
 
+const getOutlookEvents = async (date: string): Promise<OutlookEvent[]> => {
+  try {
+    const response = await GET<{ events: OutlookEventRaw[] }>(
+      '/activities/me/outlook?date=' + date,
+      false
+    );
+
+    if (response?.events && Array.isArray(response.events)) {
+      return response.events.map(transformEventStringDates);
+    } else {
+      console.error('Format de réponse inattendu :', response);
+      alert('Erreur: Format de réponse inattendu lors de la récupération des évènements Outlook.');
+      return [];
+    }
+  } catch (error) {
+    const erreur = error as any;
+    console.log(erreur.code);
+    if (erreur?.code === 'GRAPH_EXPIRED') {
+      console.error('Erreur lors de la récupération des événements Outlook : Votre compte Microsoft est déconnecté. Veuillez vous reconnecter au site web.', error);
+    }
+    console.error('Erreur lors de la récupération des événements Outlook', error);
+    throw error;
+  }
+}
+
 export const ActivityApiService = {
   createActivity,
   updateActivity,
   deleteActivity,
   getAllActivitesFromRange,
+  getOutlookEvents
 };

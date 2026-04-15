@@ -100,3 +100,21 @@ export interface CoLead {
     name: string;
 }
 
+/*************** Évènements Outlook ***************/
+export interface OutlookEventTime {
+  dateTime: string;
+  timeZone: string;
+}
+
+export interface OutlookEventRaw {
+  id: string;
+  subject: string;
+  start: OutlookEventTime;
+  end: OutlookEventTime;
+  isAllDay: boolean;
+}
+
+export interface OutlookEvent extends Omit<OutlookEventRaw, 'start' | 'end'> {
+  start: Date;
+  end: Date;
+}
