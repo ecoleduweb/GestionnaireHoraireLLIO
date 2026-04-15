@@ -569,4 +569,27 @@ export const projectMocks = {
       },
     },
   },
+  getAvailableManagersSuccess: {
+    url: "/project/availableManagers*",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        managers: [
+          {
+            id: 2,
+            firstName: "JérémieTest",
+            lastName: "Lapointe",
+            role: 1,
+          },
+          {
+            id: 3,
+            firstName: "Charle-ÉtienneTest",
+            lastName: "Soucy",
+            role: 2,
+          },
+        ],
+      },
+    },
+  },
 } satisfies Record<string, MockConfig>;
