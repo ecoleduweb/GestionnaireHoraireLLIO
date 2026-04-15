@@ -4,20 +4,17 @@
   import { formatHours } from '../../utils/date';
   import { getHoursColor } from '../../utils/displayUtils';
   import TextInputModal from "../TextInputModal.svelte";
-  import DOMPurify from 'dompurify';
+  import Renamer from "../Renamer.svelte";
 
   let { categories, sendRenameCategory }: { categories: Category[], sendRenameCategory: (category: Category, newName: string) => Promise<boolean> } = $props(); //employee.categories
   let listCategories = $state(categories);
 
-  let hoveredCategoryId: number = $state(-1);
+  function getCategories() {
+    return listCategories;
+  }
 
-  let selectedCategory: Category = $state();
-  let enableRenameCategoryPrompt = $state(false);
-
-  function handleRenameCategory(category: Category) 
-  {
-    selectedCategory = category;
-    enableRenameCategoryPrompt = true;
+  function setNewCategories(catList: Category[]) {
+    listCategories = catList;
   }
 
 </script>
@@ -26,24 +23,11 @@
     <tbody>
         {#each listCategories as category, categoryIndex}
             <tr
-                class="border-b border-gray-200 {categoryIndex % 2 === 0
+                class="categoryTableEntry border-b border-gray-200 {categoryIndex % 2 === 0
                 ? 'bg-white'
                 : 'bg-gray-50'}"
-                
-                onmouseenter={() => hoveredCategoryId = category.id }
-                onmouseleave={() => hoveredCategoryId = -1 }
             >
-                <td class="py-2 text-left w-1/2 pl-4">{category.name}
-                {#if category.name !== "Par défaut" && category.id === hoveredCategoryId}
-                        <button
-                            class="justify-end p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-                            onclick={() => handleRenameCategory(category)}
-                            aria-label="Renommer la catégorie"
-                        >
-                        <Pencil size={16} />
-                    </button>
-                {/if}
-                </td>
+                <td class="py-2 text-left w-1/2 pl-4">{category.name} <Renamer category={category} sendRenameCategory={sendRenameCategory} setNewCategories={setNewCategories} getCategories={getCategories} /> </td>
                 <td class="py-2 text-right w-1/6">{formatHours(category.timeSpent)}</td>
                     <td class="py-2 text-right w-1/6">{formatHours(category.timeEstimated)}</td>
                     <td class="py-2 text-right w-1/6 {getHoursColor(category.timeSpent, category.timeEstimated)}">{formatHours(category.timeEstimated - category.timeSpent)}</td>
@@ -61,19 +45,8 @@
     </tbody>
 </table>
 
-{#if enableRenameCategoryPrompt}
-    <TextInputModal
-      modalTitle="Modification du nom de la catégorie"
-      modalText={`Renommez la catégorie "<strong>` + DOMPurify.sanitize(selectedCategory.name) + `</strong>"`}
-      defaultTextInValue={DOMPurify.sanitize(selectedCategory.name)}
-      onSuccess={async (val: string) => {
-        if (await sendRenameCategory(selectedCategory, val)) {
-            listCategories = listCategories.map((cat) => cat.id === selectedCategory.id ? {...cat, name: val} : cat);
-        }
-        enableRenameCategoryPrompt = false;
-      }}
-      onClose={() => {
-        enableRenameCategoryPrompt = false;
-      }}
-    />
-{/if}
+<style>
+    .categoryTableEntry:hover :global(.renameButton) {
+        display: inline-flex;
+    }
+</style>

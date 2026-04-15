@@ -1,6 +1,5 @@
 <script lang="ts">
   import { X } from 'lucide-svelte';
-  import DOMPurify from 'dompurify';
 
   type Props = {
     modalTitle: string;
@@ -54,7 +53,9 @@
             }}
           >
             <div class="form-group">
-                <h2 class="modal-text">{@html DOMPurify.sanitize(modalText) }</h2>
+                <h2 class="modal-text">
+                  <b>{modalText}</b>
+                  </h2>
             </div>
 
             <div class="modal-footer">
