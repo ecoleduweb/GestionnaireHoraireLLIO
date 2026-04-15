@@ -65,7 +65,6 @@ func TestUpdateCategoryWithInvalidId(t *testing.T) {
 
 func TestUpdateCategoryWithActivities(t *testing.T) {
 	category := DTOs.CategoryDTO{
-		Id:          99999,
 		Name:        "Catégorie à modifier",
 		Description: "Description de test",
 		ProjectId:   doNotDeleteProject.Id,
