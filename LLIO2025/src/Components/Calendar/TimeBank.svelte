@@ -2,7 +2,8 @@
   import { onMount } from 'svelte';
   import { UserApiService } from '../../services/UserApiService';
   import type { TimeBalance, TimeBankConfig } from '../../Models/index';
-  import HoursWorkedConfigModal from './HoursWorkedConfigModal.svelte';
+  import HoursWorkedConfigModal from '../Calendar/HoursWorkedConfigModal.svelte';
+  
 
   let timeBalance = $state<TimeBalance>({
     isConfigured: false,
