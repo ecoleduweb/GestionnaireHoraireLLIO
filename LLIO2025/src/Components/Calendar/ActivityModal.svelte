@@ -39,6 +39,7 @@
   }: Props = $props();
 
   const editMode = activityToEdit !== null;
+  let showCloseConfirmModal = $state(false);
 
   let categories: Category[] = []; // Toutes les catégories (utilisé en mode édition)
   let projectCategories: Category[] = $state([]); // Catégories spécifiques au projet
@@ -258,6 +259,21 @@
     onClose();
   };
 
+const handleOverlayClick = (e) => {
+  const projectIdStr = String(activity.projectId ?? '').trim();
+  const hasProject = projectIdStr !== '' && projectIdStr !== 'undefined' && projectIdStr !== 'null';
+  if (hasProject) {
+    showCloseConfirmModal = true;
+  } else {
+    onClose();
+  }
+};
+
+const confirmClose = () => {
+  showCloseConfirmModal = false;
+  onClose();
+};
+
   const handleAddCategory = (e) => {
     e.stopPropagation();
     categoryToAdd = searchTerm;
@@ -325,7 +341,7 @@
     <!-- Overlay semi-transparent avec opacité à 40% comme dans l'original -->
     <div
       class="absolute inset-0 bg-gray-950/40 transition-opacity"
-      onclick={handleClose}
+      onclick={handleOverlayClick}
     ></div>
 
     <!-- Panneau latéral avec bordure et ombre à gauche pour délimiter -->
@@ -654,6 +670,19 @@
         showCategoryConfirmModal = false;
       }}
     />
+  {/if}
+  {#if showCloseConfirmModal}
+      <ConfirmationModal
+        modalTitle="Modifications non enregistrées"
+        modalText="Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter sans sauvegarder ?"
+        confirmText="Oui, quitter"
+        cancelText="Non, rester"
+        errorText=""
+        onSuccess={confirmClose}
+        onClose={() => {
+          showCloseConfirmModal = false;
+        }}
+      />
   {/if}
 {/if}
 
