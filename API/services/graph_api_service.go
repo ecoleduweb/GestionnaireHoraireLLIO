@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 )
@@ -14,42 +13,23 @@ import (
 func GetCalendarEvents(accessToken string, date time.Time) ([]GraphEvent, error) {
 	startOfDay := useful.ToStartOfDay(date)
 	endOfDay := useful.ToEndOfDay(date)
-
-	start := useful.DateToISOString(startOfDay)
-	end := useful.DateToISOString(endOfDay)
-
 	url := fmt.Sprintf(
 		"https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=%s&endDateTime=%s",
-		start, end,
+		useful.DateToISOString(startOfDay),
+		useful.DateToISOString(endOfDay),
 	)
 
-	req, err := http.NewRequest("GET", url, nil)
+	body, err := GraphApiGetRequest(url, accessToken)
 	if err != nil {
 		return nil, err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Prefer", "outlook.body-content-type=\"text\"")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("graph API error: %s", resp.Status)
 	}
 
 	var result struct {
 		Value []GraphEvent `json:"value"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
-
 	return result.Value, nil
 }
 
