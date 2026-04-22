@@ -7,7 +7,7 @@
   import ActivityModal from '../../Components/Calendar/ActivityModal.svelte';
   import DashboardLeftPane from '../../Components/Calendar/DashboardLeftPane.svelte';
   import { ActivityApiService } from '../../services/ActivityApiService';
-  import type { Activity, UserInfo, Project, DetailedProject } from '../../Models/index.ts';
+  import type {Activity, UserInfo, Project, DetailedProject, OutlookEvent} from '../../Models/index.ts';
   // Importez le fichier CSS
   import '../../style/modern-calendar.css';
   import { getDateOrDefault, formatDate } from '../../utils/date';
@@ -16,6 +16,7 @@
   import { formatViewTitle } from '../../utils/date';
   import { Plus, Calendar, ChevronLeft, ChevronRight, LogOut } from 'lucide-svelte';
   import { goto } from '$app/navigation';
+  import OutlookImportModal from "../../Components/Calendar/OutlookImportModal.svelte";
 
   let calendarEl = $state<HTMLElement | null>(null);
   let calendarService = $state<CalendarService | null>(null);
@@ -31,6 +32,9 @@
   let textHoursWorked = $state('');
   let totalHours = $state(0);
   let headerFormat: { weekday: string; day?: string; month?: string };
+  let isImportingOutlook = $state(false);
+  let outlookEvents = $state<OutlookEvent[]>([]);
+  let outlookImportDate = $state<Date | null>(null);
 
   const timeRanges = [
     { label: 'Heures de bureau', start: '06:00:00', end: '19:00:00', default: true },
@@ -212,6 +216,27 @@
           // Appelé à chaque changement de dates ou de vue
           updateViewTitle();
         },
+
+        dayHeaderContent: (arg) => {
+          // Only render custom content in week view
+          if (activeView !== 'timeGridWeek') return { html: '' };
+
+          const dateStr = arg.date.toISOString().split('T')[0];
+          const dayLabel = arg.date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+
+          return {
+            html: `
+              <div class="fc-day-header-custom">
+                <span class="fc-day-label">${dayLabel}</span>
+                <button
+                  class="import-outlook-btn"
+                  data-date="${dateStr}"
+                >
+                  + Outlook
+                </button>
+              </div>
+            `};
+        }
         
       }
 
@@ -250,6 +275,36 @@
 
       // Initialiser avec les options personnalisées
       calendarService.initialize(calendarEl, calendarOptions);
+
+      calendarEl.addEventListener('click', async (e) => {
+        const target = e.target as HTMLElement;
+        const btn = target.closest<HTMLButtonElement>('.import-outlook-btn');
+        if (!btn) return;
+
+        const date = btn.dataset.date;
+        btn.disabled = true;
+        btn.textContent = '…';
+        try {
+          const events = await ActivityApiService.getOutlookEvents(date);
+          if (events?.length) {
+            outlookEvents = events;
+            isImportingOutlook = true;
+            outlookImportDate = new Date(date);
+          } else {
+            // Optional: show a small toast/notification
+            btn.textContent = '✓ Aucun évènement à importer';
+            setTimeout(() => { btn.textContent = '+ Outlook'; btn.disabled = false; }, 2000);
+            return;
+          }
+        } catch (err) {
+          console.error('Erreur import Outlook:', err);
+          alert("Erreur lors de l'import Outlook : " + err.message);
+        }
+
+        btn.textContent = '+ Outlook';
+        btn.disabled = false;
+      });
+
       calendarService.render();
 
       // Mettre à jour le titre initial
@@ -549,6 +604,16 @@
   />
 {/if}
 
+{#if isImportingOutlook}
+  <OutlookImportModal
+          date={outlookImportDate}
+          events={outlookEvents}
+          projects={projects}
+          onClose={() => {isImportingOutlook = false;}}
+          onSuccess={() => {isImportingOutlook = false;}}
+  ></OutlookImportModal>
+{/if}
+
 <style>
   :global(.fc .fc-timegrid-slot) {
     height: 25px !important;
@@ -598,5 +663,35 @@
   /* Gestion espace dashboard */
   .space-between-dashboard-calendar {
     margin-left: 300px;
+  }
+
+  /* Bouton ajout outlook */
+  :global(.fc-day-header-custom) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+  }
+
+  :global(.import-outlook-btn) {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #f0f9f9;
+    color: #015e61;
+    border: 1px solid #015e61;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  :global(.import-outlook-btn:hover) {
+    background: #015e61;
+    color: white;
+  }
+
+  :global(.import-outlook-btn:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>

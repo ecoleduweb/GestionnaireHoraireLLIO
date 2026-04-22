@@ -16,6 +16,7 @@ const transformEventStringDates = (event: OutlookEventRaw): OutlookEvent => ({
   ...event,
   start: new Date(`${event.start.dateTime}Z`),
   end: new Date(`${event.end.dateTime}Z`),
+  submitted: false,
 });
 
 const toStringDatesToString = (activity: Activity) => ({
