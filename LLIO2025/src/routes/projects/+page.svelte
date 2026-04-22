@@ -7,7 +7,6 @@
   import { ProjectApiService } from "../../services/ProjectApiService";
   import { UserApiService } from "../../services/UserApiService";
   import AddCoManagerModal from '../../Components/Projects/AddCoManagerModal.svelte';
-  import DeleteCoManagerModal from '../../Components/Projects/DeleteCoManagerModal.svelte';
   import searchIcon from "../../../static/search.svg";
 
   // État des projets
@@ -24,9 +23,7 @@
 
   // État pour la modale d'ajout de responsable
   let showAddCoManagerModal = $state(false);
-  let showDeleteCoManagerModal = $state(false);
   let selectedProject = $state<DetailedProject | null>(null);
-  let selectedCoManager = $state<CoLead | null>(null);
   let users = $state<User[]>([]);
   let usersToDisplay = $derived<User[]>(
     selectedProject == null
@@ -42,12 +39,6 @@
     selectedProject = projects.find(p => p.id == projectId);
     await loadUsers();
     showAddCoManagerModal = true;
-  }
-
-  const handleDeleteCoManagerModalOpen = (projectId: number, coManager: CoLead) => {
-    selectedProject = projects.find(p => p.id == projectId) ?? null;
-    selectedCoManager = coManager;
-    showDeleteCoManagerModal = selectedProject != null;
   }
 
   const loadProjects = async () => {
@@ -94,21 +85,15 @@
     }
   }
 
-  const handleDeleteCoManager = async (userId: number, projectId: number) => {
-    try {
-      isLoading = true;
-      error = null;
-      await ProjectApiService.deleteCoManagerFromProject(projectId, userId);
-    } catch (e) {
-      console.error('Erreur lors de la suppression du co-chargé de projet :', e);
-      alert(e instanceof Error ? e.message : 'Erreur inconnue');
-    } finally {
-      isLoading = false;
-      showDeleteCoManagerModal = false;
-      selectedProject = null;
-      selectedCoManager = null;
-      await loadProjects();
-    }
+  const handleDeleteCoManager = (projectId: number, coManager: CoLead) => {
+    projects = projects.map(project =>
+      project.id === projectId
+        ? {
+            ...project,
+            coLeads: project.coLeads.filter((coLead) => coLead.id !== coManager.id),
+          }
+        : project
+    );
   }
 
   onMount(async () => {
@@ -213,7 +198,7 @@
       <ProjectComponent
         {project}
         onClickAddCoManager={() => handleAddCoManagerModalOpen(project.id)}
-        onClickDeleteCoManager={(coManager) => handleDeleteCoManagerModalOpen(project.id, coManager)}
+        onClickDeleteCoManager={handleDeleteCoManager}
       />
     {/each}
   {/if}
@@ -224,12 +209,3 @@
   <AddCoManagerModal show={showAddCoManagerModal} users={usersToDisplay} project={selectedProject} onAdd={handleAddCoManager} onCancel={() => showAddCoManagerModal = false} />
 {/if}
 
-{#if showDeleteCoManagerModal && selectedProject && selectedCoManager}
-  <DeleteCoManagerModal
-    show={showDeleteCoManagerModal}
-    project={selectedProject}
-    coManager={selectedCoManager}
-    onDelete={handleDeleteCoManager}
-    onCancel={() => showDeleteCoManagerModal = false}
-  />
-{/if}

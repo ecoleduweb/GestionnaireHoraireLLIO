@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Plus, Trash2 } from 'lucide-svelte';
+  import { Plus } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   import { formatHours } from '../../utils/date';
@@ -7,6 +7,7 @@
   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
   import type { Category, CoLead } from '../../Models';
   import GenerateTableCategories from './GenerateTableCategories.svelte';
+  import DeleteCoManagerModal from './DeleteCoManagerModal.svelte';
   import { CategoryApiService } from '../../services/CategoryApiService';
 
   let { 
@@ -16,7 +17,7 @@
   }: { 
     project: any; 
     onClickAddCoManager?: () => void; 
-    onClickDeleteCoManager?: (coLead: CoLead) => void; 
+    onClickDeleteCoManager?: (projectId: number, coLead: CoLead) => void; 
   } = $props();
 
   let isDetailsVisible = $state([]);
@@ -63,16 +64,11 @@
               <hr class="mt-2 text-xs text-gray-400" />
               <div class="mt-1 text-xs text-gray-400">Co-chargé·e de projet</div>
               {#each project.coLeads as coLead}
-                <div class="text-sm wrap-normal">
-                  {coLead.name}
-                  <button
-                    class="p-1 text-gray-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
-                    onclick={() => onClickDeleteCoManager(coLead)}
-                    aria-label="Supprimer le co-chargé {coLead.name}"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                <DeleteCoManagerModal
+                  projectId={project.id}
+                  coManager={coLead}
+                  onClickDeleteCoManager={onClickDeleteCoManager}
+                />
               {/each}
               <button
                 class="mt-2 inline-flex items-center bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs"
