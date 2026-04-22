@@ -6,7 +6,6 @@ import (
 	"llio-api/models/DTOs"
 	"llio-api/repositories"
 	"log"
-	"strconv"
 
 	"github.com/jinzhu/copier"
 )
@@ -76,14 +75,6 @@ func UpdateCategory(categoryDTO *DTOs.CategoryDTO) (*DTOs.CategoryDTO, error) {
 	err := copier.Copy(categoryDAO, categoryDTO)
 	if err != nil {
 		return nil, err
-	}
-
-	activitiesCount, err := repositories.GetActivitiesCountFromCategoryId(strconv.Itoa(categoryDAO.Id))
-		if err != nil {
-		return nil, err
-	}
-	if activitiesCount > 0 {
-		return nil, customs_errors.ErrPutCategoryHasActivities
 	}
 
 	categoryDAOUpdated, err := repositories.UpdateCategory(categoryDAO)

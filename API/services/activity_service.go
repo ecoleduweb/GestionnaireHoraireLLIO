@@ -113,19 +113,15 @@ func UpdateActivity(activityDTO *DTOs.ActivityDTO, user *DTOs.UserDTO) (*DTOs.De
 	}
 
 	canUpdate, err := repositories.UserHasPermissionToInteractWithActivity(user, strconv.Itoa(activityDAO.Id))
+	if !canUpdate {
+		return nil, customs_errors.ErrUserForbidden
+	}
+	
+	activityDAOUpdated, err := repositories.UpdateActivity(activityDAO)
 	if err != nil {
 		return nil, err
 	}
-
-	if canUpdate {
-		activityDAOUpdated, err := repositories.UpdateActivity(activityDAO)
-		if err != nil {
-			return nil, err
-		}
-		return GetDetailedActivityById(activityDAOUpdated.Id)
-	}
-
-	return nil, customs_errors.ErrUserForbidden
+	return GetDetailedActivityById(activityDAOUpdated.Id)
 }
 
 func DeleteActivity(id string, user *DTOs.UserDTO) error {
