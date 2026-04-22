@@ -3,8 +3,10 @@ package controllers
 import (
 	"llio-api/models/DTOs"
 	"llio-api/services"
+	"llio-api/useful"
 	"log"
 	"strconv"
+	"time"
 
 	"net/http"
 
@@ -81,6 +83,56 @@ func GetActivityById(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"activity": activity})
+}
+
+func GetUsersOutlookCalendar(c *gin.Context) {
+	dateParam := c.Query("date")
+	var date time.Time
+	if dateParam != "" {
+		var err error
+		date, err = time.Parse(time.DateOnly, dateParam)
+		if err != nil {
+			log.Printf("Erreur de format de date : %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Date invalide"})
+			return
+		}
+	} else {
+		date = time.Now()
+	}
+
+	userDto, shouldReturn := getUserFromContext(c)
+	if shouldReturn {
+		return
+	}
+
+	graphToken, err := services.GetUserGraphAccessToken(userDto.Id)
+	if err != nil {
+		handleError(c, err, activiteSTR)
+		return
+	}
+
+	if graphToken == nil {
+		log.Printf("La connexion Microsoft de l'utilisateur est invalide ou inexistante. : %v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Votre compte n'est pas connecté à votre compte Microsoft. Veuillez vous reconnecter et réessayer.",
+			"code": "GRAPH_EXPIRED"})
+		return
+	}
+
+	isGraphTokenValid := useful.VerifyTokenValidity(*graphToken)
+	if !isGraphTokenValid {
+		log.Printf("La connexion Microsoft de l'utilisateur est invalide ou inexistante. : %v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Votre compte Microsoft s'est déconnecté. Veuillez vous reconnecter et réessayer.",
+			"code": "GRAPH_EXPIRED"})
+		return
+	}
+
+	events, err := services.GetCalendarEvents(*graphToken, date)
+	if err != nil {
+		handleError(c, err, activiteSTR)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"date": date.Format(time.DateOnly), "events": events})
 }
 
 func UpdateActivity(c *gin.Context) {

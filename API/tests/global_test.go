@@ -73,44 +73,53 @@ func TestMain(m *testing.M) {
 
 func prepareTestData() {
 	testUser := DAOs.User{
-		FirstName: "John",
-		LastName:  "Doe",
-		Email:     "john.doe@example.com",
-		Role:      enums.Administrator,
+		FirstName:        "John",
+		LastName:         "Doe",
+		Email:            "john.doe@example.com",
+		Role:             enums.Administrator,
+		GraphAccessToken: nil,
 	}
 	database.DB.Create(&testUser)
 	doNotDeleteUser = testUser
 	testUser2 := DAOs.User{
-		FirstName: "Johnny",
-		LastName:  "Joestar",
-		Email:     "tusk@example.com",
-		Id:        20, // Assurez-vous que l'ID est unique pour le test
+		FirstName:        "Johnny",
+		LastName:         "Joestar",
+		Email:            "tusk@example.com",
+		Id:               20, // Assurez-vous que l'ID est unique pour le test
+		GraphAccessToken: nil,
 	}
 	database.DB.Create(&testUser2)
 	pleaseDeleteUser = testUser2
+
+	// Utilisateur de test avec un faux jeton expiré pour tester avec Graph API
+	fakeGraphToken := "eyJ0eXAiOiJKV1QiLCJub25jZSI6ImZha2Vub25jZTEyMzQ1Njc4OTAiLCJhbGciOiJSUzI1NiIsIng1dCI6ImZha2V4NXQiLCJraWQiOiJmYWtla2lkIn0.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTAwMDAtYzAwMC0wMDAwMDAwMDAwMDAiLCJpc3MiOiJodHRwczovL3N0cy5leGFtcGxlLmNvbS9mYWtldGVuYW50aWQvIiwiaWF0IjoxNzc2MjU4MDgyLCJuYmYiOjE3NzYyNTgwODIsImV4cCI6MTc3NjI2MTk5MiwiYWNjdCI6MCwiYWNyIjoiMSIsImFtciI6WyJwd2QiLCJtZmEiXSwiYXBwX2Rpc3BsYXluYW1lIjoiRmFrZSBBcHAgLSBERVYiLCJhcHBpZCI6ImZha2VhcHBpZC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJhcHBpZGFjciI6IjEiLCJmYW1pbHlfbmFtZSI6IkRvZSIsImdpdmVuX25hbWUiOiJKb2huIiwiaWR0eXAiOiJ1c2VyIiwiaXBhZGRyIjoiMTkyLjAuMi4xIiwibmFtZSI6IkpvaG4gRG9lIiwib2lkIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAwIiwicGxhdGYiOiI4IiwicHVpZCI6IjEwMDMwMDAwMDAwMDAwMDAiLCJzY3AiOiJDYWxlbmRhcnMuUmVhZCBlbWFpbCBvcGVuaWQgVXNlci5SZWFkIHByb2ZpbGUiLCJzaWQiOiJmYWtlc2lkLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsInN1YiI6ImZha2VzdWJqZWN0aWRlbnRpZmllcjEyMzQ1Njc4OTAiLCJ0aWQiOiJmYWtldGVuYW50aWQtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAwIiwidW5pcXVlX25hbWUiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsInVwbiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwidmVyIjoiMS4wIn0.fakesignature"
 	testUser3 := DAOs.User{
-		Id:        3,
-		FirstName: "Jane",
-		LastName:  "Doe",
-		Email:     "jane.doe@example.com",
-		Role:      enums.ProjectManager,
+		Id:               3,
+		FirstName:        "Jane",
+		LastName:         "Doe",
+		Email:            "jane.doe@example.com",
+		Role:             enums.ProjectManager,
+		GraphAccessToken: &fakeGraphToken,
 	}
 	database.DB.Create(&testUser3)
 	doNotDeleteUser2 = testUser3
+
 	testUser4 := DAOs.User{
-		Id:        4,
-		FirstName: "Jane",
-		LastName:  "Doe",
-		Email:     "jane.doe@example.com",
-		Role:      enums.ProjectManager,
+		Id:               4,
+		FirstName:        "Jane",
+		LastName:         "Doe",
+		Email:            "jane.doe@example.com",
+		Role:             enums.ProjectManager,
+		GraphAccessToken: nil,
 	}
 	database.DB.Create(&testUser4)
 	doNotDeleteUser3 = testUser4
 	testUser5 := DAOs.User{
-		FirstName: "Gabe",
-		LastName:  "Doe",
-		Email:     "gabe.doe@example.com",
-		Role:      enums.Employee,
+		FirstName:        "Gabe",
+		LastName:         "Doe",
+		Email:            "gabe.doe@example.com",
+		Role:             enums.Employee,
+		GraphAccessToken: nil,
 	}
 	database.DB.Create(&testUser5)
 	doNotDeleteUser4 = testUser5

@@ -96,7 +96,7 @@ func UpdateUserRole(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	existingUser.Role = userDTO.Role
 
 	// Save the updated user
-	updatedUser, err := repositories.UpdateUserRole(existingUser)
+	updatedUser, err := repositories.UpdateUser(existingUser)
 	if err != nil {
 		return nil, err
 	}
@@ -106,6 +106,26 @@ func UpdateUserRole(userDTO *DTOs.UserDTO) (*DTOs.UserDTO, error) {
 	err = copier.Copy(userDTOResponse, updatedUser)
 
 	return userDTOResponse, err
+}
+
+func UpdateUserGraphAccessToken(userId int, graphAccessToken *string) error {
+	existingUser, err := repositories.GetUserById(userId)
+	if err != nil {
+		return err
+	}
+
+	existingUser.GraphAccessToken = graphAccessToken
+
+	_, err = repositories.UpdateUser(existingUser)
+	return err
+}
+
+func GetUserGraphAccessToken(userId int) (*string, error) {
+	user, err := repositories.GetUserById(userId)
+	if err != nil {
+		return nil, err
+	}
+	return user.GraphAccessToken, nil
 }
 
 func DeleteUserById(id int) (*DTOs.UserDTO, error) {
