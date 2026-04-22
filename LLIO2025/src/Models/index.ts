@@ -95,6 +95,13 @@ export interface TimeBankResponse {
   timeInBank: number;
   textHoursWorked: string;
 }
+
+export interface TimeBalance {
+  isConfigured: boolean;
+  displayedHoursTotal: number | null;
+}
+
+
 export interface CoLead {
     id: number;
     name: string;

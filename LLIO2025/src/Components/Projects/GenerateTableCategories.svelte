@@ -1,11 +1,17 @@
 <script lang="ts">
-  import { Plus } from "lucide-svelte";
+  import { Pencil, Plus } from "lucide-svelte";
   import type { Category } from "../../Models";
   import { formatHours } from '../../utils/date';
   import { getHoursColor } from '../../utils/displayUtils';
+  import TextInputModal from "../Modal/TextInputModal.svelte";
+  import CategoryRenamer from "../CategoryRenamer.svelte";
 
   let { categories }: { categories: Category[] } = $props(); //employee.categories
   let listCategories = $state(categories);
+
+  function handledUpdateCategories(catList: Category[]) {
+    listCategories = catList;
+  }
 
 </script>
 
@@ -13,11 +19,11 @@
     <tbody>
         {#each listCategories as category, categoryIndex}
             <tr
-                class="border-b border-gray-200 {categoryIndex % 2 === 0
+                class="categoryTableEntry border-b border-gray-200 {categoryIndex % 2 === 0
                 ? 'bg-white'
                 : 'bg-gray-50'}"
             >
-                <td class="py-2 text-left w-1/2 pl-4">{category.name}</td>
+                <td class="py-2 text-left w-1/2 pl-4">{category.name} <CategoryRenamer category={category} onUpdatedCategories={handledUpdateCategories} categories={listCategories} /> </td>
                 <td class="py-2 text-right w-1/6">{formatHours(category.timeSpent)}</td>
                     <td class="py-2 text-right w-1/6">{formatHours(category.timeEstimated)}</td>
                     <td class="py-2 text-right w-1/6 {getHoursColor(category.timeSpent, category.timeEstimated)}">{formatHours(category.timeEstimated - category.timeSpent)}</td>
@@ -34,3 +40,9 @@
         </tr>
     </tbody>
 </table>
+
+<style>
+    .categoryTableEntry:hover :global(.renameButton) {
+        display: inline-flex;
+    }
+</style>
