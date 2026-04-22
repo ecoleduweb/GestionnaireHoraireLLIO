@@ -274,9 +274,13 @@
     onClose();
   };
 
+  // Le e.stopPropagation empêche le clic de traverser la modale, 
+  // car sinon le cliquer sur le fond gris pourrait déclencher une action sur le calendrier 
+  // qui se trouve derrière comme ajouter une activité. 
+  // On a ajouté un if avec un (e) pour empêché que la méthode soit appeler autre part 
+  // sans raison du coup un événement mouse est obligatoire
 const handlePreventClosingIfDirty = (e: MouseEvent) => {
     if (e) e.stopPropagation();
-
     const isDirty = 
       activity.projectId !== initialSnapshot.projectId ||
       activity.categoryId !== initialSnapshot.categoryId ||
