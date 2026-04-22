@@ -76,21 +76,6 @@
       </div>
     </div>
   </div>
-  <!-- à transferer dans le code de form
-  {#if showCategoryConfirmModal}
-    <ConfirmationModal
-      modalTitle="Confirmer l'ajout"
-      modalText={`Voulez-vous ajouter la catégorie "${categoryToAdd}" ?`}
-      errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"
-      onSuccess={() => {
-        showCategoryConfirmModal = false;
-        confirmAddCategory();
-      }}
-      onClose={() => {
-        showCategoryConfirmModal = false;
-      }}
-    />
-  {/if} -->
 {/if}
 
 <style>
