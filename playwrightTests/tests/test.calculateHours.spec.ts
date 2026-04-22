@@ -48,6 +48,6 @@ test.describe("calcul d'heures", () => {
 
 
   
-    await expect(page.locator(".card")).toBeVisible();
+    await expect(page.locator(".dashboard-card")).toBeVisible();
   });
 });

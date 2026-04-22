@@ -2,10 +2,12 @@ package tests
 
 import (
 	"encoding/json"
+	"fmt"
 	"llio-api/models/DAOs"
 	"llio-api/models/DTOs"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -59,4 +61,58 @@ func TestUpdateCategoryWithInvalidId(t *testing.T) {
 
 	w := sendRequest(router, "PUT", "/category", category, nil)
 	assertResponse(t, w, http.StatusNotFound, nil)
+}
+
+
+func TestUpdateCategoryWithActivities(t *testing.T) {
+	category := DTOs.CategoryDTO{
+		Name:        "Catégorie à modifier avec activités",
+		Description: "Description de test",
+		ProjectId:   doNotDeleteProject.Id,
+	}
+
+	w := sendRequest(router, "POST", "/category", category, nil)
+	assertResponse(t, w, http.StatusCreated, nil)
+
+	// Vérification du corps de la réponse
+	var responseBody struct {
+		Reponse  string        `json:"reponse"`
+		Category DAOs.Category `json:"category"`
+	}
+	err := json.Unmarshal(w.Body.Bytes(), &responseBody)
+	assert.NoError(t, err)
+	fmt.Println("CATEGORY RESPONSE:", w.Body.String())
+	fmt.Println("CATEGORY ID:", responseBody.Category.Id)
+
+	
+	activity := DTOs.ActivityDTO{
+		Name:        "Test tâche",
+		Description: "Test automatique de la création de tâche",
+		StartDate:   time.Now(),
+		EndDate:     time.Now().Add(24 * time.Hour),
+		UserId:      doNotDeleteUser.Id,
+		ProjectId:   doNotDeleteProject.Id,
+		CategoryId:  responseBody.Category.Id,
+	}
+
+	w = sendRequest(router, "POST", "/activity", activity, nil)
+	assertResponse(t, w, http.StatusCreated, nil)
+
+	// Vérification du corps de la réponse
+	var activityResponseBody struct {
+		Reponse  string                   `json:"reponse"`
+		Activity DTOs.DetailedActivityDTO `json:"activity"`
+	}
+	err = json.Unmarshal(w.Body.Bytes(), &activityResponseBody)
+	assert.NoError(t, err)
+
+		// Création d'une catégorie à modifier
+	categoryToUpdate := DTOs.CategoryDTO{
+		Id:          responseBody.Category.Id,
+		Name:        "Catégorie à modifier avec activités",
+		Description: "Description de test",
+	}
+
+	w = sendRequest(router, "PUT", "/category", categoryToUpdate, nil)
+	assertResponse(t, w, http.StatusOK, nil)
 }
