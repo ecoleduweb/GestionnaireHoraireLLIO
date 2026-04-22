@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"llio-api/models/DTOs"
 	"llio-api/repositories"
+
+	"github.com/jinzhu/copier"
 )
 
 type ProjectService struct{}
@@ -14,21 +16,15 @@ func GetAvailableManagers(projectId int) ([]DTOs.UserDTO, error) {
         return nil, err
     }
 
-    // Conversion en DTO
     var usersDTO []DTOs.UserDTO
-    for _, u := range usersDAO {
-        usersDTO = append(usersDTO, DTOs.UserDTO{
-            Id:        u.Id,
-            FirstName: u.FirstName,
-            LastName:  u.LastName,
-            Email:     u.Email,
-            Role:      u.Role,
-        })
+
+    err = copier.Copy(&usersDTO, &usersDAO)
+    if err != nil {
+        return nil, err
     }
 
     return usersDTO, nil
 }
-
 func (s *ProjectService) ReassignManager(projectId int, newManagerId int) error {
 	availableManagers, err := repositories.GetAvailableManagers(projectId)
 	if err != nil {

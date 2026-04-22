@@ -26,7 +26,7 @@ func GetAvailableManagers(projectId int) ([]*DAOs.User, error) {
 
 	return managers, DBErrorManager(err)
 }
-//Transaction pour changer un chargé de projet
+
 func ReassignManager(projectId int, newManagerId int) error {
     return database.DB.Transaction(func(tx *gorm.DB) error {
 		//Récupère le projet séléctionné

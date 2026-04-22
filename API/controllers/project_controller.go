@@ -94,13 +94,13 @@ func GetAvailableManagers(c *gin.Context) {
 	var projectId int
 	var err error
 
-	if projectIdStr != "" {
-		projectId, err = strconv.Atoi(projectIdStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "ID du projet invalide"})
-			return
-		}
+
+	projectId, err = strconv.Atoi(projectIdStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID du projet invalide"})
+		return
 	}
+
 
 	managers, err := services.GetAvailableManagers(projectId)
 	if err != nil {
