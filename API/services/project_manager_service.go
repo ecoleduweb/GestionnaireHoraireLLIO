@@ -25,7 +25,7 @@ func GetAvailableManagers(projectId int) ([]DTOs.UserDTO, error) {
 
     return usersDTO, nil
 }
-func (s *ProjectService) ReassignManager(projectId int, newManagerId int) error {
+func ReassignManager(projectId int, newManagerId int) error {
 	availableManagers, err := repositories.GetAvailableManagers(projectId)
 	if err != nil {
 		return fmt.Errorf("impossible de récupérer les managers disponibles: %w", err)

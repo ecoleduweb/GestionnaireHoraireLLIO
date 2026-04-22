@@ -3,7 +3,6 @@ package controllers
 import (
 	"llio-api/models/DTOs"
 	"llio-api/models/enums"
-	"llio-api/repositories"
 	"llio-api/services"
 	"log"
 	"net/http"
@@ -122,7 +121,7 @@ func ReassignManager(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID du gestionnaire invalide"})
 		return
 	}
-	err = repositories.ReassignManager(projectId, newManagerId)
+	err = services.ReassignManager(projectId, newManagerId)
 	if err != nil {
 		handleError(c, err, "réattribution du manager")
 		return
