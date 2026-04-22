@@ -1,6 +1,7 @@
 package services
 
 import (
+	"llio-api/models/DTOs"
 	"llio-api/useful"
 
 	"encoding/base64"
@@ -10,11 +11,14 @@ import (
 	"time"
 )
 
-func GetCalendarEvents(accessToken string, date time.Time) ([]GraphEvent, error) {
+const GraphApiBaseUrl = "https://graph.microsoft.com/v1.0"
+
+func GetCalendarEvents(accessToken string, date time.Time) ([]DTOs.GraphEvent, error) {
 	startOfDay := useful.ToStartOfDay(date)
 	endOfDay := useful.ToEndOfDay(date)
 	url := fmt.Sprintf(
-		"https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=%s&endDateTime=%s",
+		"%s/me/calendarView?startDateTime=%s&endDateTime=%s",
+		GraphApiBaseUrl,
 		useful.DateToISOString(startOfDay),
 		useful.DateToISOString(endOfDay),
 	)
@@ -53,21 +57,4 @@ func IsJWTExpired(tokenString string) (bool, error) {
 	}
 
 	return time.Now().Unix() > claims.Exp, nil
-}
-
-type GraphEvent struct {
-	ID      string `json:"id"`
-	Subject string `json:"subject"`
-	Body    struct {
-		Content string `json:"content"`
-	} `json:"body"`
-	Start struct {
-		DateTime string `json:"dateTime"`
-		TimeZone string `json:"timeZone"`
-	} `json:"start"`
-	End struct {
-		DateTime string `json:"dateTime"`
-		TimeZone string `json:"timeZone"`
-	} `json:"end"`
-	IsAllDay bool `json:"isAllDay"`
 }

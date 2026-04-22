@@ -14,8 +14,8 @@ const transformActivityStringToDates = (activity: RawActivity): Activity => ({
 
 const transformEventStringDates = (event: OutlookEventRaw): OutlookEvent => ({
   ...event,
-  start: new Date(`${event.start.dateTime}${event.start.timeZone === "UTC" ? "Z" : ""}`),
-  end: new Date(`${event.end.dateTime}${event.end.timeZone === "UTC" ? "Z" : ""}`),
+  start: new Date(`${event.start.dateTime}Z`),
+  end: new Date(`${event.end.dateTime}Z`),
 });
 
 const toStringDatesToString = (activity: Activity) => ({
