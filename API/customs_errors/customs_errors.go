@@ -11,7 +11,6 @@ var (
 	ErrDatabase                   = errors.New("erreur de la BD")
 	ErrUserHasActivities          = errors.New("l'utilisateur a des activités associées, suppression impossible")
 	ErrCategoryHasActivities      = errors.New("La catégorie a des activités associées, suppression impossible")
-	ErrPutCategoryHasActivities   = errors.New("La catégorie a des activités associées, modification impossible")
 	ErrUserHasProjects            = errors.New("l'utilisateur a des projets associées, suppression impossible")
 	ErrUserForbidden              = errors.New("accès refusé")
 	ErrUserIsManager              = errors.New("l'utilisateur est le chargé du projet")

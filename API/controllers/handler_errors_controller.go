@@ -20,12 +20,6 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		errorMsg := fmt.Sprintf("La catégorie a une ou des activités associées, suppression impossible")
 		log.Printf("ERREUR - Suppression impossible: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
-
-	case customs_errors.ErrPutCategoryHasActivities:
-		errorMsg := fmt.Sprintf("La catégorie a une ou des activités associées, modification impossible")
-		log.Printf("ERREUR - Modification impossible: %s - %v", errorMsg, err)
-		ctx.JSON(http.StatusConflict, gin.H{"error": errorMsg})
-
 		
 	case customs_errors.ErrNotFound:
 		errorMsg := fmt.Sprintf("Le(La) %s n'a pas été trouvé(e)", subject)
