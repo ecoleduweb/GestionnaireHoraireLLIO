@@ -3,6 +3,7 @@ package controllers
 import (
 	"llio-api/models/DTOs"
 	"llio-api/services"
+	"llio-api/useful"
 	"log"
 	"strconv"
 	"time"
@@ -117,8 +118,8 @@ func GetUsersOutlookCalendar(c *gin.Context) {
 		return
 	}
 
-	isGraphTokenExpired, err := services.IsJWTExpired(*graphToken)
-	if (err != nil) || isGraphTokenExpired {
+	isGraphTokenValid := useful.VerifyTokenValidity(*graphToken)
+	if !isGraphTokenValid {
 		log.Printf("La connexion Microsoft de l'utilisateur est invalide ou inexistante. : %v", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Votre compte Microsoft s'est déconnecté. Veuillez vous reconnecter et réessayer.",
 			"code": "GRAPH_EXPIRED"})
