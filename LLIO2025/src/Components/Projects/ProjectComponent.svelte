@@ -5,25 +5,20 @@
   import { formatHours } from '../../utils/date';
   import { getHoursColor } from '../../utils/displayUtils';
   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
-  import type { CoLead, DetailedProject, UserInfo } from '../../Models';
-  import { UserRole } from '$lib/types/enums';
+  import type { Category, CoLead } from '../../Models';
   import GenerateTableCategories from './GenerateTableCategories.svelte';
+  import { CategoryApiService } from '../../services/CategoryApiService';
 
-  type Props = {
-    project: DetailedProject;
-    currentUser?: UserInfo | null;
-    onClickAddCoManager?: () => void;
-    onClickDeleteCoManager?: (coLead: CoLead) => void;
-  };
-
-  let {
+  let { 
     project,
-    currentUser = null,
     onClickAddCoManager = () => {},
     onClickDeleteCoManager = () => {},
-  }: Props = $props();
+  }: { 
+    project: any; 
+    onClickAddCoManager?: () => void; 
+    onClickDeleteCoManager?: (coLead: CoLead) => void; 
+  } = $props();
 
-  let canManageCoManagers = $derived(currentUser?.role === UserRole.Admin || currentUser?.role === UserRole.ProjectManager);
   let isDetailsVisible = $state([]);
 </script>
 
@@ -67,6 +62,18 @@
               </button>
               <hr class="mt-2 text-xs text-gray-400" />
               <div class="mt-1 text-xs text-gray-400">Co-chargé·e de projet</div>
+              {#each project.coLeads as coLead}
+                <div class="text-sm wrap-normal">
+                  {coLead.name}
+                  <button
+                    class="p-1 text-gray-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                    onclick={() => onClickDeleteCoManager(coLead)}
+                    aria-label="Supprimer le co-chargé {coLead.name}"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              {/each}
               <button
                 class="mt-2 inline-flex items-center bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs"
                 onclick={onClickAddCoManager}
@@ -74,20 +81,6 @@
               >
                 <Plus class="w-3 h-3" />
               </button>
-              {#each project.coLeads as coLead}
-                <div class="text-sm wrap-normal flex items-center gap-1">
-                  <span>{coLead.name}</span>
-                  {#if canManageCoManagers}
-                    <button
-                      class="p-1 text-gray-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
-                      onclick={() => onClickDeleteCoManager(coLead)}
-                      aria-label="Supprimer le co-chargé {coLead.name}"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  {/if}
-                </div>
-              {/each}
             </div>
 
            

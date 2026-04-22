@@ -212,7 +212,6 @@
     {#each filteredProjects as project}
       <ProjectComponent
         {project}
-        {currentUser}
         onClickAddCoManager={() => handleAddCoManagerModalOpen(project.id)}
         onClickDeleteCoManager={(coManager) => handleDeleteCoManagerModalOpen(project.id, coManager)}
       />
