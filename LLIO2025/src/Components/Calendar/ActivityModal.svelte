@@ -67,6 +67,18 @@
     endMinutes: getMinutesFromDate(activity.endDate),
   });
 
+  // Snapshot figé à l'ouverture pour comparer plus tard
+  const initialSnapshot = {
+    projectId: activity.projectId,
+    categoryId: activity.categoryId,
+    name: activity.name || '',
+    description: activity.description || '',
+    sh: time.startHours,
+    sm: time.startMinutes,
+    eh: time.endHours,
+    em: time.endMinutes
+  };
+
   if (activityToEdit) {
     Object.assign(activity, activityToEdit);
     time.startHours = getHoursFromDate(activityToEdit.startDate);
@@ -262,15 +274,25 @@
     onClose();
   };
 
-const handleOverlayClick = (e) => {
-  if (e) e.stopPropagation();
+const handlePreventClosingIfDirty = (e: MouseEvent) => {
+    if (e) e.stopPropagation();
 
-  if (activity.projectId && activity.projectId !== initialProjectId) {
-    showCloseConfirmModal = true;
-  } else {
-    onClose();
-  }
-};
+    const isDirty = 
+      activity.projectId !== initialSnapshot.projectId ||
+      activity.categoryId !== initialSnapshot.categoryId ||
+      (activity.name || '') !== initialSnapshot.name ||
+      (activity.description || '') !== initialSnapshot.description ||
+      time.startHours !== initialSnapshot.sh ||
+      time.startMinutes !== initialSnapshot.sm ||
+      time.endHours !== initialSnapshot.eh ||
+      time.endMinutes !== initialSnapshot.em;
+
+    if (isDirty) {
+      showCloseConfirmModal = true;
+    } else {
+      onClose();
+    }
+  };
 
 const confirmClose = () => {
   showCloseConfirmModal = false;
@@ -344,7 +366,7 @@ const confirmClose = () => {
     <!-- Overlay semi-transparent avec opacité à 40% comme dans l'original -->
     <div
       class="absolute inset-0 bg-gray-950/40 transition-opacity"
-      onclick={handleOverlayClick}
+      onclick={handlePreventClosingIfDirty}
     ></div>
 
     <!-- Panneau latéral avec bordure et ombre à gauche pour délimiter -->
