@@ -371,3 +371,36 @@ func GetProjectsByActivityPerUser(userId int) ([]*DTOs.ProjectDTO, error) {
 
 	return projectsDTO, nil
 }
+
+func ArchiveProjectByIdWithUserId(userId int, projectId int) error {
+	// Check if the project exists
+	projectDAO, err := repositories.GetProjectById(fmt.Sprintf("%d", projectId))
+
+	if err != nil {
+		return err
+	}
+	if projectDAO == nil {
+		return customs_errors.ErrProjectNotFound
+	}
+
+	userHasPermission, err := repositories.DoesUserHavePermissionToInteractWithProject(userId, projectId)
+	if err != nil {
+		return err
+	}
+	if !userHasPermission {
+		log.Printf("User %d tried to access the project: %d", userId, projectId)
+		return customs_errors.ErrProjectNoPermission
+	}
+
+	//Archive the project
+	result, errArchive := repositories.ArchiveProject(projectDAO)
+	if errArchive != nil {
+		return errArchive
+	}
+
+	if !result {
+		return customs_errors.ErrProjectCouldntModifyArchive
+	}
+
+	return nil
+}

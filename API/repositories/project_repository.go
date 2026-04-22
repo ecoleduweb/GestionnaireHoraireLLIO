@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"llio-api/database"
 	"llio-api/models/DAOs"
+	"llio-api/models/enums"
 
 	"time"
 
@@ -14,7 +15,7 @@ func CreateProject(project *DAOs.Project) (*DAOs.Project, error) {
 	err := database.DB.Create(project).Error
 	return project, DBErrorManager(err)
 }
-func applyRecentActivityOrdering(db *gorm.DB,userId int) *gorm.DB {
+func applyRecentActivityOrdering(db *gorm.DB, userId int) *gorm.DB {
 	return db.
 		Joins(`
 		
@@ -33,7 +34,7 @@ func applyRecentActivityOrdering(db *gorm.DB,userId int) *gorm.DB {
 				THEN 0 ELSE 1 
 			END
 		`).
-		// Prend les activitées de moins de 1 mois et les trient par date 
+		// Prend les activitées de moins de 1 mois et les trient par date
 		Order(`
 			CASE 
 				WHEN last_activities.latest_started_activity IS NOT NULL 
@@ -41,7 +42,7 @@ func applyRecentActivityOrdering(db *gorm.DB,userId int) *gorm.DB {
 				THEN last_activities.latest_started_activity 
 			END DESC
 		`).
-		// Trie le reste des activitées par ordre alphabétique 
+		// Trie le reste des activitées par ordre alphabétique
 		Order(`
 			CASE 
 				WHEN last_activities.latest_started_activity IS NULL 
@@ -200,7 +201,6 @@ func GetProjectsByActivityPerUser(userId int) ([]*DAOs.Project, error) {
 	return projects, DBErrorManager(err)
 }
 
-
 func ProjectHasActivities(id int) (bool, error) {
 	var count int64
 	err := database.DB.Model(&DAOs.Activity{}).Where("project_id = ?", id).Count(&count).Error
@@ -210,4 +210,43 @@ func ProjectHasActivities(id int) (bool, error) {
 	return count > 0, nil
 }
 
+func DoesUserHavePermissionToInteractWithProject(userId int, projectId int) (bool, error) {
 
+	var user DAOs.User
+	err := database.DB.First(&user, userId).Error
+
+	if err != nil {
+		return false, DBErrorManager(err)
+	}
+
+	if user.Role == enums.Administrator {
+		return true, nil
+	}
+
+	var count int64
+	err2 := database.DB.Model(&DAOs.Project{}).Where("manager_id = ? AND id = ?", userId, projectId).Count(&count).Error
+	if err2 != nil {
+		return false, DBErrorManager(err)
+	}
+	return count > 0, nil
+}
+
+func ArchiveProject(projectDAO *DAOs.Project) (bool, error) {
+	// AJOUT : .Select(...) force la mise à jour de ces colonnes, même si la valeur est 0 ou false
+	var valueToChangeTo enums.ProjectStatus
+
+	if projectDAO.Status == enums.ProjectStatus(enums.Finish) {
+		valueToChangeTo = enums.ProjectStatus(enums.InProgress)
+	} else {
+		valueToChangeTo = enums.ProjectStatus(enums.Finish)
+	}
+
+	err := database.DB.Model(projectDAO).
+		Update("status", valueToChangeTo).Error
+
+	if err != nil {
+		return false, DBErrorManager(err)
+	}
+
+	return true, nil
+}

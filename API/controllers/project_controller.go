@@ -270,6 +270,37 @@ func DeleteProject(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": true})
 }
 
+func ArchiveProject(c *gin.Context) {
+	currentUser, exists := c.Get("current_user")
+	projectIdToArchive := c.Param("id")
+
+	// Convert string to int
+	projectIDInt, err := strconv.Atoi(projectIdToArchive)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Page non trouvé - Erreur de conversion du ID en int"})
+		return
+	}
+
+	user, ok := currentUser.(*DTOs.UserDTO)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur interne du serveur"})
+		c.Abort()
+		return
+	}
+
+	err = services.ArchiveProjectByIdWithUserId(user.Id, projectIDInt)
+	if err != nil {
+		handleError(c, err, projectSTR)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"archived": true})
+}
+
 func GetDetailedProjectsByUser(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
 

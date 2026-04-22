@@ -75,6 +75,16 @@ func handleError(ctx *gin.Context, err error, subject string) {
 		log.Printf("ERREUR - Requête invalide: %s - %v", errorMsg, err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
 
+	case customs_errors.ErrProjectNoPermission:
+		errorMsg := fmt.Sprintf("Impossible de faire cette action, l'utilisateur n'a pas l'autorisation pour interagir avec ce projet")
+		log.Printf("ERREUR - un utilisateur à essayer d'archiver un projet et na pas la permission: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorMsg})
+
+	case customs_errors.ErrProjectCouldntModifyArchive:
+		errorMsg := fmt.Sprintf("Impossible d'archiver le projet, il y a eu une erreur avec la base de données")
+		log.Printf("ERREUR - impossible d'archiver le projet, il y a eu une erreur avec la base de données: %s - %v", errorMsg, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": errorMsg})
+
 	default:
 		errorMsg := fmt.Sprintf("Erreur inconnue lors du traitement du(de la) %s", subject)
 		log.Printf("ERREUR INCONNUE: %s - %v", errorMsg, err)
