@@ -1,6 +1,8 @@
 package services
 
 import (
+	"llio-api/useful"
+
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -10,11 +12,11 @@ import (
 )
 
 func GetCalendarEvents(accessToken string, date time.Time) ([]GraphEvent, error) {
-	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
-	endOfDay := time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 0, date.Location())
+	startOfDay := useful.ToStartOfDay(date)
+	endOfDay := useful.ToEndOfDay(date)
 
-	start := startOfDay.Format(time.RFC3339)
-	end := endOfDay.Format(time.RFC3339)
+	start := useful.DateToISOString(startOfDay)
+	end := useful.DateToISOString(endOfDay)
 
 	url := fmt.Sprintf(
 		"https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=%s&endDateTime=%s",
