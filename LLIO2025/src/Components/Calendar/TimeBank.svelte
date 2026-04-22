@@ -4,6 +4,22 @@
   import type { TimeBalance, TimeBankConfig } from '../../Models/index';
   import HoursWorkedConfigModal from '../Calendar/HoursWorkedConfigModal.svelte';
   
+  type Props = {
+    totalHours: number;
+  }
+
+  const {
+    totalHours
+  }: Props = $props();
+
+  let previousTotalHours = 0;
+  $effect(() => {
+    if(totalHours !== previousTotalHours){
+      previousTotalHours = totalHours;
+      refreshTimeBankBalance();
+    }
+  }
+  )
 
   let timeBalance = $state<TimeBalance>({
     isConfigured: false,

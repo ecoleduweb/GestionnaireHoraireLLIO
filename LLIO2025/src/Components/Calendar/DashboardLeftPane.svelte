@@ -89,7 +89,7 @@
  <div class="dashboard-card">
 
   <HoursWorkedDashboard hoursTotal={totalHours} {dateStart} {dateEnd} {textHoursWorked} />
-  <TimeBank />
+  <TimeBank {totalHours}/>
   </div>
 </div>
 
