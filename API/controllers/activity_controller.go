@@ -86,6 +86,12 @@ func GetActivityById(c *gin.Context) {
 func UpdateActivity(c *gin.Context) {
 	var updateActivityDTO DTOs.ActivityDTO
 
+	user, shouldReturn := getUserFromContext(c)
+
+	if shouldReturn {
+		return
+	}
+
 	//Validation des données entrantes
 	messageErrsJSON := services.VerifyJSON(c, &updateActivityDTO)
 	if len(messageErrsJSON) > 0 {
@@ -108,7 +114,7 @@ func UpdateActivity(c *gin.Context) {
 		return
 	}
 
-	updatedActivityDTO, err := services.UpdateActivity(&updateActivityDTO)
+	updatedActivityDTO, err := services.UpdateActivity(&updateActivityDTO, user)
 	if err != nil {
 		handleError(c, err, activiteSTR)
 		return
