@@ -7,18 +7,23 @@
   let {
     projectId,
     coManager,
-    onClickDeleteCoManager = () => {},
+    onDeleteCoManagerSuccess = () => {},
   }: {
     projectId: number;
     coManager: CoLead;
-    onClickDeleteCoManager?: (projectId: number, coManager: CoLead) => void;
+    onDeleteCoManagerSuccess?: (projectId: number, coManager: CoLead) => void;
   } = $props();
 
   let showConfirmationModal = $state(false);
 
   const handleDeleteCoManager = async () => {
-    await ProjectApiService.deleteCoManagerFromProject(projectId, coManager.id);
-    onClickDeleteCoManager(projectId, coManager);
+    try {
+      await ProjectApiService.deleteCoManagerFromProject(projectId, coManager.id);
+      onDeleteCoManagerSuccess(projectId, coManager);
+    } catch (error) {
+      console.error('Erreur lors de la suppression du co-chargé de projet :', error);
+      throw error;
+    }
   };
 </script>
 

@@ -198,7 +198,7 @@
       <ProjectComponent
         {project}
         onClickAddCoManager={() => handleAddCoManagerModalOpen(project.id)}
-        onClickDeleteCoManager={handleDeleteCoManager}
+        onDeleteCoManagerSuccess={handleDeleteCoManager}
       />
     {/each}
   {/if}

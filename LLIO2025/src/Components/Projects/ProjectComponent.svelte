@@ -7,17 +7,17 @@
   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
   import type { Category, CoLead } from '../../Models';
   import GenerateTableCategories from './GenerateTableCategories.svelte';
-  import DeleteCoManagerModal from './DeleteCoManagerModal.svelte';
+  import DeleteCoManagerButton from './DeleteCoManagerButton.svelte';
   import { CategoryApiService } from '../../services/CategoryApiService';
 
   let { 
     project,
     onClickAddCoManager = () => {},
-    onClickDeleteCoManager = () => {},
+    onDeleteCoManagerSuccess = () => {},
   }: { 
     project: any; 
     onClickAddCoManager?: () => void; 
-    onClickDeleteCoManager?: (projectId: number, coLead: CoLead) => void; 
+    onDeleteCoManagerSuccess?: (projectId: number, coLead: CoLead) => void; 
   } = $props();
 
   let isDetailsVisible = $state([]);
@@ -64,10 +64,10 @@
               <hr class="mt-2 text-xs text-gray-400" />
               <div class="mt-1 text-xs text-gray-400">Co-chargé·e de projet</div>
               {#each project.coLeads as coLead}
-                <DeleteCoManagerModal
+                <DeleteCoManagerButton
                   projectId={project.id}
                   coManager={coLead}
-                  onClickDeleteCoManager={onClickDeleteCoManager}
+                  onDeleteCoManagerSuccess={onDeleteCoManagerSuccess}
                 />
               {/each}
               <button
