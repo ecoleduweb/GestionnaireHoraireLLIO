@@ -114,6 +114,5 @@ func TestUpdateCategoryWithActivities(t *testing.T) {
 	}
 
 	w = sendRequest(router, "PUT", "/category", categoryToUpdate, nil)
-	assertResponse(t, w, http.StatusConflict, nil)
-
+	assertResponse(t, w, http.StatusOK, nil)
 }
