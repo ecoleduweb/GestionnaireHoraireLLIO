@@ -29,7 +29,7 @@ func GetCalendarEvents(accessToken string, date time.Time) ([]DTOs.GraphEvent, e
 	}
 
 	var result struct {
-		Value []GraphEvent `json:"value"`
+		Value []DTOs.GraphEvent `json:"value"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
