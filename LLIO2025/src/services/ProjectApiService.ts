@@ -7,6 +7,10 @@ interface ProjectDeleteResponse {
   deleted: boolean;
 }
 
+interface ProjectArchiveResponse {
+  archived: boolean;
+}
+
 interface ProjectResponse {
   project: Project;
 }
@@ -42,6 +46,17 @@ const deleteProject = async (projectId: number): Promise<void> => {
     const response = await DELETE(`/project/${projectId}`);
     return response;
   } catch (error) {
+    console.error("Erreur lors de la suppression du projet:", error);
+    throw new Error("Erreur lors de la suppression du projet. Veuillez réessayer.");
+  }
+};
+
+const archiveProject = async (projectId: number): Promise<void> => {
+  try {
+    const response = await POST<string, void>(`/project/archive/${projectId}`, "");
+    return response;
+  } catch (error) {
+    console.log(error)
     console.error("Erreur lors de la suppression du projet:", error);
     throw new Error("Erreur lors de la suppression du projet. Veuillez réessayer.");
   }
@@ -112,6 +127,7 @@ const addCoManagerToProject = async(projectId: number, userId: number): Promise<
 export const ProjectApiService = {
   createProject,
   updateProject,
+  archiveProject,
   deleteProject,
   getProjects,
   getProject,

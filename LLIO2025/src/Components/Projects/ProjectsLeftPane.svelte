@@ -20,8 +20,10 @@
   let { projects = [], currentUser, onProjectsRefresh }: Props = $props();
   let isArchivedVisible = $state(false);
   let showModal = $state(false);
+  let showArchiveModal = $state(false);
   let showModalDelete = $state(false);
   let projectToEdit = $state<Project | null>(null);
+  let projectToArchive = $state<Project | null>(null);
   let projectToDelete = $state<Project | null>(null);
     
   const handleNewProject = () =>{
@@ -34,6 +36,11 @@
     showModal = true;
   }
 
+  const handleArchiveProject = (project) =>{
+    projectToArchive = projects.find((x) => x.id === project.id);
+    showArchiveModal = true;
+  }
+
   const handleDeleteProject = (project) => {
     projectToDelete = projects.find((x) => x.id === project.id);
     showModalDelete = true;
@@ -41,6 +48,7 @@
 
   const handleCloseModal = () =>{
     showModal = false;
+    showArchiveModal = false;
     showModalDelete = false;
     projectToEdit = null;
     projectToDelete = null;
@@ -49,6 +57,13 @@
   const handleSuccessDelete = async () => {
     if (projectToDelete?.id != null) {
       await ProjectApiService.deleteProject(projectToDelete.id);
+    }
+    onProjectsRefresh();
+  }
+
+  const handleSuccessArchive = async () => {
+    if (projectToArchive?.id != null) {
+      await ProjectApiService.archiveProject(projectToArchive.id);
     }
     onProjectsRefresh();
   }
@@ -79,7 +94,7 @@
 
     <div class="overflow-y-auto max-h-[calc(100vh-150px)]">
       {#each projects.filter((x) => !x.isArchived) as project}
-        <ProjectItem {project} {currentUser} onEdit={handleEditProject} onDelete={handleDeleteProject} />
+        <ProjectItem {project} {currentUser} onEdit={handleEditProject} onArchive={handleArchiveProject} onDelete={handleDeleteProject} />
       {/each}
 
       <!-- Projets archivés -->
@@ -110,7 +125,7 @@
           {#if isArchivedVisible}
             <div transition:slide={{ duration: 300, easing: quintOut }}>
               {#each projects.filter((x) => x.isArchived) as project}
-                <ProjectItem {project} {currentUser} onEdit={handleEditProject} onDelete={handleDeleteProject} />
+                <ProjectItem {project} {currentUser} onEdit={handleEditProject} onArchive={handleArchiveProject} onDelete={handleDeleteProject} />
               {/each}
             </div>
           {/if}
@@ -124,6 +139,16 @@
 <ProjectModal
   projectToEdit={projectToEdit}
   onSuccess={onProjectsRefresh}
+  onClose={handleCloseModal}
+/>
+{/if}
+
+{#if showArchiveModal}
+<ConfirmationModal
+  modalTitle="Archiver un projet"
+  modalText="Voulez-vous vraiment archiver le projet {projectToArchive.name} ?"
+  errorText="Erreur lors de la archivation du projet."
+  onSuccess={handleSuccessArchive}
   onClose={handleCloseModal}
 />
 {/if}
