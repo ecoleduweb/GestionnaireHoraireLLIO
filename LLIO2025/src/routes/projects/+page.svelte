@@ -42,7 +42,7 @@
     await loadUsers();
     showAddCoManagerModal = true;
   }
- const handleReassignManagerModalOpen = async (projectId: number) => {
+  const handleReassignManagerModalOpen = async (projectId: number) => {
     selectedProject = projects.find(p => p.id == projectId);
     showReassignManagerModal = true;
   }
