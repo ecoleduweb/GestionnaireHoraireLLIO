@@ -1,6 +1,6 @@
 // src/services/CategoryApiService.ts
 import type { Category } from "../Models/index";
-import { DELETE, GET, POST } from "../ts/server";
+import { DELETE, GET, POST, PUT } from "../ts/server";
 
 interface CategoriesResponse {
   categories: Category[];
@@ -82,14 +82,39 @@ const deleteCategory = async (categoryId: number): Promise<void> => {
   try {
     await DELETE(`/category/${categoryId}`, false, false);
   } catch (error) {
-    throw new Error(`Erreur lors de la suppression de la catégorie (ID: ${categoryId}):`, error)
+    if (error)
+      throw new Error(`Erreur lors de la suppression de la catégorie (ID: ${categoryId}):`, error)
   }
 };
+
+const changeCategoryName = async (newName: string, category: Category): Promise<boolean> => {
+  try {
+    let updatedCategory = {
+      id: category.id,
+      name: newName,
+      description: category.description,
+      billable: category.billable,
+      timeSpent: category.timeSpent,
+      timeEstimated: category.timeEstimated
+    }
+
+    await PUT<Category, Category>(`/category`, updatedCategory);
+
+    return true;
+
+  } catch (error) {
+    if (error)
+      throw new Error(`Erreur lors du renommage de la catégorie (ID: ${category.id}):`, error)
+  }
+
+  return false;
+}
 
 export const CategoryApiService = {
   getAllCategories,
   getCategoryById,
   deleteCategory,
   createCategory,
-  getCategoriesByProject
+  getCategoriesByProject,
+  changeCategoryName
 };

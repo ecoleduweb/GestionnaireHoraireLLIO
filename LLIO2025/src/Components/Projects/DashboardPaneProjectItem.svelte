@@ -2,9 +2,10 @@
   import { formatHours } from '../../utils/date';
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import { ChevronDown } from 'lucide-svelte';
+  import { ChevronDown, Pencil } from 'lucide-svelte';
   import { getHoursColor } from '../../utils/displayUtils';
   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
+  import type { Category } from '../../Models';
 
   let { project } = $props();
 
@@ -15,8 +16,7 @@
     open = !open;
   }
 
-
-
+  let categories: Category[] = $state(project.employees[selectedEmployee].categories);
 </script>
 
 <div class="border-l-10 border-b" style="border-left-color: {project.color}">
@@ -60,7 +60,7 @@
       </thead>
 
       <tbody>
-        {#each project.employees[selectedEmployee].categories as category}
+        {#each categories as category}
           <tr class="bg-gray-50">
             <td class="py-2 pl-4 text-left">
               {category.name}

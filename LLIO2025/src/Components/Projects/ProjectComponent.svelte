@@ -4,13 +4,13 @@
   import { quintOut } from 'svelte/easing';
   import { formatHours } from '../../utils/date';
   import { getHoursColor } from '../../utils/displayUtils';
-   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
+  import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
   import type { Category } from '../../Models';
   import GenerateTableCategories from './GenerateTableCategories.svelte';
+  import { CategoryApiService } from '../../services/CategoryApiService';
 
   let {project, onClickAddCoManager = () => {},onClickReassignManager = () => {}}: {project: any;onClickAddCoManager?: () => void;onClickReassignManager?: () => void;} = $props();
   let isDetailsVisible = $state([]);
-
 </script>
 
 <style>
@@ -123,7 +123,7 @@
                     class="p-2 bg-white text-sm overflow-hidden"
                     transition:slide={{ duration: 300, easing: quintOut }}
                   >
-                    <GenerateTableCategories categories={employee.categories}/>
+                    <GenerateTableCategories categories={employee.categories} />
                   </div>
                 {/if}
               {/each}

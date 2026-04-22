@@ -58,12 +58,12 @@ const detailedProjectsBase = [
       },
       {
         name: "Ariane Dionne-Santerre",
-        categories: [{ name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
+        categories: [{ id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
       },
       {
         name: "Jimmy Paquet-Cormier",
         categories: [
-          { name: "Développement", timeSpent: 14, timeEstimated: 15 },
+          { id: 1, name: "Développement", timeSpent: 14, timeEstimated: 15 },
         ],
       },
     ],
@@ -194,12 +194,12 @@ const detailedProjectsBase = [
       },
       {
         name: "Ariane Dionne-Santerre",
-        categories: [{ name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
+        categories: [{ id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
       },
       {
         name: "Jimmy Paquet-Cormier",
         categories: [
-          { name: "Développement", timeSpent: 14, timeEstimated: 15 },
+          { id: 1, name: "Développement", timeSpent: 14, timeEstimated: 15 },
         ],
       },
     ],
