@@ -58,7 +58,9 @@ const detailedProjectsBase = [
       },
       {
         name: "Ariane Dionne-Santerre",
-        categories: [{ id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
+        categories: [
+          { id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 },
+        ],
       },
       {
         name: "Jimmy Paquet-Cormier",
@@ -194,7 +196,9 @@ const detailedProjectsBase = [
       },
       {
         name: "Ariane Dionne-Santerre",
-        categories: [{ id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
+        categories: [
+          { id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 },
+        ],
       },
       {
         name: "Jimmy Paquet-Cormier",
@@ -565,7 +569,19 @@ export const projectMocks = {
     response: {
       status: 200,
       json: {
-        projects: [detailedProjectsBase[0]], 
+        projects: [detailedProjectsBase[0]],
+      },
+    },
+  },
+
+  updateEmployeeRateSuccess: {
+    url: "/employee/*/rate",
+    method: "PATCH",
+    response: {
+      status: 200,
+      json: {
+        message: "Taux horaire mis à jour avec succès",
+        hourlyRate: 75,
       },
     },
   },

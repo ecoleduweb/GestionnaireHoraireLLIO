@@ -8,9 +8,13 @@
   import type { Category } from '../../Models';
   import GenerateTableCategories from './GenerateTableCategories.svelte';
   import { CategoryApiService } from '../../services/CategoryApiService';
+  import Modal from '../Modal/BaseModal.svelte';
 
-  let { project, onClickAddCoManager = () => {} }: { project: any; onClickAddCoManager?: () => void } = $props();
+  let {project, onClickAddCoManager = () => {},onClickReassignManager = () => {}}: {project: any;onClickAddCoManager?: () => void;onClickReassignManager?: () => void;} = $props();
   let isDetailsVisible = $state([]);
+  let showRateModal = $state(false);
+  let selectedEmployee = $state(null);
+  let newRate = $state('');
 </script>
 
 <style>
@@ -46,9 +50,7 @@
             <div class="w-1/5 flex-shrink-0">
               <div class="mt-1 text-xs text-gray-400">Chargé·e de projet</div>
               <div class="text-sm wrap-normal">{project.lead}</div>
-              <button
-                class="mt-2 inline-flex items-center px-3 py-1.5 bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs font-medium"
-              >
+              <button class="mt-2 inline-flex items-center px-3 py-1.5 bg-gray-100 ..." onclick={onClickReassignManager}>
                 <span class="text-xs">Réattribuer</span>
               </button>
               <hr class="mt-2 text-xs text-gray-400" />
@@ -69,65 +71,77 @@
 
            
             <div class="flex-1 pl-4">
-              <div class="flex justify-end pr-2 mb-1">
-                <div class="w-1/2"></div>
-                <div class="w-1/6 text-right text-xs text-gray-500">Temps passé</div>
-                <div class="w-1/6 text-right text-xs text-gray-500">Temps estimé</div>
-                <div class="w-1/6 text-right text-xs text-gray-500">Temps restant</div>
+              <div class="grid grid-cols-6 text-xs text-gray-500 pr-2 mb-1">
+                <div class="col-span-2"></div>
+                <div class="text-right">Taux horaire</div>
+                <div class="text-right">Temps passé</div>
+                <div class="text-right">Temps estimé</div>
+                <div class="text-right">Temps restant</div>
               </div>
-              {#each project.employees as employee, index}
-                <button
-                  class="w-full p-2 flex items-center justify-between hover:bg-gray-50 mt-1 cursor-pointer"
-                  onclick={() => (isDetailsVisible[index] = !isDetailsVisible[index])}
-                >
-                  <span class="text-sm text-left w-1/2">{employee.name}</span>
-                  <div class="flex w-1/2">
-                    <div class="w-1/3 text-right text-sm">
-                      {formatHours(
-                        employee.categories.reduce((sum, cat) => sum + cat.timeSpent, 0)
-                      )}
-                    </div>
-                    <div class="w-1/3 text-right text-sm">
-                      {formatHours(
-                        employee.categories.reduce((sum, cat) => sum + cat.timeEstimated, 0)
-                      )}
-                    </div>
-                    <div class="w-1/3 text-right text-sm {getHoursColor(
-                        calculateEmployeeTime(employee, 'spent'),
-                        calculateEmployeeTime(employee, 'estimated')
-                      )}">
-                      {formatHours(
-                        calculateRemainingTime(
-                        calculateEmployeeTime(employee, 'spent'),
-                        calculateEmployeeTime(employee, 'estimated')
-                        )
-                      )}
-                    </div>
-                  </div>
-                  <svg
-                    class="w-4 h-4 transform transition-transform ml-2 {isDetailsVisible[index]
-                      ? 'rotate-180'
-                      : ''}"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7"
-                    ></path>
-                  </svg>
-                </button>
-                {#if isDetailsVisible[index]}
+                {#each project.employees as employee, index}
+                <div>
                   <div
-                    class="p-2 bg-white text-sm overflow-hidden"
-                    transition:slide={{ duration: 300, easing: quintOut }}
+                    class="grid grid-cols-6 w-full cursor-pointer hover:bg-gray-50 py-1.5 px-2 items-center"
+                    role="button"
+                    tabindex="0"
+                    onclick={() => (isDetailsVisible[index] = !isDetailsVisible[index])}
+                    onkeydown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        isDetailsVisible[index] = !isDetailsVisible[index];
+                      }
+                    }}
                   >
-                    <GenerateTableCategories categories={employee.categories} />
+                    <div class="col-span-2 flex items-center gap-2">
+                      <span class="text-sm">{employee.name}</span>
+                      <button
+                        aria-label="Modifier le taux horaire" 
+                        onclick={(e) => {
+                          
+                          e.stopPropagation();
+                          selectedEmployee = employee;
+                          newRate = employee.categories.reduce((sum, cat) => sum + (cat.hourlyRate ?? 0), 0);
+                          showRateModal = true;
+                        }}
+                        type="button"
+                        class="p-1 rounded-md hover:bg-gray-200 flex items-center justify-center"
+                      >
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536M9 13l6.232-6.232a2 2 0 112.828 2.828L11.828 16.828a4 4 0 01-1.414.94L7 19l1.232-3.414a4 4 0 01.94-1.414z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div class="text-right text-sm">
+                      {formatHours(employee.categories.reduce((sum, cat) => sum + (cat.hourlyRate ?? 0), 0))}
+                    </div>
+
+                    <div class="text-right text-sm">
+                      {formatHours(calculateEmployeeTime(employee, 'spent'))}
+                    </div>
+
+                    <div class="text-right text-sm">
+                      {formatHours(calculateEmployeeTime(employee, 'estimated'))}
+                    </div>
+
+                    <div class="text-right text-sm {getHoursColor(
+                      calculateEmployeeTime(employee, 'spent'),
+                      calculateEmployeeTime(employee, 'estimated')
+                    )}">
+                      {formatHours(calculateRemainingTime(
+                        calculateEmployeeTime(employee, 'spent'),
+                        calculateEmployeeTime(employee, 'estimated')
+                      ))}
+                    </div>
                   </div>
-                {/if}
+
+                  {#if isDetailsVisible[index]}
+                    <div class="p-2 bg-white text-sm overflow-hidden" transition:slide={{ duration: 300, easing: quintOut }}>
+                      <GenerateTableCategories categories={employee.categories} />
+                    </div>
+                  {/if}
+                </div>
               {/each}
 
              
@@ -140,22 +154,54 @@
               </div>
 
             
-              <div
-                class="w-full p-3 flex items-center justify-between bg-gray-100 mt-3 font-medium"
-              >
-                <span class="text-2xl text-left w-1/2">Total</span>
-                <div class="flex w-1/2">
-                  <div class="w-1/3 text-right text-sm">
-                    {formatHours(project.totalTimeSpent)}
-                  </div>
-                  <div class="w-1/3 text-right text-sm font-normal">
-                    {formatHours(project.totalTimeEstimated)}
-                  </div>
-                  <div class="w-1/3 text-right text-sm font-normal {getHoursColor(project.totalTimeSpent, project.totalTimeEstimated)}">
-                    {formatHours(project.totalTimeRemaining)}
-                    </div>
-                </div>
+              <div class="grid grid-cols-6 items-center p-3 bg-gray-100 mt-3 font-medium">
+  
+              <div class="col-span-2 text-2xl">
+                Total
               </div>
+
+              <div class="text-right text-sm">--</div>
+
+              <div class="text-right text-sm">
+                {formatHours(project.totalTimeSpent)}
+              </div>
+
+              <div class="text-right text-sm">
+                {formatHours(project.totalTimeEstimated)}
+              </div>
+
+              <div class="text-right text-sm {getHoursColor(project.totalTimeSpent, project.totalTimeEstimated)}">
+                {formatHours(project.totalTimeRemaining)}
+              </div>
+              </div>
+              {#if showRateModal}
+              <Modal
+                modalTitle="Modifier le taux horaire"
+                confirmText="Enregistrer"
+                cancelText="Annuler"
+                onClose={() => showRateModal = false}
+                onSuccess={async () => {
+                  showRateModal = false;
+                }}
+              >
+                {#snippet children()}
+                  <div class="flex flex-col gap-3">
+
+                    <p class="text-sm text-gray-500">
+                      {selectedEmployee?.name}
+                    </p>
+
+                    <input
+                      type="number"
+                      bind:value={newRate}
+                      class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#005e61]"
+                      placeholder="Nouveau taux horaire"
+                    />
+
+                  </div>
+                {/snippet}
+              </Modal>
+            {/if}
             </div>
           </div>
         </div>
