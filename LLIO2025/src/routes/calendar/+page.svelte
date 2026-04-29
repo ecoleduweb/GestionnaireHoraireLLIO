@@ -287,7 +287,9 @@
         try {
           const events = await ActivityApiService.getOutlookEvents(date);
           if (events?.length) {
-            outlookEvents = events;
+            outlookEvents = [...events].sort(
+                    (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+            );
             isImportingOutlook = true;
             outlookImportDate = new Date(date);
           } else {
@@ -610,7 +612,7 @@
           events={outlookEvents}
           projects={projects}
           onClose={() => {isImportingOutlook = false;}}
-          onSuccess={() => {isImportingOutlook = false;}}
+          onActivityImported={handleActivitySubmit}
   ></OutlookImportModal>
 {/if}
 

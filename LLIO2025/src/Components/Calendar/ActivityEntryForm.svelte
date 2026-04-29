@@ -20,7 +20,6 @@
     projects: Project[];
     activityToEdit?: Activity | null;
     activityToImport?: Activity | null;
-    importIndex?: number;
     selectedDate?: { start: Date; end: Date } | null;
     onClose: () => void;
     onDelete: (activity: Activity) => void;
@@ -32,7 +31,6 @@
     projects,
     activityToEdit,
     activityToImport = $bindable(null),
-    importIndex = null,
     selectedDate = null,
     onClose,
     onDelete,
@@ -46,6 +44,7 @@
   initialActivity.projectId = '' as unknown as number;
   initialActivity.categoryId = null;
 
+  let isLoading = $state(false);
   let isSubmitting = $state(false);
   let showCategoryConfirmModal = $state(false);
   let categoryToAdd = $state('');
@@ -100,6 +99,7 @@
       return;
     }
     try {
+      isLoading = true;
       projectCategories = await CategoryApiService.getCategoriesByProject(projectId);
 
       if (activity.categoryId) {
@@ -114,6 +114,8 @@
     } catch (error) {
       console.error(`Erreur lors du chargement des catégories pour le projet ${projectId}:`, error);
       projectCategories = [];
+    } finally {
+      isLoading = false;
     }
   };
 
@@ -309,7 +311,7 @@
         <button
                 type="submit"
                 class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLoading}
         >
           {isSubmitting ? 'En cours...' : 'Modifier'}
         </button>
@@ -319,14 +321,14 @@
                 class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200"
                 onclick={onClose}
         >
-          Annuler
+          { activityToImport ? 'Ne pas importer' : 'Annuler' }
         </button>
         <button
                 type="submit"
                 class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLoading}
         >
-          {isSubmitting ? 'En cours...' : 'Créer'}
+          {isSubmitting ? 'En cours...' : (activityToImport ? 'Importer' : 'Créer')}
         </button>
       {/if}
     </div>
