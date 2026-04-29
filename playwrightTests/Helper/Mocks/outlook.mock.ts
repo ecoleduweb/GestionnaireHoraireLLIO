@@ -11,7 +11,7 @@ export const outlookMocks = {
         events: [
           {
             id: "AAMkAGQ2MDNhYjVjLWFkMWMtNGNmZi05ZmVjLTdmZmQ4NjgwMjdkNwBGAAAAAABXx3nPK_GjQbVWwm_t6k5tBwAmsLVGJoOjQZrgmFxGm6c6AAAAAAENAAAmsLVGJoOjQZrgmFxGm6c6AADJTqHnAAA=",
-            subject: "AR145",
+            subject: "Test sans Id Projet",
             body: { content: "\r\n" },
             start: {
               dateTime: "2025-03-22T15:00:00.0000000",
