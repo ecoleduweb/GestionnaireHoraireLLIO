@@ -579,6 +579,33 @@ export const projectMocks = {
       },
     },
   },
+  deleteCoManagerSuccess: {
+    url: "/project/1/coManager/2",
+    method: "DELETE",
+    response: {
+      status: 200,
+      json: {
+        response: "Le co-chargÃ© de projet a Ã©tÃ© supprimÃ© avec succÃ¨s",
+      },
+    },
+  },
+  getDetailedProjectsSuccessAfterCoManagerDelete: {
+    url: "/projects/detailed",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        projects: detailedProjectsBase.map((p) =>
+          p.id === 1
+            ? {
+                ...p,
+                coLeads: p.coLeads.filter((coLead) => coLead.id !== 2),
+              }
+            : p,
+        ),
+      },
+    },
+  },
   getDetailedProjectsSuccessWithCoLead3OnProject1: {
     url: "/projects/detailed",
     method: "GET",
