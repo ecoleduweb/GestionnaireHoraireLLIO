@@ -5,15 +5,15 @@
   import ProjectItem from './ProjectPaneItem.svelte';
   import { Plus } from 'lucide-svelte';
   import ProjectModal from './ProjectModal.svelte';
-  import type { Project, UserInfo } from '../../Models';
-  import { UserRole } from '$lib/types/enums';
+  import type { DetailedProject, Project, UserInfo } from '../../Models';
+  import { ProjectStatus, UserRole } from '$lib/types/enums';
   import NavButton from '../NavButton.svelte';
   import { ProjectApiService } from '../../services/ProjectApiService';
   import ConfirmationModal from '../Modal/ConfirmationModal.svelte';
 
   type Props = {
     currentUser: UserInfo;
-    projects : Project[];
+    projects : DetailedProject[];
     onProjectsRefresh: () => void;
   };
 
@@ -38,6 +38,7 @@
 
   const handleArchiveProject = (project) =>{
     projectToArchive = projects.find((x) => x.id === project.id);
+    
     showArchiveModal = true;
   }
 
@@ -63,7 +64,7 @@
 
   const handleSuccessArchive = async () => {
     if (projectToArchive?.id != null) {
-      await ProjectApiService.archiveProject(projectToArchive.id);
+      await ProjectApiService.archiveProject(projectToArchive.id, !projectToArchive.isArchived);
     }
     onProjectsRefresh();
   }
@@ -146,7 +147,7 @@
 {#if showArchiveModal}
 <ConfirmationModal
   modalTitle="Archiver un projet"
-  modalText="Voulez-vous vraiment archiver le projet {projectToArchive.name} ?"
+  modalText="Voulez-vous vraiment {!projectToArchive.isArchived ? "archiver" : "désarchiver"} le projet {projectToArchive.name} ?"
   errorText="Erreur lors de la archivation du projet."
   onSuccess={handleSuccessArchive}
   onClose={handleCloseModal}

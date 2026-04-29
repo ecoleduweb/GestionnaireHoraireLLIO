@@ -5,6 +5,6 @@ type ProjectStatus int
 const (
 	InProgress UserRole = iota
 	Cancel
-	Finish
+	Archived
 	NotStart
 )

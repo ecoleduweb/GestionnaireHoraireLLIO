@@ -1,6 +1,6 @@
 // ProjectApiService.ts
 import { ProjectStatus } from "$lib/types/enums";
-import type { ProjectBase, Project, DetailedProject } from "../Models/index";
+import type { ProjectBase, Project, DetailedProject, ArchiveProject } from "../Models/index";
 import { DELETE, GET, POST, PUT } from "../ts/server";
 
 interface ProjectDeleteResponse {
@@ -51,9 +51,9 @@ const deleteProject = async (projectId: number): Promise<void> => {
   }
 };
 
-const archiveProject = async (projectId: number): Promise<void> => {
+const archiveProject = async (projectId: number, archivedStatus: boolean): Promise<void> => {
   try {
-    const response = await POST<string, void>(`/project/archive/${projectId}`, "");
+    const response = await POST<ArchiveProject, void>(`/project/archive/${projectId}`, {Archived: archivedStatus});
     return response;
   } catch (error) {
     console.log(error)

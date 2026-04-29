@@ -274,6 +274,15 @@ func ArchiveProject(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
 	projectIdToArchive := c.Param("id")
 
+	var projectStatusDTO DTOs.ArchiveProjectDTO
+
+	msgErrsJson := services.VerifyJSON(c, &projectStatusDTO)
+	if len(msgErrsJson) > 0 {
+		log.Printf("Une ou plusieurs erreurs de format JSON sont survenues:%v", msgErrsJson)
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgErrsJson})
+		return
+	}
+
 	// Convert string to int
 	projectIDInt, err := strconv.Atoi(projectIdToArchive)
 	if err != nil {
@@ -292,7 +301,7 @@ func ArchiveProject(c *gin.Context) {
 		return
 	}
 
-	err = services.ArchiveProjectByIdWithUserId(user.Id, projectIDInt)
+	err = services.ArchiveProjectByIdWithUserId(user.Id, projectIDInt, projectStatusDTO.Archived)
 	if err != nil {
 		handleError(c, err, projectSTR)
 		return

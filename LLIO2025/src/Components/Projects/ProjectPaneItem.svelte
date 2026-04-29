@@ -1,19 +1,19 @@
 <script lang="ts">
   import { formatHours } from '../../utils/date';
-  import { Pencil, User, Trash2, Archive } from 'lucide-svelte';
-  import type { Project, UserInfo } from '../../Models';
+  import { Pencil, Trash2, Archive, ArchiveX } from 'lucide-svelte';
+  import type { DetailedProject, Project, UserInfo } from '../../Models';
   import { UserRole } from '$lib/types/enums';
   import { getHoursColor } from '../../utils/displayUtils';
 
   type Props = {
-    project: Project;
+    project: DetailedProject;
     currentUser: UserInfo | null;
     onEdit: (project: Project) => void;
     onArchive: (project: Project) => void;
     onDelete: (project: Project) => void;
   };
 
-  let { project, currentUser, onArchive, onEdit, onDelete } = $props();
+  let { project, currentUser, onArchive, onEdit, onDelete }: Props = $props();
 
   const handleEdit = (event: MouseEvent) =>{
     event.stopPropagation(); // Empêche la propagation du clic aux éléments parents
@@ -53,9 +53,14 @@
         <button
           class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
           onclick={handleArchive}
-          aria-label="Archiver le projet"
+          aria-label={!project.isArchived ? "Archiver le projet" : "Désarchiver le projet"}
         >
-          <Archive size={16} />
+          {#if !project.isArchived}
+            <Archive size={16} />
+          {:else}
+            <ArchiveX size={16} />
+          {/if}
+      
         </button>
       {/if}
       {#if currentUser.role == UserRole.Admin}

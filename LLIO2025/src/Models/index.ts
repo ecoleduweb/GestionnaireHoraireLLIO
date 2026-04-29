@@ -45,6 +45,9 @@ export interface ActivityUpdateResponse {
     updated_activity: Activity;
 }
 
+export interface ArchiveProject {
+    Archived: boolean;
+}
 
 export interface ProjectBase {
     uniqueId: string;

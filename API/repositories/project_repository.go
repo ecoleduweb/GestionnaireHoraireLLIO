@@ -219,26 +219,35 @@ func DoesUserHavePermissionToInteractWithProject(userId int, projectId int) (boo
 		return false, DBErrorManager(err)
 	}
 
+	userCoManager, err2 := IsUserCoManager(projectId, userId)
+	if err2 != nil {
+		return false, DBErrorManager(err)
+	}
+
+	if userCoManager {
+		return true, nil
+	}
+
 	if user.Role == enums.Administrator {
 		return true, nil
 	}
 
 	var count int64
-	err2 := database.DB.Model(&DAOs.Project{}).Where("manager_id = ? AND id = ?", userId, projectId).Count(&count).Error
-	if err2 != nil {
+	err3 := database.DB.Model(&DAOs.Project{}).Where("manager_id = ? AND id = ?", userId, projectId).Count(&count).Error
+	if err3 != nil {
 		return false, DBErrorManager(err)
 	}
 	return count > 0, nil
 }
 
-func ArchiveProject(projectDAO *DAOs.Project) (bool, error) {
+func ArchiveProject(projectDAO *DAOs.Project, archivedStatus bool) (bool, error) {
 	// AJOUT : .Select(...) force la mise à jour de ces colonnes, même si la valeur est 0 ou false
 	var valueToChangeTo enums.ProjectStatus
 
-	if projectDAO.Status == enums.ProjectStatus(enums.Finish) {
-		valueToChangeTo = enums.ProjectStatus(enums.InProgress)
+	if archivedStatus {
+		valueToChangeTo = enums.ProjectStatus(enums.Archived)
 	} else {
-		valueToChangeTo = enums.ProjectStatus(enums.Finish)
+		valueToChangeTo = enums.ProjectStatus(enums.InProgress)
 	}
 
 	err := database.DB.Model(projectDAO).

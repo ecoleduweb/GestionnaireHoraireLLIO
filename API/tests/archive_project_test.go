@@ -7,6 +7,7 @@ import (
 
 	"llio-api/database"
 	"llio-api/models/DAOs"
+	"llio-api/models/DTOs"
 	"llio-api/models/enums"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,11 @@ func TestArchiveAndDeArchiveProject(t *testing.T) {
 
 	assert.Equal(t, int(dbProject1.Status), 0)
 
-	w := sendRequest(router, "POST", "/project/archive/"+strconv.Itoa(doNotDeleteProject.Id), nil, &doNotDeleteUser.Id, enums.ProjectManager)
+	archiveProject := DTOs.ArchiveProjectDTO{
+		Archived: true,
+	}
+
+	w := sendRequest(router, "POST", "/project/archive/"+strconv.Itoa(doNotDeleteProject.Id), archiveProject, &doNotDeleteUser.Id, enums.ProjectManager)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var dbProject2 DAOs.Project
@@ -29,7 +34,11 @@ func TestArchiveAndDeArchiveProject(t *testing.T) {
 
 	assert.Equal(t, int(dbProject2.Status), 2)
 
-	w2 := sendRequest(router, "POST", "/project/archive/"+strconv.Itoa(doNotDeleteProject.Id), nil, &doNotDeleteUser.Id, enums.ProjectManager)
+	unarchiveProject := DTOs.ArchiveProjectDTO{
+		Archived: false,
+	}
+
+	w2 := sendRequest(router, "POST", "/project/archive/"+strconv.Itoa(doNotDeleteProject.Id), unarchiveProject, &doNotDeleteUser.Id, enums.ProjectManager)
 	assertResponse(t, w2, http.StatusOK, nil)
 
 	var dbProject3 DAOs.Project
@@ -46,7 +55,7 @@ func TestArchiveNoPermissionUser(t *testing.T) {
 
 	assert.Equal(t, int(dbProject1.Status), 0)
 
-	w := sendRequest(router, "POST", "/project/archive/"+strconv.Itoa(doNotDeleteProject.Id), nil, &doNotDeleteUser2.Id, enums.ProjectManager)
+	w := sendRequest(router, "POST", "/project/archive/"+strconv.Itoa(doNotDeleteProject.Id), "{\"Archived\":true}", &doNotDeleteUser2.Id, enums.ProjectManager)
 	assertResponse(t, w, http.StatusBadRequest, nil)
 
 	var dbProject2 DAOs.Project

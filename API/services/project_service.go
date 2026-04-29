@@ -345,7 +345,7 @@ func formatProjectWithActivities(project *DAOs.Project, activities []DAOs.Activi
 		"totalTimeEstimated": project.EstimatedHours,
 		"totalTimeRemaining": float64(project.EstimatedHours) - totalTimeSpent,
 		"totalTimeSpent":     totalTimeSpent,
-		"isArchived":         project.Status == enums.ProjectStatus(enums.Finish),
+		"isArchived":         project.Status == enums.ProjectStatus(enums.Archived),
 		"managerId":          project.ManagerId,
 		"createdAt":          project.CreatedAt,
 		"updatedAt":          project.UpdatedAt,
@@ -372,7 +372,7 @@ func GetProjectsByActivityPerUser(userId int) ([]*DTOs.ProjectDTO, error) {
 	return projectsDTO, nil
 }
 
-func ArchiveProjectByIdWithUserId(userId int, projectId int) error {
+func ArchiveProjectByIdWithUserId(userId int, projectId int, archivedStatus bool) error {
 	// Check if the project exists
 	projectDAO, err := repositories.GetProjectById(fmt.Sprintf("%d", projectId))
 
@@ -393,7 +393,7 @@ func ArchiveProjectByIdWithUserId(userId int, projectId int) error {
 	}
 
 	//Archive the project
-	result, errArchive := repositories.ArchiveProject(projectDAO)
+	result, errArchive := repositories.ArchiveProject(projectDAO, archivedStatus)
 	if errArchive != nil {
 		return errArchive
 	}
