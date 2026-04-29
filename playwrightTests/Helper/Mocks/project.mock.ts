@@ -58,7 +58,9 @@ const detailedProjectsBase = [
       },
       {
         name: "Ariane Dionne-Santerre",
-        categories: [{ id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
+        categories: [
+          { id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 },
+        ],
       },
       {
         name: "Jimmy Paquet-Cormier",
@@ -194,7 +196,9 @@ const detailedProjectsBase = [
       },
       {
         name: "Ariane Dionne-Santerre",
-        categories: [{ id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
+        categories: [
+          { id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 },
+        ],
       },
       {
         name: "Jimmy Paquet-Cormier",
@@ -560,7 +564,7 @@ export const projectMocks = {
     },
   },
   reassignManagerSuccess: {
-    url: "/project/*/manager/*",
+    url: "/project/*/reassignManager/*",
     method: "PUT",
     response: {
       status: 200,
@@ -570,7 +574,7 @@ export const projectMocks = {
     },
   },
   getAvailableManagersSuccess: {
-    url: "/project/availableManagers*",
+    url: "/project/*/availableManagers",
     method: "GET",
     response: {
       status: 200,

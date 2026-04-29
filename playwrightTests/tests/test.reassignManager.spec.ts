@@ -25,7 +25,7 @@ test.describe("Réattribution du chargé de projet", () => {
   test("Réattribution réussie", async ({ page }) => {
     const apiMocker = new ApiMocker(page);
 
-    await apiMocker.addMock(projectMocks.createCoManagerSuccess).apply();
+    await apiMocker.addMock(projectMocks.reassignManagerSuccess).apply();
 
     const firstProject = page.getByTestId("project-item").first();
     await firstProject.getByRole("button", { name: "Réattribuer" }).click();
