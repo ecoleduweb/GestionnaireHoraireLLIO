@@ -8,6 +8,7 @@
   import type { Category, CoLead } from '../../Models';
   import GenerateTableCategories from './GenerateTableCategories.svelte';
   import { CategoryApiService } from '../../services/CategoryApiService';
+  import DeleteCoManagerButton from './DeleteCoManagerButton.svelte';
 
   let {project, onClickAddCoManager = () => {},onClickReassignManager = () => {},  onDeleteCoManagerSuccess = () => {},}: {project: any;onClickAddCoManager?: () => void;onClickReassignManager?: () => void;onDeleteCoManagerSuccess?: (projectId: number, coLead: CoLead) => void;  } = $props();
   let isDetailsVisible = $state([]);
@@ -52,11 +53,16 @@
               <hr class="mt-2 text-xs text-gray-400" />
               <div class="mt-1 text-xs text-gray-400">Co-chargé·e de projet</div>
               {#each project.coLeads as coLead}
-                <div class="text-sm wrap-normal">{coLead.name}</div>
+                <DeleteCoManagerButton
+                  projectId={project.id}
+                  coManager={coLead}
+                  onDeleteCoManagerSuccess={onDeleteCoManagerSuccess}
+                />
               {/each}
               <button
                 class="mt-2 inline-flex items-center bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs"
                 onclick={onClickAddCoManager}
+                aria-label="Ajouter un co-chargé"
               >
                 <Plus class="w-3 h-3" />
               </button>
