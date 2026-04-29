@@ -26,7 +26,7 @@ test.describe('Vérification de l\'ajout de co-chargés de projet', () => {
 
         await expect(page.getByText('AT-123')).toHaveCount(2);
         const firstProject = page.getByTestId('project-item').first();
-        await firstProject.locator('button').filter({ has: page.locator('svg') }).first().click();
+        await firstProject.getByRole('button', { name: /Ajouter un co-charg/i }).click();
 
         const heading = page.getByRole('heading', { name: 'Ajouter un co-chargé' });
         await expect(heading).toBeVisible();
@@ -69,7 +69,7 @@ test.describe('Vérification de l\'ajout de co-chargés de projet', () => {
 
         await expect(page.getByText('AT-123')).toHaveCount(2);
         const firstProject = page.getByTestId('project-item').first();
-        await firstProject.locator('button').filter({ has: page.locator('svg') }).first().click();
+        await firstProject.getByRole('button', { name: /Ajouter un co-charg/i }).click();
 
         const heading = page.getByRole('heading', { name: 'Ajouter un co-chargé' });
         await expect(heading).toBeVisible();
@@ -123,7 +123,7 @@ test.describe('Vérification de l\'ajout de co-chargés de projet', () => {
 
         await expect(page.getByText('AT-123')).toHaveCount(2);
         const firstProject = page.getByTestId('project-item').first();
-        await firstProject.locator('button').filter({ has: page.locator('svg') }).first().click();
+        await firstProject.getByRole('button', { name: /Ajouter un co-charg/i }).click();
 
         const heading = page.getByRole('heading', { name: 'Ajouter un co-chargé' });
         await expect(heading).toBeVisible();

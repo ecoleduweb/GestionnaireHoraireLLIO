@@ -70,8 +70,8 @@ func AuthWithAzure() {
 				Tenant: azureadv2.OrganizationsTenant,
 				Scopes: []azureadv2.ScopeType{
 					azureadv2.OpenIDScope,
-					azureadv2.EmailScope,
-					azureadv2.CalendarsReadScope,
+					azureadv2.EmailScope,         // pour obtenir l'adresse e-mail de l'utilisateur
+					azureadv2.CalendarsReadScope, // pour obtenir les évènements de l'utilisateur
 				},
 			},
 		),
