@@ -31,25 +31,27 @@ test.describe("Recherche et filtrage de projets", () => {
 
     await expect(page.locator('[data-testid="project-item"]')).toHaveCount(8);
 
-    const requestPromise = page.waitForRequest(req => {
-      const url = req.url();
+    const responsePromise = page.waitForResponse(res => {
+      const url = res.url();
       return url.includes('/projects/detailed') &&
         url.includes(`from=${testStartDate}`) &&
         url.includes(`to=${testEndDate}`) &&
-        req.method() === 'GET';
+        res.request().method() === 'GET' &&
+        res.ok();
     });
 
     await page.locator('#startDate').fill(testStartDate);
     await page.locator('#endDate').fill(testEndDate);
     await page.locator('#endDate').blur();
 
-    await requestPromise;
+    await responsePromise;
 
     await expect(page.locator('[data-testid="project-item"]')).toHaveCount(1);
     await expect(page.locator('[data-testid="project-item"]').first()).toContainText(
       projectMocks.getDetailedProjectsFilteredSuccess.response.json.projects[0].name
     );
-  });
+});
+
 
 
 
