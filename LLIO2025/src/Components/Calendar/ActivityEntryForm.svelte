@@ -21,6 +21,7 @@
     activityToEdit?: Activity | null;
     activityToImport?: Activity | null;
     selectedDate?: { start: Date; end: Date } | null;
+    isDirty?: boolean;
     onClose: () => void;
     onDelete: (activity: Activity) => void;
     onSubmit: (activity: Activity) => void;
@@ -32,6 +33,7 @@
     activityToEdit,
     activityToImport = $bindable(null),
     selectedDate = null,
+    isDirty = $bindable(false),
     onClose,
     onDelete,
     onSubmit,
@@ -65,6 +67,30 @@
     endMinutes: getMinutesFromDate(activity.endDate),
   });
 
+  let initialSnapshot = $state({
+    projectId: activity.projectId,
+    categoryId: activity.categoryId,
+    name: activity.name || '',
+    description: activity.description || '',
+    sh: time.startHours,
+    sm: time.startMinutes,
+    eh: time.endHours,
+    em: time.endMinutes,
+  });
+
+
+  const _isDirty = $derived(
+          activity.projectId !== initialSnapshot.projectId ||
+          activity.categoryId !== initialSnapshot.categoryId ||
+          (activity.name || '') !== initialSnapshot.name ||
+          (activity.description || '') !== initialSnapshot.description ||
+          time.startHours !== initialSnapshot.sh ||
+          time.startMinutes !== initialSnapshot.sm ||
+          time.endHours !== initialSnapshot.eh ||
+          time.endMinutes !== initialSnapshot.em
+  );
+
+  $effect(() => { isDirty = _isDirty; });
 
   const {
     time: { hours, minutes },
@@ -274,20 +300,46 @@
     time.startMinutes = getMinutesFromDate(merged.startDate);
     time.endHours = getHoursFromDate(merged.endDate);
     time.endMinutes = getMinutesFromDate(merged.endDate);
+
+    initialSnapshot.projectId = merged.projectId;
+    initialSnapshot.categoryId = merged.categoryId;
+    initialSnapshot.name = merged.name || '';
+    initialSnapshot.description = merged.description || '';
+    initialSnapshot.sh = time.startHours;
+    initialSnapshot.sm = time.startMinutes;
+    initialSnapshot.eh = time.endHours;
+    initialSnapshot.em = time.endMinutes;
   }
+
+  let lastEditId = $state<number | null>(null);
+  let lastImportId = $state<number | null>(null);
+  let wasReset = $state(false);
 
   $effect(() => {
     if (activityToEdit) {
-      applyActivity(activityToEdit);
+      if (activityToEdit.id !== lastEditId) {
+        lastEditId = activityToEdit.id;
+        wasReset = false;
+        applyActivity(activityToEdit);
+      }
       return;
     }
 
     if (activityToImport) {
-      applyActivity(activityToImport);
+      if (activityToImport.id !== lastImportId) {
+        lastImportId = activityToImport.id;
+        wasReset = false;
+        applyActivity(activityToImport);
+      }
       return;
     }
 
-    applyActivity(null);
+    if (!wasReset) {
+      wasReset = true;
+      lastEditId = null;
+      lastImportId = null;
+      applyActivity(null);
+    }
   });
 </script>
 
