@@ -3,24 +3,8 @@
   import { UserApiService } from '../../services/UserApiService';
   import type { TimeBalance, TimeBankConfig } from '../../Models/index';
   import HoursWorkedConfigModal from '../Calendar/HoursWorkedConfigModal.svelte';
-  
-  type Props = {
-    totalHours: number;
-  }
-
-  const {
-    totalHours
-  }: Props = $props();
-
-  let previousTotalHours = 0;
-  $effect(() => {
-    if(totalHours !== previousTotalHours){
-      previousTotalHours = totalHours;
-      refreshTimeBankBalance();
-    }
-  }
-  )
-
+  import { refreshTimeBankSignal } from '../../lib/refreshTimeBankSignal.svelte';
+    
   let timeBalance = $state<TimeBalance>({
     isConfigured: false,
     displayedHoursTotal: null,
@@ -51,11 +35,15 @@
       if (timeBankConfig) {
         Object.assign(config, timeBankConfig);
       }
-
-      await refreshTimeBankBalance();
     } catch (err) {
       console.error(err);
     }
+  });
+
+    // $effect agit comme onMount et est aussi mis à jour quand une variable state est mise à jour.
+  $effect(() => {
+    void refreshTimeBankSignal.tick; // permet de déclancher le rafraichissement lorsque refreshTimeBankSignal.tick est incrémenté (voir le fichier refreshTimeBankSignal.svelte.ts
+   refreshTimeBankBalance();
   });
 
   const openConfigModal = () => {
