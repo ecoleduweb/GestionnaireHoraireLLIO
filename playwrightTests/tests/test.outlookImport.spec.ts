@@ -24,6 +24,7 @@ test.describe("ImportOutlook", () => {
     await page.goto("http://localhost:5002/calendar");
     await page.waitForLoadState("networkidle");
   });
+
   test("AddActivityFromOutlookWithoutProjetId", async ({ page }) => {
     const mocker = new ApiMocker(page);
     await mocker
@@ -62,5 +63,47 @@ test.describe("ImportOutlook", () => {
     await expect(
       page.getByText("Importation des évènements Outlook"),
     ).not.toBeVisible();
+  });
+
+  test("Import d'une journée sans évènements", async ({ page }) => {
+    const apiMocker = new ApiMocker(page);
+    await apiMocker.addMocks([outlookMocks.getEventsNoEvent]).apply();
+    // Load la page et fait la requête de base
+    await page.goto("http://localhost:5002/calendar");
+    await page.waitForLoadState("networkidle");
+
+    // On va chercher le bouton d'import
+    const button = page.locator(`.import-outlook-btn[data-date="2025-03-22"]`);
+
+    // Vérification de l'état original du bouton
+    await expect(button).toBeVisible();
+    await expect(button).toHaveText("+ Outlook");
+    await expect(button).not.toBeDisabled();
+
+    // Clic
+    await button.click();
+
+    // Vérification de l'état final
+    await expect(button).toHaveText("✓ Aucun évènement à importer");
+    await expect(button).toBeDisabled();
+    await expect(button).toHaveAttribute("data-date", "2025-03-22");
+  });
+
+  test("outlookFailed", async ({ page }) => {
+    const apiMocker = new ApiMocker(page);
+    await apiMocker.addMocks([outlookMocks.outlookFail]).apply();
+
+    const dialogPromise = page.waitForEvent("dialog");
+
+    page.getByLabel("22 mars").getByRole("button", { name: "Outlook" }).click();
+    const dialog = await dialogPromise;
+
+    expect(dialog.type()).toBe("alert");
+    expect(dialog.message()).toContain(
+      "Votre connexion à Outlook a expirée. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.",
+    );
+    await dialog.dismiss();
+
+    await page.waitForURL("http://localhost:5002/");
   });
 });
