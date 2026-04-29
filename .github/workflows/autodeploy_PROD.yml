@@ -1,23 +1,49 @@
 name: Deployer LLIO PROD
+
 on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Deploy Full Application
         uses: appleboy/ssh-action@v0.1.2
         with:
-          host: ${{secrets.PROD_SSH_HOST}}
-          key: ${{secrets.PROD_SSH_KEY}}
-          username: ${{ secrets.PROD_SSH_USERNAME}}
+          host: ${{ secrets.PROD_SSH_HOST }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          username: ${{ secrets.PROD_SSH_USERNAME }}
           debug: true
           script: |
-            set -e # Exit immediately if a command exits with a non-zero status.
+
+            set -e
             echo "Starting deployment process..."
+            echo "Preparing backup using fresh repo..."
+            cd /root
+            rm -rf /root/backup-temp
+            git clone https://github.com/ecoleduweb/GestionnaireHoraire.git backup-temp
+
+            cat > /root/backup-temp/docs/Backup/db.config <<EOF
+            DB_USER="${{ secrets.PROD_DB_USER }}"
+            DB_PASS="${{ secrets.PROD_DB_PASSWORD }}"
+            DB_NAME="${{ secrets.PROD_DB_NAME_RUN }}"
+
+            DB_HOST="${{ secrets.PROD_DB_HOST }}"
+            DB_PORT="${{ secrets.PROD_DB_PORT }}"
+
+            BACKUP_DIR="/var/backups/mariadb"
+            RETENTION_DAYS=365
+            EOF
+
+            chmod 600 /root/backup-temp/docs/Backup/db.config
+            chmod +x /root/backup-temp/docs/Backup/backup.sh
+
+            echo "Running backup..."
+            /root/backup-temp/docs/Backup/backup.sh
 
             # Arrêt des services
             echo "Stopping services..."
@@ -25,21 +51,21 @@ jobs:
             sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
 
             # Copie du fichier de logs
-            echo 'Moving logs file to logs backup folder'
+            echo "Moving logs file to logs backup folder..."
             mkdir -p /root/logs
             DATE=$(date +'%Y-%m-%d_%H-%M')
             [ -f "/var/www/GestionnaireHoraire/API/logs.txt" ] && cp "/var/www/GestionnaireHoraire/API/logs.txt" /root/logs/logs_llio_$DATE.txt
 
-            # Suppression et récréation du répertoire GestionnaireHoraire
+            # Suppression et récréation du répertoire
             echo "Refreshing project directory..."
             cd /var/www
             rm -rf GestionnaireHoraire
 
-            # Clone du projet (plus propre qu'un pull)
-            echo "Cloning fresh repository..."
+            # Clonage du dépôt
+            echo "Copying project from backup-temp..."
+            rm -rf /var/www/GestionnaireHoraire
+            cp -r /root/backup-temp /var/www/GestionnaireHoraire
 
-            git clone -b main https://github.com/ecoleduweb/GestionnaireHoraire.git
-            
             # Configuration API
             echo "Configuring API..."
             cd /var/www/GestionnaireHoraire/API
@@ -64,8 +90,8 @@ jobs:
             EOF
 
             echo "Building API..."
-            go mod tidy
-            go build -o app
+            /usr/local/go/bin/go mod tidy
+            /usr/local/go/bin/go build -o app
 
             # Configuration Frontend
             echo "Configuring Frontend..."
@@ -86,7 +112,6 @@ jobs:
             sudo systemctl start llio-api || echo "Failed to start API service"
             sudo systemctl start llio-frontend || echo "Failed to start Frontend service"
 
-            # Vérification
             echo "Checking services status..."
             sudo systemctl status llio-api --no-pager
             sudo systemctl status llio-frontend --no-pager
