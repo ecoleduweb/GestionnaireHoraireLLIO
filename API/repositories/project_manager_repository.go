@@ -5,28 +5,31 @@ import (
 	"llio-api/database"
 	"llio-api/models/DAOs"
 	"llio-api/models/enums"
+	"log"
 
 	"gorm.io/gorm"
 )
 func GetAvailableManagers(projectId int) ([]*DAOs.User, error) {
-	var managers []*DAOs.User
-	var project DAOs.Project
+    var managers []*DAOs.User
+    var project DAOs.Project
 
-	err := database.DB.First(&project, projectId).Error
-	if err != nil {
-		return nil, DBErrorManager(err)
-	}
+    err := database.DB.First(&project, projectId).Error
+    if err != nil {
+        return nil, DBErrorManager(err)
+    }
 
+    log.Printf("Project found: %+v", project)
+    log.Printf("ManagerId: %d", project.ManagerId)
 
-	err = database.DB.
-		Where("role IN ?", []enums.UserRole{enums.ProjectManager, enums.Administrator}).
-		Where("id != ?", project.ManagerId).
-		Find(&managers).Error
+    err = database.DB.
+        Where("role IN ?", []enums.UserRole{enums.ProjectManager, enums.Administrator}).
+        Where("id != ?", project.ManagerId).
+        Find(&managers).Error
 
+    log.Printf("Managers found: %+v", managers)
 
-	return managers, DBErrorManager(err)
+    return managers, DBErrorManager(err)
 }
-
 func ReassignManager(projectId int, newManagerId int) error {
     return database.DB.Transaction(func(tx *gorm.DB) error {
 		//Récupère le projet séléctionné

@@ -89,17 +89,15 @@ func AddCoManager(c *gin.Context) {
 	})
 }
 func GetAvailableManagers(c *gin.Context) {
-	projectIdStr := c.Query("excludeProjectManagerId") 
+	projectIdStr := c.Param("id")
 	var projectId int
 	var err error
-
 
 	projectId, err = strconv.Atoi(projectIdStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID du projet invalide"})
 		return
 	}
-
 
 	managers, err := services.GetAvailableManagers(projectId)
 	if err != nil {

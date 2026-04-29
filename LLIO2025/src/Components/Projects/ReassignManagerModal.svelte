@@ -19,14 +19,15 @@
   let users: User[] = $state([]);
   let valueSelected : string = $state("");
   let valueSelectedInt : number = $derived(parseInt(valueSelected, 10));
-    $effect(() => {
-    if (show && project.id) {
-      (async () => {
-        users = await ProjectApiService.getAvailableManagers(project.id);
-        valueSelected = "";
-      })();
-    }
-  });
+$effect(() => {
+  if (show && project?.id) {
+    (async () => {
+      const result = await ProjectApiService.getAvailableManagers(project.id);
+      users = [...result]; // force un nouveau tableau plain
+      valueSelected = "";
+    })();
+  }
+});
 </script>
 
 {#if show}

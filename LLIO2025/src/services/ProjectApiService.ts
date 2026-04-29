@@ -124,9 +124,7 @@ const reassignManagerToProject = async (projectId: number, userId: number): Prom
 };
 const getAvailableManagers = async (projectId: number): Promise<User[]> => {
   try {
-    const response = await GET<{ managers: User[] }>(
-      `/project/availableManagers?excludeProjectManagerId=${projectId}`
-    );
+    const response = await GET<{ managers: User[] }>(`/project/${projectId}/availableManagers`);
     return response?.managers ?? [];
   } catch (error) {
     console.error('Erreur lors de la récupération des managers disponibles:', error);

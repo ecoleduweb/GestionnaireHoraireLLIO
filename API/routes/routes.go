@@ -66,7 +66,6 @@ func RegisterRoutes(r *gin.Engine) {
 	/*------------------- Projets -------------------*/
 	projectGroup := r.Group("/project")
 	{
-		projectGroup.GET("/availableManagers", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.GetAvailableManagers)
 		projectGroup.POST("", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.CreatedProject)
 		projectGroup.GET("/:id", middleware.RoleValidationMiddleware(enums.Employee), controllers.GetProjectById)
 		projectGroup.PUT("", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.UpdateProject)
@@ -75,6 +74,7 @@ func RegisterRoutes(r *gin.Engine) {
 		projectGroup.POST("/:projectId/coManager/:userId", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.AddCoManager)
 		projectGroup.PUT("/:projectId/reassignManager/:newManagerId",middleware.RoleValidationMiddleware(enums.ProjectManager),controllers.ReassignManager)
 		projectGroup.DELETE("/:id/coManager/:userId", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.DeleteCoManager)
+		projectGroup.GET("/:id/availableManagers", middleware.RoleValidationMiddleware(enums.ProjectManager), controllers.GetAvailableManagers)
 	}
 
 	projectsGroup := r.Group("/projects", middleware.RoleValidationMiddleware(enums.Employee))
