@@ -4,18 +4,14 @@
   import { quintOut } from 'svelte/easing';
   import { formatHours } from '../../utils/date';
   import { getHoursColor } from '../../utils/displayUtils';
-  import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
-  import type { Category } from '../../Models';
+  import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';;
   import GenerateTableCategories from './GenerateTableCategories.svelte';
-  import { CategoryApiService } from '../../services/CategoryApiService';
-  import Modal from '../Modal/BaseModal.svelte';
-  import CrayonEdit from '../../assets/svg/crayon.svg.svelte';
+  import ModifierTauxHoraire from './ModifierTauxHoraire.svelte';
+ 
 
   let {project, onClickAddCoManager = () => {},onClickReassignManager = () => {}}: {project: any;onClickAddCoManager?: () => void;onClickReassignManager?: () => void;} = $props();
   let isDetailsVisible = $state([]);
-  let showRateModal = $state(false);
-  let selectedEmployee = $state(null);
-  let newRate = $state('');
+
 </script>
 
 <style>
@@ -94,20 +90,10 @@
                   >
                     <div class="col-span-2 flex items-center gap-2">
                       <span class="text-sm">{employee.name}</span>
-                      <button
-                        aria-label="Modifier le taux horaire" 
-                        onclick={(e) => {
-                          
-                          e.stopPropagation();
-                          selectedEmployee = employee;
-                          newRate = employee.hourlyRate
-                          showRateModal = true;
-                        }}
-                        type="button"
-                        class="p-1 rounded-md hover:bg-gray-200 flex items-center justify-center"
-                      >
-                        <CrayonEdit/>
-                      </button>
+                      <ModifierTauxHoraire
+                        {employee}
+                        onRateUpdated={(emp, rate) => { emp.hourlyRate = rate; }}
+                      />
                     </div>
 
                     <div class="text-right text-sm" data-testid="employee-hourly-rate">
@@ -177,34 +163,7 @@
                 {formatHours(project.totalTimeRemaining)}
               </div>
               </div>
-              {#if showRateModal}
-              <Modal
-                modalTitle="Modifier le taux horaire"
-                confirmText="Enregistrer"
-                cancelText="Annuler"
-                onClose={() => showRateModal = false}
-                onSuccess={async () => {
-                  showRateModal = false;
-                }}
-              >
-                {#snippet children()}
-                  <div class="flex flex-col gap-3">
-
-                    <p class="text-sm text-gray-500">
-                      {selectedEmployee?.name}
-                    </p>
-
-                    <input
-                      type="number"
-                      bind:value={newRate}
-                      class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#005e61]"
-                      placeholder="Nouveau taux horaire"
-                    />
-
-                  </div>
-                {/snippet}
-              </Modal>
-            {/if}
+              
             </div>
           </div>
         </div>

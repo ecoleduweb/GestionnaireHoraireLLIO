@@ -76,7 +76,7 @@ test.describe("Modification du taux horaire", () => {
     await input.fill("75");
     await expect(input).toHaveValue("75");
 
-    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(modal).not.toBeVisible({ timeout: 5000 });
   });
