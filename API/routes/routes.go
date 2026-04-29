@@ -46,6 +46,7 @@ func RegisterRoutes(r *gin.Engine) {
 		{
 			usersActivitiesGroup.GET("", controllers.GetActivitiesFromRange)
 			usersActivitiesGroup.GET("/detailed", controllers.GetDetailedActivitiesFromRange)
+			usersActivitiesGroup.GET("/outlook", controllers.GetUsersOutlookCalendar)
 		}
 	}
 

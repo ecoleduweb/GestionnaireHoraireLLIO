@@ -30,7 +30,13 @@ const handleResponse = async <T>(response: Response, redirectToLoginOn401 = true
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
                 const errorData = await response.json();
-                
+
+                // Si on retourne un code d'erreur pour distinguer l'erreur, on l'inclus.
+                if (errorData.code) {
+                  const err = new Error(errorData.error);
+                  (err as any).code = errorData.code;
+                  throw err;
+                }
                 // Si l'API retourne un message d'erreur, l'utiliser
                 if (errorData.error) {
                     throw new Error(errorData.error);
