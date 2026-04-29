@@ -98,15 +98,20 @@ test.describe('showActivities', () => {
             activityMocks.getAllActivitiesPreviousWeekSuccess,
             activityMocks.getAllActivitiesDefaultWeekSuccess
         ]).apply();
-        // Load la page et fait la requête de base 
+
         await page.goto('http://localhost:5002/calendar');
-        await page.waitForSelector('.fc-event', { state: 'visible' });
+        await expect(page.locator('.fc-event')).toHaveCount(2);
+
+        const responsePromise = page.waitForResponse(r =>
+            r.url().includes('/activities') && r.request().method() === 'GET'
+        );
+
         await page.locator('button:has(.lucide-chevron-left)').click();
-        // Vérifie les activités de la semaine
-        let activities = await page.locator('.fc-event').all();
-        await expect(activities.length).toBe(1);
-    
+        await responsePromise;
+
+        await expect(page.locator('.fc-event')).toHaveCount(1);
     });
+
     test('showActivitiesNextWeek', async ({ page }) => {
         const apiMocker = new ApiMocker(page);
         await apiMocker.addMocks([
@@ -114,14 +119,20 @@ test.describe('showActivities', () => {
             activityMocks.getAllActivitiesNextWeekSuccess,
             activityMocks.getAllActivitiesDefaultWeekSuccess
         ]).apply();
-    
+
         await page.goto('http://localhost:5002/calendar');
-        await page.waitForSelector('.fc-event', { state: 'visible' });
+        await expect(page.locator('.fc-event')).toHaveCount(2);
+
+        const responsePromise = page.waitForResponse(r =>
+            r.url().includes('/activities') && r.request().method() === 'GET'
+        );
+
         await page.locator('button:has(.lucide-chevron-right)').click();
-    
-        let activities = await page.locator('.fc-event').all();
-        await expect(activities.length).toBe(1); 
+        await responsePromise;
+
+        await expect(page.locator('.fc-event')).toHaveCount(1);
     });
+
     test('showActivitiesPreviousMonth', async ({ page }) => {
         const apiMocker = new ApiMocker(page);
         await apiMocker.addMocks([

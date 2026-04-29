@@ -25,31 +25,33 @@ test.describe("Recherche et filtrage de projets", () => {
     const testEndDate = "2025-01-31";
 
     const dynamicMocker = new ApiMocker(page);
-    await dynamicMocker.addMock(projectMocks.getDetailedProjectsFilteredSuccess).apply();
+    await dynamicMocker
+      .addMock(projectMocks.getDetailedProjectsFilteredSuccess)
+      .apply();
 
-    await page.waitForSelector('[data-testid="project-item"]');
+    await expect(page.locator('[data-testid="project-item"]')).toHaveCount(8);
+
+    const requestPromise = page.waitForRequest(req => {
+      const url = req.url();
+      return url.includes('/projects/detailed') &&
+        url.includes(`from=${testStartDate}`) &&
+        url.includes(`to=${testEndDate}`) &&
+        req.method() === 'GET';
+    });
 
     await page.locator('#startDate').fill(testStartDate);
     await page.locator('#endDate').fill(testEndDate);
+    await page.locator('#endDate').blur();
 
-    const responsePromise = page.waitForResponse(response =>
-      response.url().includes('/projects/detailed') &&
-      response.url().includes(`from=${testStartDate}`) &&
-      response.url().includes(`to=${testEndDate}`) &&
-      response.request().method() === 'GET' &&
-      response.status() === 200
-    );
-
-    await Promise.all([
-      responsePromise,
-      page.locator('#endDate').dispatchEvent('change'),
-    ]);
-
-    const mockFilteredProject =
-      projectMocks.getDetailedProjectsFilteredSuccess.response.json.projects[0];
+    await requestPromise;
 
     await expect(page.locator('[data-testid="project-item"]')).toHaveCount(1);
-    await expect(page.locator('[data-testid="project-item"]').first())
-      .toContainText(mockFilteredProject.name);
+    await expect(page.locator('[data-testid="project-item"]').first()).toContainText(
+      projectMocks.getDetailedProjectsFilteredSuccess.response.json.projects[0].name
+    );
   });
+
+
+
+
 });
