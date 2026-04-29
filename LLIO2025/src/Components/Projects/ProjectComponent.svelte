@@ -100,7 +100,7 @@
                           
                           e.stopPropagation();
                           selectedEmployee = employee;
-                          newRate = employee.categories.reduce((sum, cat) => sum + (cat.hourlyRate ?? 0), 0);
+                          newRate = employee.hourlyRate
                           showRateModal = true;
                         }}
                         type="button"
@@ -110,8 +110,8 @@
                       </button>
                     </div>
 
-                    <div class="text-right text-sm">
-                      {formatHours(employee.categories.reduce((sum, cat) => sum + (cat.hourlyRate ?? 0), 0))}
+                    <div class="text-right text-sm" data-testid="employee-hourly-rate">
+                      {employee.hourlyRate != null ? `${employee.hourlyRate}$/h` : '-'}
                     </div>
 
                     <div class="text-right text-sm">
@@ -157,7 +157,13 @@
                 Total
               </div>
 
-              <div class="text-right text-sm">--</div>
+              <div class="text-right text-sm" data-testid="total-hourly-rate">
+                {#if (project.employees ?? []).every(e => e.hourlyRate == null)}
+                  0$/h
+                {:else}
+                  {(project.employees ?? []).reduce((sum, e) => sum + (e.hourlyRate ?? 0), 0)}$/h
+                {/if}
+              </div>
 
               <div class="text-right text-sm">
                 {formatHours(project.totalTimeSpent)}

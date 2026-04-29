@@ -18,6 +18,37 @@ test.describe("Modification du taux horaire", () => {
     await page.waitForLoadState("domcontentloaded");
   });
 
+  test("Affichage du taux horaire quand il est défini", async ({ page }) => {
+    const firstProject = page.getByTestId("project-item").first();
+
+    const employeeRow = firstProject
+      .locator(".grid.grid-cols-6")
+      .filter({ hasText: "Katell Arnault de la Ménardière" })
+      .first();
+
+    const rateCell = employeeRow.getByTestId("employee-hourly-rate");
+    await expect(rateCell).toBeVisible();
+
+    await expect(rateCell).toHaveText("85$/h");
+  });
+
+  test("Affichage d'un tiret quand le taux horaire est absent", async ({
+    page,
+  }) => {
+    const firstProject = page.getByTestId("project-item").first();
+
+    const employeeRow = firstProject
+      .locator(".grid.grid-cols-6")
+      .filter({ hasText: "Jean-François Jasmin" })
+      .first();
+
+    await employeeRow.click();
+
+    await expect(employeeRow.getByTestId("employee-hourly-rate")).toHaveText(
+      "-",
+    );
+  });
+
   test("Modification réussie du taux horaire", async ({ page }) => {
     const apiMocker = new ApiMocker(page);
 
@@ -48,5 +79,12 @@ test.describe("Modification du taux horaire", () => {
     await page.getByRole("button", { name: "Enregistrer" }).click();
 
     await expect(modal).not.toBeVisible({ timeout: 5000 });
+  });
+  test("Affichage du total des taux horaires", async ({ page }) => {
+    const firstProject = page.getByTestId("project-item").first();
+
+    await expect(firstProject.getByTestId("total-hourly-rate")).toHaveText(
+      "85$/h",
+    );
   });
 });
