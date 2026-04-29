@@ -29,4 +29,13 @@ export const outlookMocks = {
       },
     },
   },
+  getEventsNoEvent: {
+      url: '/activities/me/outlook?date=2026-05-01',
+      method: 'GET',
+      response: {
+          status: 200,
+          json:
+            {date:"2026-05-01",events:[]}
+      }
+    },
 };
