@@ -1,3 +1,5 @@
+import { isThisWeek } from "date-fns";
+
 // Extraire les heures et minutes d'un objet Date
 export const getHoursFromDate = (date: Date | null | undefined): string =>{
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
@@ -182,3 +184,7 @@ export const getHoursFromRange = (activity) => {
   const hours = diffMilliseconds / (1000 * 60 * 60);
   return hours;
 };
+
+export const isDateInCurrentWeek = (date : Date) => {
+  return isThisWeek(date, { weekStartsOn: 1 });
+}
