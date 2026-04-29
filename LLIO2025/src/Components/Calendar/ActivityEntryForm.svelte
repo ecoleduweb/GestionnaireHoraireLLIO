@@ -310,9 +310,8 @@
     initialSnapshot.eh = time.endHours;
     initialSnapshot.em = time.endMinutes;
   }
-
   let lastEditId = $state<number | null>(null);
-  let lastImportId = $state<number | null>(null);
+  let lastImportRef = $state<Activity | null>(null);
   let wasReset = $state(false);
 
   $effect(() => {
@@ -326,8 +325,8 @@
     }
 
     if (activityToImport) {
-      if (activityToImport.id !== lastImportId) {
-        lastImportId = activityToImport.id;
+      if (activityToImport !== lastImportRef) {
+        lastImportRef = activityToImport;
         wasReset = false;
         applyActivity(activityToImport);
       }
@@ -337,7 +336,7 @@
     if (!wasReset) {
       wasReset = true;
       lastEditId = null;
-      lastImportId = null;
+      lastImportRef = null;
       applyActivity(null);
     }
   });
