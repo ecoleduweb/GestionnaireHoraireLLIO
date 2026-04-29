@@ -7,7 +7,6 @@
   import { UserRole } from '../../lib/types/enums';
   import NavButton from '../NavButton.svelte';
   import HoursWorkedDashboard from './HoursWorkedDashboard.svelte';
-
   import TimeBank from './TimeBank.svelte';
 
   type Props = {
@@ -89,7 +88,7 @@
  <div class="dashboard-card">
 
   <HoursWorkedDashboard hoursTotal={totalHours} {dateStart} {dateEnd} {textHoursWorked} />
-  <TimeBank />
+  <TimeBank/>
   </div>
 </div>
 

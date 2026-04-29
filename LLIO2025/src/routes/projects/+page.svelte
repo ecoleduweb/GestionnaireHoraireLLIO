@@ -3,7 +3,7 @@
   import "../../style/app.css"
   import ProjectsLeftPane from "../../Components/Projects/ProjectsLeftPane.svelte";
   import ProjectComponent from "../../Components/Projects/ProjectComponent.svelte";
-  import type { DetailedProject, User, UserInfo } from '../../Models';
+  import type { CoLead, DetailedProject, User, UserInfo } from '../../Models';
   import { ProjectApiService } from "../../services/ProjectApiService";
   import { UserApiService } from "../../services/UserApiService";
   import AddCoManagerModal from '../../Components/Projects/AddCoManagerModal.svelte';
@@ -83,6 +83,17 @@
       users = [];
       await loadProjects();
     }
+  }
+
+  const handleDeleteCoManager = (projectId: number, coManager: CoLead) => {
+    projects = projects.map(project =>
+      project.id === projectId
+        ? {
+            ...project,
+            coLeads: project.coLeads.filter((coLead) => coLead.id !== coManager.id),
+          }
+        : project
+    );
   }
 
   onMount(async () => {
@@ -184,12 +195,17 @@
     </div>
   {:else}
     {#each filteredProjects as project}
-      <ProjectComponent {project} onClickAddCoManager={() => handleAddCoManagerModalOpen(project.id)} />
+      <ProjectComponent
+        {project}
+        onClickAddCoManager={() => handleAddCoManagerModalOpen(project.id)}
+        onDeleteCoManagerSuccess={handleDeleteCoManager}
+      />
     {/each}
   {/if}
   </div>
 </div>
 
-{#if showAddCoManagerModal}
+{#if showAddCoManagerModal && selectedProject}
   <AddCoManagerModal show={showAddCoManagerModal} users={usersToDisplay} project={selectedProject} onAdd={handleAddCoManager} onCancel={() => showAddCoManagerModal = false} />
 {/if}
+

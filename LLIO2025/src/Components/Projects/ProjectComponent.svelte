@@ -1,15 +1,25 @@
 <script lang="ts">
-  import { Plus, Trash2 } from 'lucide-svelte';
+  import { Plus } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   import { formatHours } from '../../utils/date';
   import { getHoursColor } from '../../utils/displayUtils';
   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
-  import type { Category } from '../../Models';
+  import type { Category, CoLead } from '../../Models';
   import GenerateTableCategories from './GenerateTableCategories.svelte';
+  import DeleteCoManagerButton from './DeleteCoManagerButton.svelte';
   import { CategoryApiService } from '../../services/CategoryApiService';
 
-  let { project, onClickAddCoManager = () => {} }: { project: any; onClickAddCoManager?: () => void } = $props();
+  let { 
+    project,
+    onClickAddCoManager = () => {},
+    onDeleteCoManagerSuccess = () => {},
+  }: { 
+    project: any; 
+    onClickAddCoManager?: () => void; 
+    onDeleteCoManagerSuccess?: (projectId: number, coLead: CoLead) => void; 
+  } = $props();
+
   let isDetailsVisible = $state([]);
 </script>
 
@@ -54,11 +64,16 @@
               <hr class="mt-2 text-xs text-gray-400" />
               <div class="mt-1 text-xs text-gray-400">Co-chargé·e de projet</div>
               {#each project.coLeads as coLead}
-                <div class="text-sm wrap-normal">{coLead.name}</div>
+                <DeleteCoManagerButton
+                  projectId={project.id}
+                  coManager={coLead}
+                  onDeleteCoManagerSuccess={onDeleteCoManagerSuccess}
+                />
               {/each}
               <button
                 class="mt-2 inline-flex items-center bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs"
                 onclick={onClickAddCoManager}
+                aria-label="Ajouter un co-chargé"
               >
                 <Plus class="w-3 h-3" />
               </button>

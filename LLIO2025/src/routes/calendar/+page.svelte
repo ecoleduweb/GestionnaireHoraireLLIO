@@ -17,6 +17,7 @@
   import { Plus, Calendar, ChevronLeft, ChevronRight, LogOut } from 'lucide-svelte';
   import { goto } from '$app/navigation';
   import OutlookImportModal from "../../Components/Calendar/OutlookImportModal.svelte";
+  import { triggerTimeBankRefetch} from '../../lib/refreshTimeBankSignal.svelte';
 
   let calendarEl = $state<HTMLElement | null>(null);
   let calendarService = $state<CalendarService | null>(null);
@@ -343,6 +344,7 @@
       extendedProps: { ...activityData },
     });
     await refreshDashboardData();
+    triggerTimeBankRefetch(activityData.startDate) 
   }
 
   const handleActivityUpdate = async (activity: Activity) =>{
@@ -359,6 +361,7 @@
 
       calendarService.updateEvent(activity);
       await refreshDashboardData();
+      triggerTimeBankRefetch(activity.startDate) 
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
 
@@ -373,6 +376,7 @@
       await ActivityApiService.deleteActivity(activity.id);
       calendarService.deleteActivity(activity.id.toString());
       await refreshDashboardData();
+      triggerTimeBankRefetch(activity.startDate) 
     } catch (error) {
       console.error("Erreur lors de la suppression de l'activité", error);
       throw error;
@@ -388,6 +392,7 @@
 
       calendarService.updateEvent(updatedActivity);
       await refreshDashboardData();
+      triggerTimeBankRefetch(updatedActivity.startDate) 
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
       alert("Une erreur est survenue lors de la mise à jour de l'activité.");
