@@ -59,7 +59,7 @@ test.describe("ImportOutlook", () => {
         
         const dialogPromise = page.waitForEvent('dialog');
         
-        page.getByLabel('21 mars').getByRole('button', { name: 'Outlook' }).click();
+        page.getByLabel('1 mai').getByRole('button', { name: 'Outlook' }).click();
         const dialog = await dialogPromise;
 
         expect(dialog.type()).toBe('alert');
