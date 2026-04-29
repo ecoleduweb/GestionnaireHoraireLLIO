@@ -576,7 +576,7 @@ export const projectMocks = {
 
   updateEmployeeRateSuccess: {
     url: "/employee/*/rate",
-    method: "PATCH",
+    method: "PUT",
     response: {
       status: 200,
       json: {
