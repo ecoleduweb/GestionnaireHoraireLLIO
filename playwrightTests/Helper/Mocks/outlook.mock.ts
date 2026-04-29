@@ -38,4 +38,12 @@ export const outlookMocks = {
             {date:"2026-05-01",events:[]}
       }
     },
+  outlookFail: {
+    url: "/activities/me/outlook?date=*",
+    method: "GET",
+    response: {
+        status: 401,
+        json: {"code":"GRAPH_EXPIRED","error":"Votre compte n'est pas connecté à votre compte Microsoft. Veuillez vous reconnecter et réessayer."},
+    },
+  },
 };

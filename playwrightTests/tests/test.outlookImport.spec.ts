@@ -4,6 +4,7 @@ import { userMocks } from "../Helper/Mocks/user.Mock";
 import { outlookMocks } from "../Helper/Mocks/outlook.mock";
 import { projectMocks } from "../Helper/Mocks/project.mock";
 import { categoryMocks } from "../Helper/Mocks/category.mock";
+import { activityMocks } from "../Helper/Mocks/activity.mock";
 
 test.describe("ImportOutlook", () => {
   test.beforeEach(async ({ page }) => {
@@ -47,5 +48,24 @@ test.describe("ImportOutlook", () => {
         await expect(button).toBeDisabled();
         await expect(button).toHaveAttribute("data-date", "2026-05-01");
 
+    });
+
+    test('outlookFailed', async ({ page }) => {
+        const apiMocker = new ApiMocker(page);
+        await apiMocker.addMocks([
+            outlookMocks.outlookFail,
+        ])
+            .apply();
+        
+        const dialogPromise = page.waitForEvent('dialog');
+        
+        page.getByLabel('21 mars').getByRole('button', { name: 'Outlook' }).click();
+        const dialog = await dialogPromise;
+
+        expect(dialog.type()).toBe('alert');
+        expect(dialog.message()).toContain("Votre connexion à Outlook a expirée. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.");
+        await dialog.dismiss();
+
+        await page.waitForURL('http://localhost:5002/');
     });
 });
