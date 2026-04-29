@@ -299,8 +299,13 @@
             return;
           }
         } catch (err) {
-          console.error('Erreur import Outlook:', err);
-          alert("Erreur lors de l'import Outlook : " + err.message);
+          if (err?.code === 'GRAPH_EXPIRED') {
+            alert("Votre connexion à Outlook a expirée. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.")
+            window.location.href = "/";
+          } else {
+            console.error('Erreur import Outlook:', err);
+            alert("Erreur lors de l'import Outlook : " + err.message);
+          }
         }
 
         btn.textContent = '+ Outlook';
