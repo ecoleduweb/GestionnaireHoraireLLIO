@@ -38,26 +38,23 @@ test.describe('checkProjectsArchive', () => {
     test('projetArchiveFailed', async ({ page }) => {
         const apiMocker = new ApiMocker(page);
         await apiMocker.addMocks([projectMocks.archiveFailed]).apply();
-        //Valide que les projets s'affichent sur la page principale ET dans le left pane
+
         await expect(page.getByText('Projets archivés (4)')).toBeVisible();
         await page.getByRole('button', { name: 'Archiver le projet' }).first().click();
-        
-        await apiMocker.addMocks([projectMocks.getDetailedProjectsSuccessAfterArchive]).apply();
-        
-        page.on('dialog', async dialog => {
-            if (dialog.type() == 'alert') {
-                expect(dialog.message()).toContain(
-                    'Erreur lors de la archivation du projet.'
-                );
-                await dialog.dismiss();
-            }
 
-            
+        let dialogHandled = false;
+
+        page.once('dialog', async dialog => {
+            expect(dialog.type()).toBe('alert');
+            expect(dialog.message()).toContain('Erreur lors de la archivation du projet.');
+            dialogHandled = true;
+            await dialog.dismiss();
         });
 
         await page.getByRole('button', { name: 'Confirmer' }).click();
 
+        await expect.poll(() => dialogHandled).toBe(true);
         await expect(page.getByText('Projets archivés (4)')).toBeVisible();
-
     });
+
 });

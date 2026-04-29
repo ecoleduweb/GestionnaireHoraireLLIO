@@ -31,20 +31,25 @@ test.describe("Recherche et filtrage de projets", () => {
 
     await page.locator('#startDate').fill(testStartDate);
     await page.locator('#endDate').fill(testEndDate);
-    
-    await page.locator('#endDate').dispatchEvent('change');
 
-    await page.waitForResponse(
-      response => 
-        response.url().includes('projects/detailed') && 
-        response.url().includes('from=') &&
-        response.status() === 200
+    const responsePromise = page.waitForResponse(response =>
+      response.url().includes('/projects/detailed') &&
+      response.url().includes(`from=${testStartDate}`) &&
+      response.url().includes(`to=${testEndDate}`) &&
+      response.request().method() === 'GET' &&
+      response.status() === 200
     );
 
-    const mockFilteredProject = projectMocks.getDetailedProjectsFilteredSuccess.response.json.projects[0];
-    const visibleProjects = page.locator('[data-testid="project-item"]');
-    
-    await expect(visibleProjects).toHaveCount(1);
-    await expect(visibleProjects.first()).toContainText(mockFilteredProject.name);
+    await Promise.all([
+      responsePromise,
+      page.locator('#endDate').dispatchEvent('change'),
+    ]);
+
+    const mockFilteredProject =
+      projectMocks.getDetailedProjectsFilteredSuccess.response.json.projects[0];
+
+    await expect(page.locator('[data-testid="project-item"]')).toHaveCount(1);
+    await expect(page.locator('[data-testid="project-item"]').first())
+      .toContainText(mockFilteredProject.name);
   });
 });
