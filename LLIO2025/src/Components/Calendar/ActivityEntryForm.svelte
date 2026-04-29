@@ -20,6 +20,7 @@
     projects: Project[];
     activityToEdit?: Activity | null;
     activityToImport?: Activity | null;
+    importIndex?: number;
     selectedDate?: { start: Date; end: Date } | null;
     onClose: () => void;
     onDelete: (activity: Activity) => void;
@@ -31,14 +32,14 @@
     projects,
     activityToEdit,
     activityToImport = $bindable(null),
+    importIndex = null,
     selectedDate = null,
     onClose,
     onDelete,
     onSubmit,
     onUpdate,
   }: Props = $props();
-
-  const editMode = activityToEdit !== null;
+  let editMode = $derived(!!activityToEdit);
 
   let projectCategories: Category[] = $state([]);
   let initialActivity = activityTemplate.generate();
@@ -65,27 +66,10 @@
     endMinutes: getMinutesFromDate(activity.endDate),
   });
 
-  if (activityToEdit) {
-    Object.assign(activity, activityToEdit);
-    time.startHours = getHoursFromDate(activityToEdit.startDate);
-    time.startMinutes = getMinutesFromDate(activityToEdit.startDate);
-    time.endHours = getHoursFromDate(activityToEdit.endDate);
-    time.endMinutes = getMinutesFromDate(activityToEdit.endDate);
-  }
 
   const {
     time: { hours, minutes },
   } = activityTemplate;
-
-  $effect(() => {
-    console.log("activityToImport", activityToImport);
-    Object.assign(activity, activityToImport);
-    console.log("activity", activity);
-    time.startHours = getHoursFromDate(activityToImport.startDate);
-    time.startMinutes = getMinutesFromDate(activityToImport.startDate);
-    time.endHours = getHoursFromDate(activityToImport.endDate);
-    time.endMinutes = getMinutesFromDate(activityToImport.endDate);
-  })
 
   const applyEndTime = () => {
     const result = applyEndTimeUtil(
@@ -110,15 +94,6 @@
                   : projectCategories
   );
 
-  $effect(() => {
-    if (activity.projectId) {
-      loadCategoriesByProject(activity.projectId);
-    } else {
-      projectCategories = [];
-      activity.categoryId = null;
-    }
-  });
-
   const loadCategoriesByProject = async (projectId) => {
     if (!projectId) {
       projectCategories = [];
@@ -142,26 +117,12 @@
     }
   };
 
-  const loadCategories = async () => {
-    try {
-      if (editMode && activityToEdit && activityToEdit.projectId) {
-        await loadCategoriesByProject(activityToEdit.projectId);
-      }
-      // --- Ajouté par moi ---
-      if (activityToImport && activityToImport.projectId) {
-        await loadCategoriesByProject(activityToImport.projectId);
-      }
-      // --- /Ajouté par moi ---
-    } catch (error) {
-      console.error('Erreur lors du chargement des catégories:', error);
-    }
-  };
-
   $effect(() => {
     if (activity.projectId) {
       loadCategoriesByProject(activity.projectId);
     } else {
-      loadCategories();
+      projectCategories = [];
+      activity.categoryId = null;
     }
   });
 
@@ -286,10 +247,49 @@
   });
 
   const { form, errors, setFields } = validateActivityForm(handleSubmit, activity);
+
+  function applyActivity(source: Activity | null | undefined) {
+    const fresh = activityTemplate.generate();
+    fresh.projectId = '' as unknown as number;
+    fresh.categoryId = null;
+
+    if (selectedDate?.start) {
+      const { startDate, endDate } = initializeActivityDates(selectedDate.start);
+      fresh.startDate = startDate;
+      fresh.endDate = endDate ? new Date(selectedDate.end) : endDate;
+    }
+
+    const merged = Object.assign({}, fresh, source ?? {});
+
+    Object.assign(activity, merged);
+
+    setFields('name', merged.name ?? '');
+    setFields('description', merged.description ?? '');
+    setFields('projectId', merged.projectId);
+    setFields('categoryId', merged.categoryId);
+
+    time.startHours = getHoursFromDate(merged.startDate);
+    time.startMinutes = getMinutesFromDate(merged.startDate);
+    time.endHours = getHoursFromDate(merged.endDate);
+    time.endMinutes = getMinutesFromDate(merged.endDate);
+  }
+
+  $effect(() => {
+    if (activityToEdit) {
+      applyActivity(activityToEdit);
+      return;
+    }
+
+    if (activityToImport) {
+      applyActivity(activityToImport);
+      return;
+    }
+
+    applyActivity(null);
+  });
 </script>
 
 <svelte:window onclick={handleOutsideClick} />
-
 <form
         class="flex flex-col"
         use:form
@@ -535,7 +535,6 @@
     </div>
   </div>
 </form>
-
 {#if showCategoryConfirmModal}
   <ConfirmationModal
           modalTitle="Confirmer l'ajout"

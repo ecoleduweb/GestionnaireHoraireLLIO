@@ -109,7 +109,7 @@
                 </div>
 
                 <div class="form-group">
-                    <ActivityEntryForm activityToImport={activity} projects={projects} onClose={()=>{}} onDelete={()=>{}} onSubmit={()=>{}} onUpdate={()=>{}} activityToEdit={null} />
+                    <ActivityEntryForm importIndex={selectedEventInt} activityToImport={activity} projects={projects} onClose={()=>{}} onDelete={()=>{}} onSubmit={()=>{}} onUpdate={()=>{}} activityToEdit={null} />
 
                     <div class="field-row">
                         <div class="field">
