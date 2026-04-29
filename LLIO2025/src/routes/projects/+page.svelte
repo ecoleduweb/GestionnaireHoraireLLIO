@@ -219,6 +219,7 @@
       <ProjectComponent
         {project}
         onClickAddCoManager={() => handleAddCoManagerModalOpen(project.id)}
+        onClickReassignManager={() => handleReassignManagerModalOpen(project.id)}
         onDeleteCoManagerSuccess={handleDeleteCoManager}
       />
     {/each}
@@ -228,5 +229,8 @@
 
 {#if showAddCoManagerModal && selectedProject}
   <AddCoManagerModal show={showAddCoManagerModal} users={usersToDisplay} project={selectedProject} onAdd={handleAddCoManager} onCancel={() => showAddCoManagerModal = false} />
+{/if}
+{#if showReassignManagerModal}
+  <ReassignManagerModal show={showReassignManagerModal} project={selectedProject} onAdd={handleReassignManager} onCancel={() => showReassignManagerModal = false} />
 {/if}
 

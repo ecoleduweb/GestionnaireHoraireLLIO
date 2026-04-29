@@ -135,16 +135,17 @@ const getAvailableManagers = async (projectId: number): Promise<User[]> => {
   }
 };
 
-const deleteCoManagerFromProject = async(projectId: number, userId: number): Promise<void> => {
+const deleteCoManagerFromProject = async (projectId: number, userId: number): Promise<void> => {
   try {
     await DELETE(`/project/${projectId}/coManager/${userId}`);
   } catch (error) {
-    console.error("Erreur lors de la suppression du co-chargé au projet:", error);
+    console.error('Erreur lors de la suppression du co-chargé au projet:', error);
     throw new Error(
-      "Erreur à la suppression du co-chargé : " + (error instanceof Error ? error.message : String(error))
+      'Erreur à la suppression du co-chargé : ' +
+        (error instanceof Error ? error.message : String(error))
     );
   }
-}
+};
 
 export const ProjectApiService = {
   createProject,
@@ -155,5 +156,7 @@ export const ProjectApiService = {
   getDetailedProjects,
   getCurrentUserProjects,
   addCoManagerToProject,
-  deleteCoManagerFromProject
+  reassignManagerToProject,
+  getAvailableManagers,
+  deleteCoManagerFromProject,
 };
