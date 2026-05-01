@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Plus } from 'lucide-svelte';
+  import { Plus, Trash2 } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   import { formatHours } from '../../utils/date';
@@ -7,19 +7,10 @@
   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
   import type { Category, CoLead } from '../../Models';
   import GenerateTableCategories from './GenerateTableCategories.svelte';
-  import DeleteCoManagerButton from './DeleteCoManagerButton.svelte';
   import { CategoryApiService } from '../../services/CategoryApiService';
+  import DeleteCoManagerButton from './DeleteCoManagerButton.svelte';
 
-  let { 
-    project,
-    onClickAddCoManager = () => {},
-    onDeleteCoManagerSuccess = () => {},
-  }: { 
-    project: any; 
-    onClickAddCoManager?: () => void; 
-    onDeleteCoManagerSuccess?: (projectId: number, coLead: CoLead) => void; 
-  } = $props();
-
+  let {project, onClickAddCoManager = () => {},onClickReassignManager = () => {},  onDeleteCoManagerSuccess = () => {},}: {project: any;onClickAddCoManager?: () => void;onClickReassignManager?: () => void;onDeleteCoManagerSuccess?: (projectId: number, coLead: CoLead) => void;  } = $props();
   let isDetailsVisible = $state([]);
 </script>
 
@@ -56,9 +47,7 @@
             <div class="w-1/5 flex-shrink-0">
               <div class="mt-1 text-xs text-gray-400">Chargé·e de projet</div>
               <div class="text-sm wrap-normal">{project.lead}</div>
-              <button
-                class="mt-2 inline-flex items-center px-3 py-1.5 bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs font-medium"
-              >
+              <button class="mt-2 inline-flex items-center px-3 py-1.5 bg-gray-100 ..." onclick={onClickReassignManager}>
                 <span class="text-xs">Réattribuer</span>
               </button>
               <hr class="mt-2 text-xs text-gray-400" />

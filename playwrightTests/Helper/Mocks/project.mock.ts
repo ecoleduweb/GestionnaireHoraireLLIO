@@ -58,7 +58,9 @@ const detailedProjectsBase = [
       },
       {
         name: "Ariane Dionne-Santerre",
-        categories: [{ id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
+        categories: [
+          { id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 },
+        ],
       },
       {
         name: "Jimmy Paquet-Cormier",
@@ -194,7 +196,9 @@ const detailedProjectsBase = [
       },
       {
         name: "Ariane Dionne-Santerre",
-        categories: [{ id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 }],
+        categories: [
+          { id: 2, name: "Rédaction", timeSpent: 8, timeEstimated: 10 },
+        ],
       },
       {
         name: "Jimmy Paquet-Cormier",
@@ -586,13 +590,46 @@ export const projectMocks = {
       },
     },
   },
+  reassignManagerSuccess: {
+    url: "/project/*/reassignManager/*",
+    method: "PUT",
+    response: {
+      status: 200,
+      json: {
+        response: "Le chargé de projet a bien été mis à jour",
+      },
+    },
+  },
+  getAvailableManagersSuccess: {
+    url: "/project/*/availableManagers",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        managers: [
+          {
+            id: 2,
+            firstName: "JérémieTest",
+            lastName: "Lapointe",
+            role: 1,
+          },
+          {
+            id: 3,
+            firstName: "Charle-ÉtienneTest",
+            lastName: "Soucy",
+            role: 2,
+          },
+        ],
+      },
+    },
+  },
   getDetailedProjectsFilteredSuccess: {
     url: "/projects/detailed?from=2025-01-01&to=2025-01-31",
     method: "GET",
     response: {
       status: 200,
       json: {
-        projects: [detailedProjectsBase[0]], 
+        projects: [detailedProjectsBase[0]],
       },
     },
   },

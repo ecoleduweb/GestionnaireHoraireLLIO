@@ -13,6 +13,7 @@ import (
 
 var projectSTR = "projet"
 
+
 func CreatedProject(c *gin.Context) {
 	var projetDTO DTOs.ProjectDTO
 
@@ -85,6 +86,47 @@ func AddCoManager(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"response":  "Le co-chargé de projet a bien été ajouté à la base de données",
 		"coManager": coManagerAdded,
+	})
+}
+func GetAvailableManagers(c *gin.Context) {
+	projectIdStr := c.Param("id")
+	var projectId int
+	var err error
+
+	projectId, err = strconv.Atoi(projectIdStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID du projet invalide"})
+		return
+	}
+
+	managers, err := services.GetAvailableManagers(projectId)
+	if err != nil {
+		handleError(c, err, "liste des chargés de projet")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"managers": managers})
+}
+func ReassignManager(c *gin.Context) {
+	projectId, err := strconv.Atoi(c.Param("projectId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID du projet invalide"})
+		return
+	}
+
+	newManagerId, err := strconv.Atoi(c.Param("newManagerId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID du gestionnaire invalide"})
+		return
+	}
+	err = services.ReassignManager(projectId, newManagerId)
+	if err != nil {
+		handleError(c, err, "réattribution du manager")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"response": "Le manager a bien été réattribué",
 	})
 }
 
@@ -302,3 +344,4 @@ func GetDetailedProjectsByUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"projects": projects})
 }
+
