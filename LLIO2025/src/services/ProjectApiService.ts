@@ -51,9 +51,9 @@ const deleteProject = async (projectId: number): Promise<void> => {
   }
 };
 
-const archiveProject = async (projectId: number, archivedStatus: boolean): Promise<void> => {
+const toggleArchiveProject = async (projectId: number, archivedStatus: boolean): Promise<DetailedProject> => {
   try {
-    const response = await POST<ArchiveProject, void>(`/project/archive/${projectId}`, {Archived: archivedStatus});
+    const response = await POST<ArchiveProject, DetailedProject>(`/project/toggleArchive/${projectId}`, {Archived: archivedStatus});
     return response;
   } catch (error) {
     console.log(error)
@@ -138,7 +138,7 @@ const deleteCoManagerFromProject = async(projectId: number, userId: number): Pro
 export const ProjectApiService = {
   createProject,
   updateProject,
-  archiveProject,
+  toggleArchiveProject,
   deleteProject,
   getProjects,
   getProject,

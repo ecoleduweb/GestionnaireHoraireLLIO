@@ -4,6 +4,8 @@
   import type { DetailedProject, Project, UserInfo } from '../../Models';
   import { UserRole } from '$lib/types/enums';
   import { getHoursColor } from '../../utils/displayUtils';
+  import ToggleArchiveButton from './ToggleArchiveButton.svelte';
+  import { on } from 'svelte/events';
 
   type Props = {
     project: DetailedProject;
@@ -18,11 +20,6 @@
   const handleEdit = (event: MouseEvent) =>{
     event.stopPropagation(); // Empêche la propagation du clic aux éléments parents
     onEdit(project);
-  }
-
-  const handleArchive = (event: MouseEvent) => {
-    event.stopPropagation();
-    onArchive(project);
   }
 
   const handleDelete = (event: MouseEvent) => {
@@ -50,18 +47,7 @@
         >
           <Pencil size={16} />
         </button>
-        <button
-          class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-          onclick={handleArchive}
-          aria-label={!project.isArchived ? "Archiver le projet" : "Désarchiver le projet"}
-        >
-          {#if !project.isArchived}
-            <Archive size={16} />
-          {:else}
-            <ArchiveX size={16} />
-          {/if}
-      
-        </button>
+        <ToggleArchiveButton project={project} onArchive={onArchive}/>
       {/if}
       {#if currentUser.role == UserRole.Admin}
         <button

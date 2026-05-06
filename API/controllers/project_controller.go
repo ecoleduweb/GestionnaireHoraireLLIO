@@ -270,7 +270,7 @@ func DeleteProject(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": true})
 }
 
-func ArchiveProject(c *gin.Context) {
+func ToggleArchiveProject(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
 	projectIdToArchive := c.Param("id")
 
@@ -301,13 +301,18 @@ func ArchiveProject(c *gin.Context) {
 		return
 	}
 
-	err = services.ArchiveProjectByIdWithUserId(user.Id, projectIDInt, projectStatusDTO.Archived)
+	project, err := services.ToggleArchiveProjectByIdWithUserId(user.Id, projectIDInt, projectStatusDTO.Archived)
 	if err != nil {
 		handleError(c, err, projectSTR)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"archived": true})
+	if project == nil {
+		handleError(c, err, projectSTR)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"updatedProject": project})
 }
 
 func GetDetailedProjectsByUser(c *gin.Context) {

@@ -296,7 +296,8 @@ export const projectMocks = {
           p.id === 1
             ? {
                 ...p,
-                isArchived: true,
+                status: 2,
+                isArchived: true
               }
             : p,
         ),
@@ -304,17 +305,17 @@ export const projectMocks = {
     },
   },
   archiveSuccess: {
-    url: "/project/archive/1",
+    url: "/project/toggleArchive/1",
     method: "POST",
     response: {
       status: 200,
       json: {
-        archived: true
+        updatedProject: {...detailedProjectsBase[0], isArchived: true}
       },
     },
   },
   archiveFailed: {
-    url: "/project/archive/1",
+    url: "/project/toggleArchive/1",
     method: "POST",
     response: {
       status: 400,

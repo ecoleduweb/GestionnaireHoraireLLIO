@@ -219,8 +219,8 @@ func DoesUserHavePermissionToInteractWithProject(userId int, projectId int) (boo
 		return false, DBErrorManager(err)
 	}
 
-	userCoManager, err2 := IsUserCoManager(projectId, userId)
-	if err2 != nil {
+	userCoManager, err := IsUserCoManager(projectId, userId)
+	if err != nil {
 		return false, DBErrorManager(err)
 	}
 
@@ -240,8 +240,7 @@ func DoesUserHavePermissionToInteractWithProject(userId int, projectId int) (boo
 	return count > 0, nil
 }
 
-func ArchiveProject(projectDAO *DAOs.Project, archivedStatus bool) (bool, error) {
-	// AJOUT : .Select(...) force la mise à jour de ces colonnes, même si la valeur est 0 ou false
+func ToggleArchiveProject(projectDAO *DAOs.Project, archivedStatus bool) (*DAOs.Project, error) {
 	var valueToChangeTo enums.ProjectStatus
 
 	if archivedStatus {
@@ -254,8 +253,8 @@ func ArchiveProject(projectDAO *DAOs.Project, archivedStatus bool) (bool, error)
 		Update("status", valueToChangeTo).Error
 
 	if err != nil {
-		return false, DBErrorManager(err)
+		return nil, DBErrorManager(err)
 	}
 
-	return true, nil
+	return projectDAO, nil
 }

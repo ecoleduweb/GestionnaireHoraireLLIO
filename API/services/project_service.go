@@ -372,35 +372,34 @@ func GetProjectsByActivityPerUser(userId int) ([]*DTOs.ProjectDTO, error) {
 	return projectsDTO, nil
 }
 
-func ArchiveProjectByIdWithUserId(userId int, projectId int, archivedStatus bool) error {
+func ToggleArchiveProjectByIdWithUserId(userId int, projectId int, archivedStatus bool) (*DTOs.ProjectDTO, error) {
 	// Check if the project exists
 	projectDAO, err := repositories.GetProjectById(fmt.Sprintf("%d", projectId))
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if projectDAO == nil {
-		return customs_errors.ErrProjectNotFound
+		return nil, customs_errors.ErrProjectNotFound
 	}
 
 	userHasPermission, err := repositories.DoesUserHavePermissionToInteractWithProject(userId, projectId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if !userHasPermission {
 		log.Printf("User %d tried to access the project: %d", userId, projectId)
-		return customs_errors.ErrProjectNoPermission
+		return nil, customs_errors.ErrProjectNoPermission
 	}
 
 	//Archive the project
-	result, errArchive := repositories.ArchiveProject(projectDAO, archivedStatus)
+	result, errArchive := repositories.ToggleArchiveProject(projectDAO, archivedStatus)
 	if errArchive != nil {
-		return errArchive
+		return nil, errArchive
 	}
 
-	if !result {
-		return customs_errors.ErrProjectCouldntModifyArchive
-	}
+	projectDTOResponse := &DTOs.ProjectDTO{}
+	err = copier.Copy(projectDTOResponse, result)
 
-	return nil
+	return projectDTOResponse, nil
 }

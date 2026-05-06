@@ -28,8 +28,12 @@ test.describe('checkProjectsArchive', () => {
             dialog.dismiss().catch(() => {});
         });
         await apiMocker.addMocks([projectMocks.getDetailedProjectsSuccessAfterArchive]).apply();
+
+        await page.waitForTimeout(1000);
+
         await page.getByRole('button', { name: 'Confirmer' }).click();
 
+        await page.waitForTimeout(1000);
 
         await expect(page.getByText('Projets archivés (5)')).toBeVisible();
 

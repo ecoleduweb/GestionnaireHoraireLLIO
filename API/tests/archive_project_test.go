@@ -25,7 +25,7 @@ func TestArchiveAndDeArchiveProject(t *testing.T) {
 		Archived: true,
 	}
 
-	w := sendRequest(router, "POST", "/project/archive/"+strconv.Itoa(doNotDeleteProject.Id), archiveProject, &doNotDeleteUser.Id, enums.ProjectManager)
+	w := sendRequest(router, "POST", "/project/toggleArchive/"+strconv.Itoa(doNotDeleteProject.Id), archiveProject, &doNotDeleteUser.Id, enums.ProjectManager)
 	assertResponse(t, w, http.StatusOK, nil)
 
 	var dbProject2 DAOs.Project
@@ -38,7 +38,7 @@ func TestArchiveAndDeArchiveProject(t *testing.T) {
 		Archived: false,
 	}
 
-	w2 := sendRequest(router, "POST", "/project/archive/"+strconv.Itoa(doNotDeleteProject.Id), unarchiveProject, &doNotDeleteUser.Id, enums.ProjectManager)
+	w2 := sendRequest(router, "POST", "/project/toggleArchive/"+strconv.Itoa(doNotDeleteProject.Id), unarchiveProject, &doNotDeleteUser.Id, enums.ProjectManager)
 	assertResponse(t, w2, http.StatusOK, nil)
 
 	var dbProject3 DAOs.Project
@@ -55,7 +55,7 @@ func TestArchiveNoPermissionUser(t *testing.T) {
 
 	assert.Equal(t, int(dbProject1.Status), 0)
 
-	w := sendRequest(router, "POST", "/project/archive/"+strconv.Itoa(doNotDeleteProject.Id), "{\"Archived\":true}", &doNotDeleteUser2.Id, enums.ProjectManager)
+	w := sendRequest(router, "POST", "/project/toggleArchive/"+strconv.Itoa(doNotDeleteProject.Id), "{\"Archived\":true}", &doNotDeleteUser2.Id, enums.ProjectManager)
 	assertResponse(t, w, http.StatusBadRequest, nil)
 
 	var dbProject2 DAOs.Project
