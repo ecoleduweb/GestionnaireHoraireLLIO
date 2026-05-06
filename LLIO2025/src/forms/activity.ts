@@ -1,18 +1,19 @@
-import type { Activity, Category } from '../Models';
-import { initializeActivityDates } from '../utils/date';
+import type { Activity, Category, OutlookEvent } from '../Models';
+import { initializeActivityDates, roundTimeToNearest15Minutes } from '../utils/date';
 
 export const activityTemplate = {
-  generate: (): Activity => {
+  generate: (selectedEvent: OutlookEvent|null = null,
+             selectedProject: {id: number, name: string} | null = null): Activity => {
     const { startDate, endDate } = initializeActivityDates();
     return {
-      name: '',
-      description: '',
+      name: selectedEvent ? selectedEvent.subject : '',
+      description: selectedEvent ? selectedEvent.body.content : '',
       userId: 1,
-      projectId: 0,
+      projectId: selectedProject ? selectedProject.id : 0,
       categoryId: null,
-      projectName: '',
-      startDate,
-      endDate,
+      projectName: selectedProject ? selectedProject.name : '',
+      startDate: selectedEvent ? roundTimeToNearest15Minutes(selectedEvent.start) : startDate,
+      endDate: selectedEvent ? roundTimeToNearest15Minutes(selectedEvent.end) : endDate,
     };
   },
 

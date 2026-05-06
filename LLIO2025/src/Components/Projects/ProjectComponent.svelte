@@ -1,26 +1,19 @@
 <script lang="ts">
-  import { Plus } from 'lucide-svelte';
+  import { Plus, Trash2 } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   import { formatHours } from '../../utils/date';
   import { getHoursColor } from '../../utils/displayUtils';
-  import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';
-  import type { Category, CoLead } from '../../Models';
+  import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';;
   import GenerateTableCategories from './GenerateTableCategories.svelte';
-  import DeleteCoManagerButton from './DeleteCoManagerButton.svelte';
+  import EditTimeRate from './EditTimeRate.svelte';
+  import type { Category, CoLead } from '../../Models';
   import { CategoryApiService } from '../../services/CategoryApiService';
+  import DeleteCoManagerButton from './DeleteCoManagerButton.svelte';
+ 
+  let {project, onClickAddCoManager = () => {},onClickReassignManager = () => {},onDeleteCoManagerSuccess = () => {},}: {project: any;onClickAddCoManager?: () => void;onClickReassignManager?: () => void; onDeleteCoManagerSuccess?: (projectId: number, coLead: CoLead) => void; } = $props();
+  let isDetailsVisible = $state<boolean[]>([]);
 
-  let { 
-    project,
-    onClickAddCoManager = () => {},
-    onDeleteCoManagerSuccess = () => {},
-  }: { 
-    project: any; 
-    onClickAddCoManager?: () => void; 
-    onDeleteCoManagerSuccess?: (projectId: number, coLead: CoLead) => void; 
-  } = $props();
-
-  let isDetailsVisible = $state([]);
 </script>
 
 <style>
@@ -56,9 +49,7 @@
             <div class="w-1/5 flex-shrink-0">
               <div class="mt-1 text-xs text-gray-400">Chargé·e de projet</div>
               <div class="text-sm wrap-normal">{project.lead}</div>
-              <button
-                class="mt-2 inline-flex items-center px-3 py-1.5 bg-gray-100 border border-transparent rounded-4xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-grey-500 text-gray-700 text-xs font-medium"
-              >
+              <button class="mt-2 inline-flex items-center px-3 py-1.5 bg-gray-100 ..." onclick={onClickReassignManager}>
                 <span class="text-xs">Réattribuer</span>
               </button>
               <hr class="mt-2 text-xs text-gray-400" />
@@ -84,65 +75,63 @@
 
            
             <div class="flex-1 pl-4">
-              <div class="flex justify-end pr-2 mb-1">
-                <div class="w-1/2"></div>
-                <div class="w-1/6 text-right text-xs text-gray-500">Temps passé</div>
-                <div class="w-1/6 text-right text-xs text-gray-500">Temps estimé</div>
-                <div class="w-1/6 text-right text-xs text-gray-500">Temps restant</div>
+              <div class="grid grid-cols-6 text-xs text-gray-500 pr-2 mb-1">
+                <div class="col-span-2"></div>
+                <div class="text-right">Taux horaire</div>
+                <div class="text-right">Temps passé</div>
+                <div class="text-right">Temps estimé</div>
+                <div class="text-right">Temps restant</div>
               </div>
-              {#each project.employees as employee, index}
-                <button
-                  class="w-full p-2 flex items-center justify-between hover:bg-gray-50 mt-1 cursor-pointer"
-                  onclick={() => (isDetailsVisible[index] = !isDetailsVisible[index])}
-                >
-                  <span class="text-sm text-left w-1/2">{employee.name}</span>
-                  <div class="flex w-1/2">
-                    <div class="w-1/3 text-right text-sm">
-                      {formatHours(
-                        employee.categories.reduce((sum, cat) => sum + cat.timeSpent, 0)
-                      )}
-                    </div>
-                    <div class="w-1/3 text-right text-sm">
-                      {formatHours(
-                        employee.categories.reduce((sum, cat) => sum + cat.timeEstimated, 0)
-                      )}
-                    </div>
-                    <div class="w-1/3 text-right text-sm {getHoursColor(
-                        calculateEmployeeTime(employee, 'spent'),
-                        calculateEmployeeTime(employee, 'estimated')
-                      )}">
-                      {formatHours(
-                        calculateRemainingTime(
-                        calculateEmployeeTime(employee, 'spent'),
-                        calculateEmployeeTime(employee, 'estimated')
-                        )
-                      )}
-                    </div>
-                  </div>
-                  <svg
-                    class="w-4 h-4 transform transition-transform ml-2 {isDetailsVisible[index]
-                      ? 'rotate-180'
-                      : ''}"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7"
-                    ></path>
-                  </svg>
-                </button>
-                {#if isDetailsVisible[index]}
+                {#each project.employees as employee, index}
+                <div>
                   <div
-                    class="p-2 bg-white text-sm overflow-hidden"
-                    transition:slide={{ duration: 300, easing: quintOut }}
+                    class="grid grid-cols-6 w-full cursor-pointer hover:bg-gray-50 py-1.5 px-2 items-center"
+                    role="button"
+                    tabindex="0"
+                    onclick={() => (isDetailsVisible[index] = !isDetailsVisible[index])}
+                    onkeydown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        isDetailsVisible[index] = !isDetailsVisible[index];
+                      }
+                    }}
                   >
-                    <GenerateTableCategories categories={employee.categories} />
+                    <div class="col-span-2 flex items-center gap-2">
+                      <span class="text-sm">{employee.name}</span>
+                      <EditTimeRate
+                        {employee}
+                        onRateUpdated={(emp, rate) => { emp.hourlyRate = rate; }}
+                      />
+                    </div>
+
+                    <div class="text-right text-sm" data-testid="employee-hourly-rate">
+                      {employee.hourlyRate != null ? `${employee.hourlyRate}$/h` : '-'}
+                    </div>
+
+                    <div class="text-right text-sm">
+                      {formatHours(calculateEmployeeTime(employee, 'spent'))}
+                    </div>
+
+                    <div class="text-right text-sm">
+                      {formatHours(calculateEmployeeTime(employee, 'estimated'))}
+                    </div>
+
+                    <div class="text-right text-sm {getHoursColor(
+                      calculateEmployeeTime(employee, 'spent'),
+                      calculateEmployeeTime(employee, 'estimated')
+                    )}">
+                      {formatHours(calculateRemainingTime(
+                        calculateEmployeeTime(employee, 'spent'),
+                        calculateEmployeeTime(employee, 'estimated')
+                      ))}
+                    </div>
                   </div>
-                {/if}
+
+                  {#if isDetailsVisible[index]}
+                    <div class="p-2 bg-white text-sm overflow-hidden" transition:slide={{ duration: 300, easing: quintOut }}>
+                      <GenerateTableCategories categories={employee.categories} />
+                    </div>
+                  {/if}
+                </div>
               {/each}
 
              
@@ -155,22 +144,33 @@
               </div>
 
             
-              <div
-                class="w-full p-3 flex items-center justify-between bg-gray-100 mt-3 font-medium"
-              >
-                <span class="text-2xl text-left w-1/2">Total</span>
-                <div class="flex w-1/2">
-                  <div class="w-1/3 text-right text-sm">
-                    {formatHours(project.totalTimeSpent)}
-                  </div>
-                  <div class="w-1/3 text-right text-sm font-normal">
-                    {formatHours(project.totalTimeEstimated)}
-                  </div>
-                  <div class="w-1/3 text-right text-sm font-normal {getHoursColor(project.totalTimeSpent, project.totalTimeEstimated)}">
-                    {formatHours(project.totalTimeRemaining)}
-                    </div>
-                </div>
+              <div class="grid grid-cols-6 items-center p-3 bg-gray-100 mt-3 font-medium">
+  
+              <div class="col-span-2 text-2xl">
+                Total
               </div>
+
+              <div class="text-right text-sm" data-testid="total-hourly-rate">
+                {#if (project.employees ?? []).every((e: { hourlyRate?: number }) => e.hourlyRate == null)}0$/h
+                  {:else}
+                    {(project.employees ?? []).reduce(
+                    (sum: number, e: { hourlyRate?: number }) => sum + (e.hourlyRate ?? 0),0)}$/h
+                {/if}
+              </div>
+
+              <div class="text-right text-sm">
+                {formatHours(project.totalTimeSpent)}
+              </div>
+
+              <div class="text-right text-sm">
+                {formatHours(project.totalTimeEstimated)}
+              </div>
+
+              <div class="text-right text-sm {getHoursColor(project.totalTimeSpent, project.totalTimeEstimated)}">
+                {formatHours(project.totalTimeRemaining)}
+              </div>
+              </div>
+              
             </div>
           </div>
         </div>

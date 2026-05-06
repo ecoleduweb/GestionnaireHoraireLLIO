@@ -7,7 +7,7 @@
   import ActivityModal from '../../Components/Calendar/ActivityModal.svelte';
   import DashboardLeftPane from '../../Components/Calendar/DashboardLeftPane.svelte';
   import { ActivityApiService } from '../../services/ActivityApiService';
-  import type { Activity, UserInfo, Project, DetailedProject } from '../../Models/index.ts';
+  import type {Activity, UserInfo, Project, DetailedProject, OutlookEvent} from '../../Models/index.ts';
   // Importez le fichier CSS
   import '../../style/modern-calendar.css';
   import { getDateOrDefault, formatDate } from '../../utils/date';
@@ -16,7 +16,9 @@
   import { formatViewTitle } from '../../utils/date';
   import { Plus, Calendar, ChevronLeft, ChevronRight, LogOut } from 'lucide-svelte';
   import { goto } from '$app/navigation';
+  import OutlookImportModal from "../../Components/Calendar/OutlookImportModal.svelte";
   import { triggerTimeBankRefetch} from '../../lib/refreshTimeBankSignal.svelte';
+  import BaseModal from "../../Components/Modal/BaseModal.svelte";
 
   let calendarEl = $state<HTMLElement | null>(null);
   let calendarService = $state<CalendarService | null>(null);
@@ -32,6 +34,10 @@
   let textHoursWorked = $state('');
   let totalHours = $state(0);
   let headerFormat: { weekday: string; day?: string; month?: string };
+  let isImportingOutlook = $state(false);
+  let outlookEvents = $state<OutlookEvent[]>([]);
+  let outlookImportDate = $state<Date | null>(null);
+  let isNoEventToImportOutlookModalShowing = $state(false);
 
   const timeRanges = [
     { label: 'Heures de bureau', start: '06:00:00', end: '19:00:00', default: true },
@@ -132,7 +138,7 @@
     //permet de recupérer le total d'heures
     totalHours = calendarService.getTotalHours();
 
-    // Permet de faire 2 appels en mêmes temps 
+    // Permet de faire 2 appels en mêmes temps
     const [userProjects, allProjects] = await Promise.all([
       //permet de recupérer permet de recupérer les projets du panneau gauche avec les heures
       ProjectApiService.getCurrentUserProjects(),
@@ -164,102 +170,173 @@
     }
   }
 
-  onMount(async () => {
-    isLoading = true;
-    if (calendarEl) {
-      calendarService = new CS();
+  onMount(() => {
+    let cleanupOutlookClick: (() => void) | undefined;
 
-      // Configuration personnalisée pour FullCalendar
-      const calendarOptions = {
-        initialView: activeView,
-        locale: frLocale, // Utiliser la locale française
-        firstDay: 1, // 1 = lundi (standard français)
-        buttonText: {
-          today: "Aujourd'hui",
-          month: 'Mois',
-          week: 'Semaine',
-          day: 'Jour',
-        },
-        slotDuration: '00:15:00', // Durée de chaque intervalle de temps
-        slotLabelInterval: '01:00', // affichage des labels toutes les heures
-        allDaySlot: false,
-        slotMinTime: activeTimeRange.start,
-        slotMaxTime: activeTimeRange.end,
-        nowIndicator: true,
-        
-        // Gestion du drag
-        editable: true,
-        eventDrop: handleEventDropOrResize,
-        eventResize: handleEventDropOrResize,
+    (async () => {
+      isLoading = true;
+      if (calendarEl) {
+        calendarService = new CS();
 
-        height: 'auto',
-        contentHeight: 'auto', // Hauteur automatique
-        
-        expandRows: false,
-        dayHeaderFormat: headerFormat,
-        eventClassNames: getEventClassName,
-        eventTimeFormat: {
-          hour: '2-digit',
-          minute: '2-digit',
-          meridiem: false,
-          hour12: false,
-        },
-        slotLabelFormat: {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: false,
-        },
-        datesSet: () => {
-          // Appelé à chaque changement de dates ou de vue
-          updateViewTitle();
-        },
-        
-      }
+        // Configuration personnalisée pour FullCalendar
+        const calendarOptions = {
+          initialView: activeView,
+          stickyHeaderDates: true,
+          locale: frLocale, // Utiliser la locale française
+          firstDay: 1, // 1 = lundi (standard français)
+          buttonText: {
+            today: "Aujourd'hui",
+            month: 'Mois',
+            week: 'Semaine',
+            day: 'Jour',
+          },
+          slotDuration: '00:15:00', // Durée de chaque intervalle de temps
+          slotLabelInterval: '01:00', // affichage des labels toutes les heures
+          allDaySlot: false,
+          slotMinTime: activeTimeRange.start,
+          slotMaxTime: activeTimeRange.end,
+          nowIndicator: true,
 
-      calendarService.onDateSelect = (info) => {
-        editMode = false;
-        editActivity = null;
-        selectedDate = info;
-        showModal = true;
-      };
+          // Gestion du drag
+          editable: true,
+          eventDrop: handleEventDropOrResize,
+          eventResize: handleEventDropOrResize,
 
-      calendarService.onEventClick = (info) => {
-        editMode = true;
-        editActivity = {
-          id: info.event.extendedProps.id,
-          name: info.event.extendedProps.name,
-          description: info.event.extendedProps.description,
-          userId: info.event.extendedProps.userId,
-          projectId: info.event.extendedProps.projectId,
-          categoryId: info.event.extendedProps.categoryId,
-          startDate: info.event.start,
-          endDate: info.event.end,
+          height: '100vh',
+          contentHeight: 'auto', // Hauteur automatique
+
+          expandRows: false,
+          dayHeaderFormat: headerFormat,
+          eventClassNames: getEventClassName,
+          eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            meridiem: false,
+            hour12: false,
+          },
+          slotLabelFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: false,
+          },
+          datesSet: () => {
+            // Appelé à chaque changement de dates ou de vue
+            updateViewTitle();
+          },
+
+          dayHeaderContent: (arg) => {
+            // Only render custom content in week view
+            if (activeView !== 'timeGridWeek') return { html: '' };
+
+            const dateStr = formatDate(arg.date)
+            const dayLabel = arg.date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+
+            return {
+              html: `
+                <div class="fc-day-header-custom">
+                  <span class="fc-day-label">${dayLabel}</span>
+                  <button
+                    class="import-outlook-btn"
+                    data-date="${dateStr}"
+                  >
+                    + Outlook
+                  </button>
+                </div>
+              `};
+          }
+
+        }
+
+        calendarService.onDateSelect = (info) => {
+          editMode = false;
+          editActivity = null;
+          selectedDate = info;
+          showModal = true;
         };
-        selectedDate = {
-          start: info.event.start,
-          end: info.event.end,
+
+        calendarService.onEventClick = (info) => {
+          editMode = true;
+          editActivity = {
+            id: info.event.extendedProps.id,
+            name: info.event.extendedProps.name,
+            description: info.event.extendedProps.description,
+            userId: info.event.extendedProps.userId,
+            projectId: info.event.extendedProps.projectId,
+            categoryId: info.event.extendedProps.categoryId,
+            startDate: info.event.start,
+            endDate: info.event.end,
+          };
+          selectedDate = {
+            start: info.event.start,
+            end: info.event.end,
+          };
+          showModal = true;
         };
-        showModal = true;
-      };
 
-      // Charger les informations utilisateur
-      try {
-        currentUser = await UserApiService.getUserInfo();
-      } catch (error) {
-        console.error('Erreur lors du chargement des informations utilisateur:', error);
+        // Charger les informations utilisateur
+        try {
+          currentUser = await UserApiService.getUserInfo();
+        } catch (error) {
+          console.error('Erreur lors du chargement des informations utilisateur:', error);
+        }
+
+        // Initialiser avec les options personnalisées
+        calendarService.initialize(calendarEl, calendarOptions);
+
+        const handleOutlookClick = async (e) => {
+          const target = e.target as HTMLElement;
+          const btn = target.closest<HTMLButtonElement>('.import-outlook-btn');
+          if (!btn) return;
+
+          const date = btn.dataset.date;
+          btn.disabled = true;
+          btn.textContent = '…';
+          try {
+            const events = await ActivityApiService.getOutlookEvents(date);
+            if (events?.length) {
+              outlookEvents = [...events].sort(
+                      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+              );
+              isImportingOutlook = true;
+              const [y, m, d] = date.split('-').map(Number);
+              outlookImportDate = new Date(y, m - 1, d);
+            } else {
+              isNoEventToImportOutlookModalShowing = true;
+              btn.textContent = '+ Outlook';
+              btn.disabled = false;
+              return;
+            }
+          } catch (err) {
+            if (err?.code === 'GRAPH_EXPIRED') {
+              alert("Votre connexion à Outlook a expiré. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.")
+              await goto("/");
+            } else {
+              console.error('Erreur import Outlook:', err);
+              alert("Erreur lors de l'import Outlook : " + err.message);
+            }
+          }
+
+          btn.textContent = '+ Outlook';
+          btn.disabled = false;
+        };
+
+        calendarEl.addEventListener('click', handleOutlookClick);
+        cleanupOutlookClick = () => calendarEl?.removeEventListener('click', handleOutlookClick);
+
+        calendarService.render();
+
+        // Mettre à jour le titre initial
+        updateViewTitle();
+
+        await loadActivities();
+        await loadProjects();
       }
+      isLoading = false;
+    })();
 
-      // Initialiser avec les options personnalisées
-      calendarService.initialize(calendarEl, calendarOptions);
-      calendarService.render();
-
-      // Mettre à jour le titre initial
-      updateViewTitle();
-
-      await loadActivities();
-      await loadProjects();
-    }
-    isLoading = false;
+    return () => {
+      cleanupOutlookClick?.();
+    };
   });
 
 
@@ -282,7 +359,7 @@
       extendedProps: { ...activityData },
     });
     await refreshDashboardData();
-    triggerTimeBankRefetch(activityData.startDate) 
+    triggerTimeBankRefetch(activityData.startDate)
   }
 
   const handleActivityUpdate = async (activity: Activity) =>{
@@ -299,7 +376,7 @@
 
       calendarService.updateEvent(activity);
       await refreshDashboardData();
-      triggerTimeBankRefetch(activity.startDate) 
+      triggerTimeBankRefetch(activity.startDate)
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
 
@@ -314,7 +391,7 @@
       await ActivityApiService.deleteActivity(activity.id);
       calendarService.deleteActivity(activity.id.toString());
       await refreshDashboardData();
-      triggerTimeBankRefetch(activity.startDate) 
+      triggerTimeBankRefetch(activity.startDate)
     } catch (error) {
       console.error("Erreur lors de la suppression de l'activité", error);
       throw error;
@@ -330,7 +407,7 @@
 
       calendarService.updateEvent(updatedActivity);
       await refreshDashboardData();
-      triggerTimeBankRefetch(updatedActivity.startDate) 
+      triggerTimeBankRefetch(updatedActivity.startDate)
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
       alert("Une erreur est survenue lors de la mise à jour de l'activité.");
@@ -377,7 +454,7 @@
       cal.setOption('slotMaxTime', range.end);
     });
     cal.updateSize();
- 
+
   };
 
 
@@ -421,11 +498,11 @@
           </span>
           <button
             class="ml-2 mt-1 p-1.5 rounded-full hover:bg-gray-100 text-gray-600 hover:text-[#015e61] transition-colors"
-            title="Se déconnecter" 
+            title="Se déconnecter"
             onclick={async () => {
               await UserApiService.logOut();
               goto("/");
-            }} 
+            }}
             >
             <LogOut class="w-5 h-5" />
           </button>
@@ -531,9 +608,9 @@
       </div>
 
       <!-- Calendrier -->
-      <div class="border border-gray-200 rounded-lg overflow-hidden">
-        <div bind:this={calendarEl} class="w-full"></div>
-      </div>
+      <div class="border border-gray-200 rounded-lg overflow-hidden calendar-container">
+      <div bind:this={calendarEl} class="w-full h-full"></div>
+    </div>
     </div>
   </div>
 </div>
@@ -554,12 +631,49 @@
   />
 {/if}
 
+{#if isImportingOutlook}
+  <OutlookImportModal
+          date={outlookImportDate}
+          events={outlookEvents}
+          projects={projects}
+          onClose={() => {isImportingOutlook = false;}}
+          onActivityImported={handleActivitySubmit}
+  ></OutlookImportModal>
+{/if}
+
+{#if isNoEventToImportOutlookModalShowing}
+  <BaseModal modalTitle="Alerte" onClose={() => isNoEventToImportOutlookModalShowing = false}>
+    {#snippet children()}
+      <p>
+        Aucun évènement à importer pour la journée sélectionnée.
+        <br/><br/>
+        Vérifiez que vous avez des évènements dans votre calendrier Outlook principal et réessayez à nouveau.
+      </p>
+    {/snippet}
+
+    {#snippet footer()}
+      <div class="modal-footer mt-5">
+        <button
+                type="button"
+                class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition border border-gray-200"
+                onclick={() => isNoEventToImportOutlookModalShowing = false}
+        >
+          Fermer
+        </button>
+      </div>
+    {/snippet}
+  </BaseModal>
+{/if}
+
 <style>
+  :global(body) {
+    overflow: hidden;
+  }
   :global(.fc .fc-timegrid-slot) {
     height: 25px !important;
     min-height: 25px !important;
     max-height: 25px !important;
-    
+
   }
 
   :global(.fc-timegrid-event) {
@@ -604,4 +718,51 @@
   .space-between-dashboard-calendar {
     margin-left: 300px;
   }
+
+  /* Bouton ajout outlook */
+  :global(.fc-day-header-custom) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+  }
+
+  :global(.import-outlook-btn) {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #f0f9f9;
+    color: #015e61;
+    border: 1px solid #015e61;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  :global(.import-outlook-btn:hover) {
+    background: #015e61;
+    color: white;
+  }
+
+  :global(.import-outlook-btn:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  :global(.fc) {
+  height: 100%;
+}
+
+:global(.fc-scroller) {
+  overflow-y: auto !important;
+}
+.calendar-container {
+  height: calc(100vh - 220px);
+  overflow: auto; 
+}
+
+.calendar-container :global(.fc) {
+  height: 100% !important;
+}
+
+
 </style>
