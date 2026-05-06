@@ -138,7 +138,7 @@
     //permet de recupérer le total d'heures
     totalHours = calendarService.getTotalHours();
 
-    // Permet de faire 2 appels en mêmes temps 
+    // Permet de faire 2 appels en mêmes temps
     const [userProjects, allProjects] = await Promise.all([
       //permet de recupérer permet de recupérer les projets du panneau gauche avec les heures
       ProjectApiService.getCurrentUserProjects(),
@@ -170,161 +170,172 @@
     }
   }
 
-  onMount(async () => {
-    isLoading = true;
-    if (calendarEl) {
-      calendarService = new CS();
+  onMount(() => {
+    let cleanupOutlookClick: (() => void) | undefined;
 
-      // Configuration personnalisée pour FullCalendar
-      const calendarOptions = {
-        initialView: activeView,
-        locale: frLocale, // Utiliser la locale française
-        firstDay: 1, // 1 = lundi (standard français)
-        buttonText: {
-          today: "Aujourd'hui",
-          month: 'Mois',
-          week: 'Semaine',
-          day: 'Jour',
-        },
-        slotDuration: '00:15:00', // Durée de chaque intervalle de temps
-        slotLabelInterval: '01:00', // affichage des labels toutes les heures
-        allDaySlot: false,
-        slotMinTime: activeTimeRange.start,
-        slotMaxTime: activeTimeRange.end,
-        nowIndicator: true,
-        
-        // Gestion du drag
-        editable: true,
-        eventDrop: handleEventDropOrResize,
-        eventResize: handleEventDropOrResize,
+    (async () => {
+      isLoading = true;
+      if (calendarEl) {
+        calendarService = new CS();
 
-        height: 'auto',
-        contentHeight: 'auto', // Hauteur automatique
-        
-        expandRows: false,
-        dayHeaderFormat: headerFormat,
-        eventClassNames: getEventClassName,
-        eventTimeFormat: {
-          hour: '2-digit',
-          minute: '2-digit',
-          meridiem: false,
-          hour12: false,
-        },
-        slotLabelFormat: {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: false,
-        },
-        datesSet: () => {
-          // Appelé à chaque changement de dates ou de vue
-          updateViewTitle();
-        },
+        // Configuration personnalisée pour FullCalendar
+        const calendarOptions = {
+          initialView: activeView,
+          locale: frLocale, // Utiliser la locale française
+          firstDay: 1, // 1 = lundi (standard français)
+          buttonText: {
+            today: "Aujourd'hui",
+            month: 'Mois',
+            week: 'Semaine',
+            day: 'Jour',
+          },
+          slotDuration: '00:15:00', // Durée de chaque intervalle de temps
+          slotLabelInterval: '01:00', // affichage des labels toutes les heures
+          allDaySlot: false,
+          slotMinTime: activeTimeRange.start,
+          slotMaxTime: activeTimeRange.end,
+          nowIndicator: true,
 
-        dayHeaderContent: (arg) => {
-          // Only render custom content in week view
-          if (activeView !== 'timeGridWeek') return { html: '' };
+          // Gestion du drag
+          editable: true,
+          eventDrop: handleEventDropOrResize,
+          eventResize: handleEventDropOrResize,
 
-          const dateStr = formatDate(arg.date)
-          const dayLabel = arg.date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+          height: 'auto',
+          contentHeight: 'auto', // Hauteur automatique
 
-          return {
-            html: `
-              <div class="fc-day-header-custom">
-                <span class="fc-day-label">${dayLabel}</span>
-                <button
-                  class="import-outlook-btn"
-                  data-date="${dateStr}"
-                >
-                  + Outlook
-                </button>
-              </div>
-            `};
+          expandRows: false,
+          dayHeaderFormat: headerFormat,
+          eventClassNames: getEventClassName,
+          eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            meridiem: false,
+            hour12: false,
+          },
+          slotLabelFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: false,
+          },
+          datesSet: () => {
+            // Appelé à chaque changement de dates ou de vue
+            updateViewTitle();
+          },
+
+          dayHeaderContent: (arg) => {
+            // Only render custom content in week view
+            if (activeView !== 'timeGridWeek') return { html: '' };
+
+            const dateStr = formatDate(arg.date)
+            const dayLabel = arg.date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+
+            return {
+              html: `
+                <div class="fc-day-header-custom">
+                  <span class="fc-day-label">${dayLabel}</span>
+                  <button
+                    class="import-outlook-btn"
+                    data-date="${dateStr}"
+                  >
+                    + Outlook
+                  </button>
+                </div>
+              `};
+          }
+
         }
-        
-      }
 
-      calendarService.onDateSelect = (info) => {
-        editMode = false;
-        editActivity = null;
-        selectedDate = info;
-        showModal = true;
-      };
-
-      calendarService.onEventClick = (info) => {
-        editMode = true;
-        editActivity = {
-          id: info.event.extendedProps.id,
-          name: info.event.extendedProps.name,
-          description: info.event.extendedProps.description,
-          userId: info.event.extendedProps.userId,
-          projectId: info.event.extendedProps.projectId,
-          categoryId: info.event.extendedProps.categoryId,
-          startDate: info.event.start,
-          endDate: info.event.end,
+        calendarService.onDateSelect = (info) => {
+          editMode = false;
+          editActivity = null;
+          selectedDate = info;
+          showModal = true;
         };
-        selectedDate = {
-          start: info.event.start,
-          end: info.event.end,
+
+        calendarService.onEventClick = (info) => {
+          editMode = true;
+          editActivity = {
+            id: info.event.extendedProps.id,
+            name: info.event.extendedProps.name,
+            description: info.event.extendedProps.description,
+            userId: info.event.extendedProps.userId,
+            projectId: info.event.extendedProps.projectId,
+            categoryId: info.event.extendedProps.categoryId,
+            startDate: info.event.start,
+            endDate: info.event.end,
+          };
+          selectedDate = {
+            start: info.event.start,
+            end: info.event.end,
+          };
+          showModal = true;
         };
-        showModal = true;
-      };
 
-      // Charger les informations utilisateur
-      try {
-        currentUser = await UserApiService.getUserInfo();
-      } catch (error) {
-        console.error('Erreur lors du chargement des informations utilisateur:', error);
-      }
-
-      // Initialiser avec les options personnalisées
-      calendarService.initialize(calendarEl, calendarOptions);
-
-      calendarEl.addEventListener('click', async (e) => {
-        const target = e.target as HTMLElement;
-        const btn = target.closest<HTMLButtonElement>('.import-outlook-btn');
-        if (!btn) return;
-
-        const date = btn.dataset.date;
-        btn.disabled = true;
-        btn.textContent = '…';
+        // Charger les informations utilisateur
         try {
-          const events = await ActivityApiService.getOutlookEvents(date);
-          if (events?.length) {
-            outlookEvents = [...events].sort(
-                    (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
-            );
-            isImportingOutlook = true;
-            const [y, m, d] = date.split('-').map(Number);
-            outlookImportDate = new Date(y, m - 1, d);
-          } else {
-            isNoEventToImportOutlookModalShowing = true;
-            btn.textContent = '+ Outlook';
-            btn.disabled = false;
-            return;
-          }
-        } catch (err) {
-          if (err?.code === 'GRAPH_EXPIRED') {
-            alert("Votre connexion à Outlook a expiré. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.")
-            await goto("/");
-          } else {
-            console.error('Erreur import Outlook:', err);
-            alert("Erreur lors de l'import Outlook : " + err.message);
-          }
+          currentUser = await UserApiService.getUserInfo();
+        } catch (error) {
+          console.error('Erreur lors du chargement des informations utilisateur:', error);
         }
 
-        btn.textContent = '+ Outlook';
-        btn.disabled = false;
-      });
+        // Initialiser avec les options personnalisées
+        calendarService.initialize(calendarEl, calendarOptions);
 
-      calendarService.render();
+        const handleOutlookClick = async (e) => {
+          const target = e.target as HTMLElement;
+          const btn = target.closest<HTMLButtonElement>('.import-outlook-btn');
+          if (!btn) return;
 
-      // Mettre à jour le titre initial
-      updateViewTitle();
+          const date = btn.dataset.date;
+          btn.disabled = true;
+          btn.textContent = '…';
+          try {
+            const events = await ActivityApiService.getOutlookEvents(date);
+            if (events?.length) {
+              outlookEvents = [...events].sort(
+                      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+              );
+              isImportingOutlook = true;
+              const [y, m, d] = date.split('-').map(Number);
+              outlookImportDate = new Date(y, m - 1, d);
+            } else {
+              isNoEventToImportOutlookModalShowing = true;
+              btn.textContent = '+ Outlook';
+              btn.disabled = false;
+              return;
+            }
+          } catch (err) {
+            if (err?.code === 'GRAPH_EXPIRED') {
+              alert("Votre connexion à Outlook a expiré. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.")
+              await goto("/");
+            } else {
+              console.error('Erreur import Outlook:', err);
+              alert("Erreur lors de l'import Outlook : " + err.message);
+            }
+          }
 
-      await loadActivities();
-      await loadProjects();
-    }
-    isLoading = false;
+          btn.textContent = '+ Outlook';
+          btn.disabled = false;
+        };
+
+        calendarEl.addEventListener('click', handleOutlookClick);
+        cleanupOutlookClick = () => calendarEl?.removeEventListener('click', handleOutlookClick);
+
+        calendarService.render();
+
+        // Mettre à jour le titre initial
+        updateViewTitle();
+
+        await loadActivities();
+        await loadProjects();
+      }
+      isLoading = false;
+    })();
+
+    return () => {
+      cleanupOutlookClick?.();
+    };
   });
 
 
@@ -347,7 +358,7 @@
       extendedProps: { ...activityData },
     });
     await refreshDashboardData();
-    triggerTimeBankRefetch(activityData.startDate) 
+    triggerTimeBankRefetch(activityData.startDate)
   }
 
   const handleActivityUpdate = async (activity: Activity) =>{
@@ -364,7 +375,7 @@
 
       calendarService.updateEvent(activity);
       await refreshDashboardData();
-      triggerTimeBankRefetch(activity.startDate) 
+      triggerTimeBankRefetch(activity.startDate)
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
 
@@ -379,7 +390,7 @@
       await ActivityApiService.deleteActivity(activity.id);
       calendarService.deleteActivity(activity.id.toString());
       await refreshDashboardData();
-      triggerTimeBankRefetch(activity.startDate) 
+      triggerTimeBankRefetch(activity.startDate)
     } catch (error) {
       console.error("Erreur lors de la suppression de l'activité", error);
       throw error;
@@ -395,7 +406,7 @@
 
       calendarService.updateEvent(updatedActivity);
       await refreshDashboardData();
-      triggerTimeBankRefetch(updatedActivity.startDate) 
+      triggerTimeBankRefetch(updatedActivity.startDate)
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'activité", error);
       alert("Une erreur est survenue lors de la mise à jour de l'activité.");
@@ -442,7 +453,7 @@
       cal.setOption('slotMaxTime', range.end);
     });
     cal.updateSize();
- 
+
   };
 
 
@@ -486,11 +497,11 @@
           </span>
           <button
             class="ml-2 mt-1 p-1.5 rounded-full hover:bg-gray-100 text-gray-600 hover:text-[#015e61] transition-colors"
-            title="Se déconnecter" 
+            title="Se déconnecter"
             onclick={async () => {
               await UserApiService.logOut();
               goto("/");
-            }} 
+            }}
             >
             <LogOut class="w-5 h-5" />
           </button>
@@ -658,7 +669,7 @@
     height: 25px !important;
     min-height: 25px !important;
     max-height: 25px !important;
-    
+
   }
 
   :global(.fc-timegrid-event) {
