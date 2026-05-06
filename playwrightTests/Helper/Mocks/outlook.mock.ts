@@ -95,4 +95,30 @@ export const outlookMocks = {
       },
     },
   },
+  getActivityWithProjectIdFromOutlook: {
+    url: "/activities/me/outlook?date=2025-03-22",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        date: "2025-03-22",
+        events: [
+          {
+            id: "AAMkAGQ2MDNhYjVjLWFkMWMtNGNmZi05ZmVjLTdmZmQ4NjgwMjdkNwBGAAAAAABXx3nPK_GjQbVWwm_t6k5tBwAmsLVGJoOjQZrgmFxGm6c6AAAAAAENAAAmsLVGJoOjQZrgmFxGm6c6AADJTqHnAAA=",
+            subject: "Projet sous-sol",
+            body: { content: "\r\n" },
+            start: {
+              dateTime: "2025-03-22T15:00:00.0000000",
+              timeZone: "UTC",
+            },
+            end: {
+              dateTime: "2025-03-22T16:00:00.0000000",
+              timeZone: "UTC",
+            },
+            isAllDay: false,
+          },
+        ],
+      },
+    },
+  },
 };

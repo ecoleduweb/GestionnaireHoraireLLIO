@@ -111,4 +111,35 @@ test.describe("ImportOutlook", () => {
 
     await page.waitForURL("http://localhost:5002/");
   });
+
+  test("AddActivityFromOutlookWithProjetId", async ({ page }) => {
+    const mocker = new ApiMocker(page);
+    await mocker
+      .addMocks([
+        outlookMocks.getActivityWithProjectIdFromOutlook,
+        userMocks.userMeSuccess,
+        activityMocks.addActivitySuccess,
+      ])
+      .apply();
+
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await page
+      .locator('[data-date="2025-03-22"] button:has-text("+ Outlook")')
+      .click();
+
+    const activityRequest = page.waitForRequest(
+      (request) =>
+        request.url().includes("/activity") && request.method() === "POST",
+    );
+
+    await page.getByRole("button", { name: "Importer", exact: true }).click();
+
+    const request = await activityRequest;
+    expect(request.method()).toBe("POST");
+
+    await expect(
+      page.getByText("Importation des évènements Outlook"),
+    ).not.toBeVisible();
+  });
 });
