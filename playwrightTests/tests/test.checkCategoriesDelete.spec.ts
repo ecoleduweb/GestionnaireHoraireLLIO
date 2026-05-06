@@ -78,8 +78,9 @@ test.describe("checkCategoriesDelete", () => {
 
     await activities[0].click();
     await page.waitForTimeout(2000);
+    //Dans un premier temps, le test clic sur le textbox de la catégorie
     await page.getByRole("textbox", { name: "Catégorie *" }).click();
-
+    //Il paramètre la fenêtre dialogue qu'il attend et lorsque d'un dialogue s'ouvre sur la page, le code suivant s'execute
     page.on("dialog", async (dialog) => {
       let type = dialog.type();
 
@@ -93,11 +94,12 @@ test.describe("checkCategoriesDelete", () => {
         await dialog.dismiss();
       }
     });
-
+    //Clic sur le poubelle pour supprimer le projet ce qui va ouvir le dialogue
     await page.getByRole("button", { name: "Supprimer la catégorie" }).click();
 
+    //Retourne sur le textbox de la catégorie
     await page.getByRole("textbox", { name: "Catégorie *" }).click();
-
+    //Verifie que la catégorie à bien été supprimé
     await expect(
       page.getByRole("button", { name: "Supprimer la catégorie" }),
     ).toHaveCount(1, { timeout: 15000 });
