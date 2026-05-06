@@ -7,7 +7,12 @@
   import CategoryRenamer from "../CategoryRenamer.svelte";
 
   let { categories }: { categories: Category[] } = $props(); //employee.categories
-  let listCategories = $state(categories);
+
+  let listCategories = $state<Category[]>([]);
+
+  $effect(() => {
+    listCategories = categories;
+  });
 
   function handledUpdateCategories(catList: Category[]) {
     listCategories = catList;
