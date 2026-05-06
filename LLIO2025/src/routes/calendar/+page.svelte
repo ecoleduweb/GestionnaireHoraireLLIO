@@ -225,7 +225,6 @@
           },
 
           dayHeaderContent: (arg) => {
-            // Utiliser arg.view.type au lieu de activeView (closure stale)
             if (arg.view.type !== 'timeGridWeek') return;
 
             const dateStr = formatDate(arg.date);
