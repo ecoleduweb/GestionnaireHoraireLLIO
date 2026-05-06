@@ -548,6 +548,33 @@ export const projectMocks = {
       },
     },
   },
+  deleteCoManagerSuccess: {
+    url: "/project/1/coManager/2",
+    method: "DELETE",
+    response: {
+      status: 200,
+      json: {
+        response: "Le co-chargÃ© de projet a Ã©tÃ© supprimÃ© avec succÃ¨s",
+      },
+    },
+  },
+  getDetailedProjectsSuccessAfterCoManagerDelete: {
+    url: "/projects/detailed",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        projects: detailedProjectsBase.map((p) =>
+          p.id === 1
+            ? {
+                ...p,
+                coLeads: p.coLeads.filter((coLead) => coLead.id !== 2),
+              }
+            : p,
+        ),
+      },
+    },
+  },
   getDetailedProjectsSuccessWithCoLead3OnProject1: {
     url: "/projects/detailed",
     method: "GET",
@@ -562,6 +589,39 @@ export const projectMocks = {
               }
             : p,
         ),
+      },
+    },
+  },
+  reassignManagerSuccess: {
+    url: "/project/*/reassignManager/*",
+    method: "PUT",
+    response: {
+      status: 200,
+      json: {
+        response: "Le chargé de projet a bien été mis à jour",
+      },
+    },
+  },
+  getAvailableManagersSuccess: {
+    url: "/project/*/availableManagers",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        managers: [
+          {
+            id: 2,
+            firstName: "JérémieTest",
+            lastName: "Lapointe",
+            role: 1,
+          },
+          {
+            id: 3,
+            firstName: "Charle-ÉtienneTest",
+            lastName: "Soucy",
+            role: 2,
+          },
+        ],
       },
     },
   },

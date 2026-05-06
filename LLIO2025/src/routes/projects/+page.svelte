@@ -3,11 +3,12 @@
   import "../../style/app.css"
   import ProjectsLeftPane from "../../Components/Projects/ProjectsLeftPane.svelte";
   import ProjectComponent from "../../Components/Projects/ProjectComponent.svelte";
-  import type { DetailedProject, User, UserInfo } from '../../Models';
+  import type { CoLead, DetailedProject, User, UserInfo } from '../../Models';
   import { ProjectApiService } from "../../services/ProjectApiService";
   import { UserApiService } from "../../services/UserApiService";
   import AddCoManagerModal from '../../Components/Projects/AddCoManagerModal.svelte';
   import searchIcon from "../../../static/search.svg";
+  import ReassignManagerModal from "../../Components/Projects/ReassignManagerModal.svelte";
 
   // État des projets
   let projects = $state<DetailedProject[]>([]);
@@ -22,6 +23,7 @@
   let currentUser = $state<UserInfo | null>(null);
 
   // État pour la modale d'ajout de responsable
+  let showReassignManagerModal = $state(false);
   let showAddCoManagerModal = $state(false);
   let selectedProject = $state<DetailedProject | null>(null);
   let users = $state<User[]>([]);
@@ -40,7 +42,10 @@
     await loadUsers();
     showAddCoManagerModal = true;
   }
-
+  const handleReassignManagerModalOpen = async (projectId: number) => {
+    selectedProject = projects.find(p => p.id == projectId);
+    showReassignManagerModal = true;
+  }
   const loadProjects = async () => {
     try {
       isLoading = true;
@@ -83,6 +88,33 @@
       users = [];
       await loadProjects();
     }
+  }
+  const handleReassignManager = async (userId : number, projectId : number) =>{
+     try {
+      isLoading = true;
+      error= null;
+      await ProjectApiService.reassignManagerToProject(projectId, userId);
+    } catch (e) {
+      console.error('Erreur lors de la réattribution du chef de projet :', e);
+      alert(e instanceof Error ? e.message : 'Erreur inconnue');
+    } finally {
+      isLoading = false;
+      showReassignManagerModal = false;
+      selectedProject = null;
+      users = [];
+      await loadProjects();
+    }
+  }
+
+  const handleDeleteCoManager = (projectId: number, coManager: CoLead) => {
+    projects = projects.map(project =>
+      project.id === projectId
+        ? {
+            ...project,
+            coLeads: project.coLeads.filter((coLead) => coLead.id !== coManager.id),
+          }
+        : project
+    );
   }
 
   onMount(async () => {
@@ -184,12 +216,21 @@
     </div>
   {:else}
     {#each filteredProjects as project}
-      <ProjectComponent {project} onClickAddCoManager={() => handleAddCoManagerModalOpen(project.id)} />
+      <ProjectComponent
+        {project}
+        onClickAddCoManager={() => handleAddCoManagerModalOpen(project.id)}
+        onClickReassignManager={() => handleReassignManagerModalOpen(project.id)}
+        onDeleteCoManagerSuccess={handleDeleteCoManager}
+      />
     {/each}
   {/if}
   </div>
 </div>
 
-{#if showAddCoManagerModal}
+{#if showAddCoManagerModal && selectedProject}
   <AddCoManagerModal show={showAddCoManagerModal} users={usersToDisplay} project={selectedProject} onAdd={handleAddCoManager} onCancel={() => showAddCoManagerModal = false} />
 {/if}
+{#if showReassignManagerModal}
+  <ReassignManagerModal show={showReassignManagerModal} project={selectedProject} onAdd={handleReassignManager} onCancel={() => showReassignManagerModal = false} />
+{/if}
+

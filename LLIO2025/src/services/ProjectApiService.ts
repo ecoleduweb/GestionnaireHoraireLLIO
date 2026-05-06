@@ -1,7 +1,7 @@
 // ProjectApiService.ts
-import { ProjectStatus } from "$lib/types/enums";
-import type { ProjectBase, Project, DetailedProject } from "../Models/index";
-import { DELETE, GET, POST, PUT } from "../ts/server";
+import { ProjectStatus } from '$lib/types/enums';
+import type { ProjectBase, Project, DetailedProject, User } from '../Models/index';
+import { DELETE, GET, POST, PUT } from '../ts/server';
 
 interface ProjectDeleteResponse {
   deleted: boolean;
@@ -16,11 +16,11 @@ const createProject = async (project: ProjectBase): Promise<Project> => {
     project.status = ProjectStatus.InProgress;
   }
   try {
-    const response = await POST<ProjectBase, ProjectResponse>("/project", project);
+    const response = await POST<ProjectBase, ProjectResponse>('/project', project);
     return response.project;
   } catch (error) {
-    console.error("Erreur lors de la création du projet:", error);
-    throw new Error("Échec de la création du projet. Veuillez réessayer.");
+    console.error('Erreur lors de la création du projet:', error);
+    throw new Error('Échec de la création du projet. Veuillez réessayer.');
   }
 };
 
@@ -29,11 +29,11 @@ const updateProject = async (project: ProjectBase): Promise<Project> => {
     project.status = ProjectStatus.InProgress;
   }
   try {
-    const response = await PUT<ProjectBase, ProjectResponse>("/project", project);
+    const response = await PUT<ProjectBase, ProjectResponse>('/project', project);
     return response.project;
   } catch (error) {
-    console.error("Erreur lors de la création du projet:", error);
-    throw new Error("Échec de la mise à jour du projet. Veuillez réessayer.");
+    console.error('Erreur lors de la création du projet:', error);
+    throw new Error('Échec de la mise à jour du projet. Veuillez réessayer.');
   }
 };
 
@@ -42,32 +42,35 @@ const deleteProject = async (projectId: number): Promise<void> => {
     const response = await DELETE(`/project/${projectId}`);
     return response;
   } catch (error) {
-    console.error("Erreur lors de la suppression du projet:", error);
-    throw new Error("Erreur lors de la suppression du projet. Veuillez réessayer.");
+    console.error('Erreur lors de la suppression du projet:', error);
+    throw new Error('Erreur lors de la suppression du projet. Veuillez réessayer.');
   }
 };
 
-const getProjects = async(): Promise<Project[]> => {
+const getProjects = async (): Promise<Project[]> => {
   try {
-    const response = await GET<{projects: Project[]}>("/projects");
+    const response = await GET<{ projects: Project[] }>('/projects');
     return response.projects;
   } catch (error) {
-    console.error("Erreur lors de la récupération des projets:", error);
-    throw new Error("Échec de la récupération des projets. Veuillez réessayer.");
+    console.error('Erreur lors de la récupération des projets:', error);
+    throw new Error('Échec de la récupération des projets. Veuillez réessayer.');
   }
-}
+};
 
-const getProject = async(id: number): Promise<Project> => {
+const getProject = async (id: number): Promise<Project> => {
   try {
-    const response = await GET<{project: Project}>(`/project/${id}`);
+    const response = await GET<{ project: Project }>(`/project/${id}`);
     return response.project;
   } catch (error) {
-    console.error("Erreur lors de la récupération du projet:", error);
-    throw new Error("Échec de la récupération du projet. Veuillez réessayer.");
+    console.error('Erreur lors de la récupération du projet:', error);
+    throw new Error('Échec de la récupération du projet. Veuillez réessayer.');
   }
-}
+};
 // Utilitaire pour construire l'URL avec les paramètres dynamiques
-const buildUrlWithParams = (basePath: string, params: Record<string, string | undefined>): string => {
+const buildUrlWithParams = (
+  basePath: string,
+  params: Record<string, string | undefined>
+): string => {
   const urlParams = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value) urlParams.append(key, value);
@@ -76,29 +79,29 @@ const buildUrlWithParams = (basePath: string, params: Record<string, string | un
   return queryString ? `${basePath}?${queryString}` : basePath;
 };
 
-const getDetailedProjects = async(from?: string, to?: string): Promise<DetailedProject[]> => {
+const getDetailedProjects = async (from?: string, to?: string): Promise<DetailedProject[]> => {
   try {
-    const url = buildUrlWithParams("/projects/detailed", { from, to });
-    const response = await GET<{projects: DetailedProject[]}>(url);
+    const url = buildUrlWithParams('/projects/detailed', { from, to });
+    const response = await GET<{ projects: DetailedProject[] }>(url);
     return response.projects;
   } catch (error) {
-    console.error("Erreur lors de la récupération des projets:", error);
-    throw new Error("Échec de la récupération des projets. Veuillez réessayer.");
+    console.error('Erreur lors de la récupération des projets:', error);
+    throw new Error('Échec de la récupération des projets. Veuillez réessayer.');
   }
-}
+};
 
-const getCurrentUserProjects = async(from?: string, to?: string): Promise<DetailedProject[]> => {
+const getCurrentUserProjects = async (from?: string, to?: string): Promise<DetailedProject[]> => {
   try {
-    const url = buildUrlWithParams("/projects/me/detailed", { from, to });
-    const response = await GET<{projects: DetailedProject[]}>(url);
+    const url = buildUrlWithParams('/projects/me/detailed', { from, to });
+    const response = await GET<{ projects: DetailedProject[] }>(url);
     return response.projects;
   } catch (error) {
-    console.error("Erreur lors de la récupération des projets:", error);
-    throw new Error("Échec de la récupération des projets. Veuillez réessayer.");
+    console.error('Erreur lors de la récupération des projets:', error);
+    throw new Error('Échec de la récupération des projets. Veuillez réessayer.');
   }
-}
+};
 
-const addCoManagerToProject = async(projectId: number, userId: number): Promise<void> => {
+const addCoManagerToProject = async (projectId: number, userId: number): Promise<void> => {
   try {
     await POST(`/project/${projectId}/coManager/${userId}`, {});
   } catch (error) {
@@ -107,7 +110,42 @@ const addCoManagerToProject = async(projectId: number, userId: number): Promise<
       "Erreur à l'ajout du co-chargé : " + (error instanceof Error ? error.message : String(error))
     );
   }
-}
+};
+const reassignManagerToProject = async (projectId: number, userId: number): Promise<void> => {
+  try {
+    await PUT(`/project/${projectId}/reassignManager/${userId}`, {});
+  } catch (error) {
+    console.error('Erreur lors de la réattribution du chargé au projet:', error);
+    throw new Error(
+      'Erreur à la réattribution du chargé de projet: ' +
+        (error instanceof Error ? error.message : String(error))
+    );
+  }
+};
+const getAvailableManagers = async (projectId: number): Promise<User[]> => {
+  try {
+    const response = await GET<{ managers: User[] }>(`/project/${projectId}/availableManagers`);
+    return response?.managers ?? [];
+  } catch (error) {
+    console.error('Erreur lors de la récupération des managers disponibles:', error);
+    throw new Error(
+      'Échec de la récupération des managers disponibles: ' +
+        (error instanceof Error ? error.message : String(error))
+    );
+  }
+};
+
+const deleteCoManagerFromProject = async (projectId: number, userId: number): Promise<void> => {
+  try {
+    await DELETE(`/project/${projectId}/coManager/${userId}`);
+  } catch (error) {
+    console.error('Erreur lors de la suppression du co-chargé au projet:', error);
+    throw new Error(
+      'Erreur à la suppression du co-chargé : ' +
+        (error instanceof Error ? error.message : String(error))
+    );
+  }
+};
 
 export const ProjectApiService = {
   createProject,
@@ -117,5 +155,8 @@ export const ProjectApiService = {
   getProject,
   getDetailedProjects,
   getCurrentUserProjects,
-  addCoManagerToProject
+  addCoManagerToProject,
+  reassignManagerToProject,
+  getAvailableManagers,
+  deleteCoManagerFromProject,
 };
