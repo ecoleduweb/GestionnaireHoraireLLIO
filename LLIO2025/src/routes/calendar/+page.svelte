@@ -18,6 +18,7 @@
   import { goto } from '$app/navigation';
   import OutlookImportModal from "../../Components/Calendar/OutlookImportModal.svelte";
   import { triggerTimeBankRefetch} from '../../lib/refreshTimeBankSignal.svelte';
+  import BaseModal from "../../Components/Modal/BaseModal.svelte";
 
   let calendarEl = $state<HTMLElement | null>(null);
   let calendarService = $state<CalendarService | null>(null);
@@ -36,6 +37,7 @@
   let isImportingOutlook = $state(false);
   let outlookEvents = $state<OutlookEvent[]>([]);
   let outlookImportDate = $state<Date | null>(null);
+  let isNoEventToImportOutlookModalShowing = $state(false);
 
   const timeRanges = [
     { label: 'Heures de bureau', start: '06:00:00', end: '19:00:00', default: true },
@@ -294,9 +296,9 @@
             isImportingOutlook = true;
             outlookImportDate = new Date(date);
           } else {
-            // Optional: show a small toast/notification
-            btn.textContent = '✓ Aucun évènement à importer';
-            setTimeout(() => { btn.textContent = '+ Outlook'; btn.disabled = false; }, 2000);
+            isNoEventToImportOutlookModalShowing = true;
+            btn.textContent = '+ Outlook';
+            btn.disabled = false;
             return;
           }
         } catch (err) {
@@ -624,6 +626,30 @@
           onClose={() => {isImportingOutlook = false;}}
           onActivityImported={handleActivitySubmit}
   ></OutlookImportModal>
+{/if}
+
+{#if isNoEventToImportOutlookModalShowing}
+  <BaseModal modalTitle="Alerte" onClose={() => isNoEventToImportOutlookModalShowing = false}>
+    {#snippet children()}
+      <p>
+        Aucun évènement à importer pour la journée sélectionnée.
+        <br/><br/>
+        Vérifiez que vous avez des évènements dans votre calendrier Outlook principal et réessayez à nouveau.
+      </p>
+    {/snippet}
+
+    {#snippet footer()}
+      <div class="modal-footer mt-5">
+        <button
+                type="button"
+                class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition border border-gray-200"
+                onclick={() => isNoEventToImportOutlookModalShowing = false}
+        >
+          Fermer
+        </button>
+      </div>
+    {/snippet}
+  </BaseModal>
 {/if}
 
 <style>

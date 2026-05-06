@@ -83,10 +83,15 @@ test.describe("ImportOutlook", () => {
     // Clic
     await button.click();
 
-    // Vérification de l'état final
-    await expect(button).toHaveText("✓ Aucun évènement à importer");
-    await expect(button).toBeDisabled();
-    await expect(button).toHaveAttribute("data-date", "2025-03-22");
+    // Vérification du modal
+    const modal = page.locator('.modal-overlay');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.modal-title')).toHaveText('Alerte');
+    await expect(modal).toContainText('Aucun évènement à importer pour la journée sélectionnée.');
+
+    // Fermeture du modal
+    await modal.locator('button', { hasText: 'Fermer' }).click();
+    await expect(modal).not.toBeVisible();
   });
 
   test("outlookFailed", async ({ page }) => {

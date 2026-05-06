@@ -3,6 +3,7 @@
     import {type Activity, type OutlookEvent, type Project} from "../../Models";
     import ActivityEntryForm from "./ActivityEntryForm.svelte";
     import {activityTemplate} from "../../forms/activity";
+    import {roundTimeToNearest15Minutes} from "../../utils/date";
 
     type Props = {
         date: Date;
@@ -24,11 +25,6 @@
         onClose();
     };
 
-    const roundToNearest15 = (dateStr) => {
-        const date = new Date(dateStr);
-        const ms = 15 * 60 * 1000;
-        return new Date(Math.round(date.getTime() / ms) * ms);
-    }
 
     let selectedEventInt = $state<number>(0);
     let selectedEvent = $derived(events[selectedEventInt]);
@@ -44,19 +40,25 @@
     })())
 
     $effect(() => {
-        const baseActivity = activityTemplate.generate();
-        activity = {
-            ...baseActivity,
-            name: selectedEvent.subject,
-            description: selectedEvent.body.content,
-            startDate: roundToNearest15(selectedEvent.start),
-            endDate: roundToNearest15(selectedEvent.end),
-            projectId: selectedEventProject ? selectedEventProject.id : baseActivity.projectId,
-            projectName: selectedEventProject ? selectedEventProject.name : baseActivity.projectName,
-        }
-    })
+        // On va chercher l'événement et son projet manuellement afin que l'effect réagisse à un mise-à-jour de ceux-ci.
+        const event = selectedEvent;
+        const project = selectedEventProject;
+
+        if (!event) return;
+
+        activity = activityTemplate.generate(
+            event,
+            project ? { id: project.id, name: project.name } : null
+        );
+    });
 
     const handleNext = () => {
+        // Boucle do...while afin de trouver le prochain évènement à afficher qui n'a toujours pas été soumis
+        //
+        // On augmente au moins une fois le numéro de l'évènement afin de ne pas rester sur le même chaque fois, puis on
+        //  le refait jusqu'à ce que ce soit un événement qui n'est pas soumis, si ça n'en est pas déjà un.
+        //
+        // Le eventsLeftInt.length > 0 sert à ne pas avoir de boucle infinie quand il ne reste plus d'évènements à afficher.
         let nextEventToDisplay = selectedEventInt;
         do {
             if (nextEventToDisplay >= events.length - 1) {
@@ -67,6 +69,12 @@
     }
 
     const handlePrevious = () => {
+        // Boucle do...while afin de trouver le prochain évènement à afficher qui n'a toujours pas été soumis
+        //
+        // On diminue au moins une fois le numéro de l'évènement afin de ne pas rester sur le même chaque fois, puis on
+        //  le refait jusqu'à ce que ce soit un événement qui n'est pas soumis, si ça n'en est pas déjà un.
+        //
+        // Le eventsLeftInt.length > 0 sert à ne pas avoir de boucle infinie quand il ne reste plus d'évènements à afficher.
         let nextEventToDisplay = selectedEventInt;
         do {
             if (nextEventToDisplay <= 0) {

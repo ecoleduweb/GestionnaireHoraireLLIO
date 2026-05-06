@@ -129,5 +129,4 @@ export interface OutlookEventRaw {
 export interface OutlookEvent extends Omit<OutlookEventRaw, 'start' | 'end'> {
   start: Date;
   end: Date;
-  submitted: boolean;
 }
