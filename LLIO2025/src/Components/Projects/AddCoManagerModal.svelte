@@ -1,30 +1,29 @@
 <script lang="ts">
   // Propriétés du composant
-  import type {DetailedProject, User} from '../../Models';
+  import type { DetailedProject, User } from '../../Models';
 
   type Props = {
     show: boolean;
     project: DetailedProject;
     users: User[];
-    onAdd: (userId : number, projectId : number) => void;
+    onAdd: (userId: number, projectId: number) => void;
     onCancel: () => void;
   };
 
-  let {
-    show,
-    project,
-    users,
-    onAdd,
-    onCancel,
-  }: Props = $props();
+  let { show, project, users, onAdd, onCancel }: Props = $props();
 
-  let valueSelected : string = $state("");
-  let valueSelectedInt : number = $derived(parseInt(valueSelected, 10));
+  let valueSelected: string = $state('');
+  let valueSelectedInt: number = $derived(parseInt(valueSelected, 10));
 </script>
 
 {#if show}
   <div class="fixed inset-0 z-50 flex items-center justify-center">
-    <div class="absolute inset-0 bg-gray-800/50 transition-opacity" onclick={onCancel}></div>
+    <button
+      type="button"
+      class="absolute inset-0 bg-gray-800/50 transition-opacity"
+      onclick={onCancel}
+      aria-label="Fermer la fenêtre"
+    ></button>
 
     <!-- Modal -->
     <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-xl z-10">
@@ -37,10 +36,15 @@
       <div class="flex gap-3 mb-6">
         <label for="userId" class="block text-gray-700">Utilisateur</label>
         <select name="userId" id="userId" bind:value={valueSelected}>
-          <option value="" disabled hidden>{ users.length === 0 ? "Aucun utilisateur disponible à l'ajout" : "Choisir un utilisateur" }</option>
+          <option value="" disabled hidden
+            >{users.length === 0
+              ? "Aucun utilisateur disponible à l'ajout"
+              : 'Choisir un utilisateur'}</option
+          >
           {#each users as user}
             <option value={user.id}>
-              {user.firstName} {user.lastName}
+              {user.firstName}
+              {user.lastName}
             </option>
           {/each}
         </select>
