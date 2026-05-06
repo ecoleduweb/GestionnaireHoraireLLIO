@@ -6,11 +6,12 @@
   import { getHoursColor } from '../../utils/displayUtils';
   import { calculateEmployeeTime, calculateRemainingTime } from '../../utils/CalculUtils';;
   import GenerateTableCategories from './GenerateTableCategories.svelte';
-  import ModifierTauxHoraire from './ModifierTauxHoraire.svelte';
+  import EditTimeRate from './EditTimeRate.svelte';
  
+  
 
   let {project, onClickAddCoManager = () => {},onClickReassignManager = () => {}}: {project: any;onClickAddCoManager?: () => void;onClickReassignManager?: () => void;} = $props();
-  let isDetailsVisible = $state([]);
+  let isDetailsVisible = $state<boolean[]>([]);
 
 </script>
 
@@ -90,7 +91,7 @@
                   >
                     <div class="col-span-2 flex items-center gap-2">
                       <span class="text-sm">{employee.name}</span>
-                      <ModifierTauxHoraire
+                      <EditTimeRate
                         {employee}
                         onRateUpdated={(emp, rate) => { emp.hourlyRate = rate; }}
                       />
@@ -144,10 +145,10 @@
               </div>
 
               <div class="text-right text-sm" data-testid="total-hourly-rate">
-                {#if (project.employees ?? []).every(e => e.hourlyRate == null)}
-                  0$/h
-                {:else}
-                  {(project.employees ?? []).reduce((sum, e) => sum + (e.hourlyRate ?? 0), 0)}$/h
+                {#if (project.employees ?? []).every((e: { hourlyRate?: number }) => e.hourlyRate == null)}0$/h
+                  {:else}
+                    {(project.employees ?? []).reduce(
+                    (sum: number, e: { hourlyRate?: number }) => sum + (e.hourlyRate ?? 0),0)}$/h
                 {/if}
               </div>
 
