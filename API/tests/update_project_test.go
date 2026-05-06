@@ -42,7 +42,7 @@ func TestUpdateProjectStatus(t *testing.T) {
 		ManagerId: doNotDeleteUser.Id,
 		UniqueId:  doNotDeleteProject2.UniqueId,
 		Name:      doNotDeleteProject2.Name,
-		Status:    enums.ProjectStatus(enums.Finish),
+		Status:    enums.ProjectStatus(enums.Archived),
 	}
 
 	w := sendRequest(router, "PUT", "/project", updatedProject, nil, enums.Administrator)
@@ -53,7 +53,7 @@ func TestUpdateProjectStatus(t *testing.T) {
 	}
 	err := json.Unmarshal(w.Body.Bytes(), &responseBody)
 	assert.NoError(t, err)
-	assert.Equal(t, enums.ProjectStatus(enums.Finish), responseBody.UpdatedProject.Status)
+	assert.Equal(t, enums.ProjectStatus(enums.Archived), responseBody.UpdatedProject.Status)
 }
 
 func TestUpdateProjectEndDate(t *testing.T) {

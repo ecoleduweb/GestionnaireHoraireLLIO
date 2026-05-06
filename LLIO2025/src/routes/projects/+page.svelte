@@ -37,6 +37,16 @@
         )
   )
 
+  function handleToggleArchive(projectUpdated) {
+    const project: DetailedProject = projectUpdated.updatedProject;
+    console.log(project.status);
+    console.log(projects[0]);
+    projects = projects.map(p =>
+      p.id === project.id ? { ...p, isArchived: project.status == 2 || project.isArchived } : p
+    );
+    console.log(projects[0]);
+  }
+
   const handleAddCoManagerModalOpen = async (projectId: number) => {
     selectedProject = projects.find(p => p.id == projectId);
     await loadUsers();
@@ -149,7 +159,7 @@
 
 <div class="bg-gray-100">
   {#if currentUser}
-  <ProjectsLeftPane projects={filteredProjects} {currentUser} onProjectsRefresh={loadProjects} />
+  <ProjectsLeftPane projects={filteredProjects} {currentUser} onProjectsRefresh={loadProjects} onProjectArchive={handleToggleArchive} />
   {/if}
   
   <div class="flex flex-col" style="padding-left: 300px;">

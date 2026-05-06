@@ -312,6 +312,51 @@ func DeleteProject(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": true})
 }
 
+func ToggleArchiveProject(c *gin.Context) {
+	currentUser, exists := c.Get("current_user")
+	projectIdToArchive := c.Param("id")
+
+	var projectStatusDTO DTOs.ArchiveProjectDTO
+
+	msgErrsJson := services.VerifyJSON(c, &projectStatusDTO)
+	if len(msgErrsJson) > 0 {
+		log.Printf("Une ou plusieurs erreurs de format JSON sont survenues:%v", msgErrsJson)
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgErrsJson})
+		return
+	}
+
+	// Convert string to int
+	projectIDInt, err := strconv.Atoi(projectIdToArchive)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Page non trouvé - Erreur de conversion du ID en int"})
+		return
+	}
+
+	user, ok := currentUser.(*DTOs.UserDTO)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur interne du serveur"})
+		c.Abort()
+		return
+	}
+
+	project, err := services.ToggleArchiveProjectByIdWithUserId(user.Id, projectIDInt, projectStatusDTO.Archived)
+	if err != nil {
+		handleError(c, err, projectSTR)
+		return
+	}
+
+	if project == nil {
+		handleError(c, err, projectSTR)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"updatedProject": project})
+}
+
 func GetDetailedProjectsByUser(c *gin.Context) {
 	currentUser, exists := c.Get("current_user")
 
