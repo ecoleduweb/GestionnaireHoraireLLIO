@@ -17,10 +17,12 @@
 
   const project = $state<ProjectBase>(projectTemplate.generate());
 
-  if (projectToEdit) {
-    Object.assign(project, projectToEdit);
-    project.estimatedHours = projectToEdit.totalTimeEstimated || 0;
-  }
+  $effect(() => {
+    if (projectToEdit) {
+      Object.assign(project, projectToEdit);
+      project.estimatedHours = projectToEdit.totalTimeEstimated || 0;
+    }
+  });
 
   const editMode = $derived(projectToEdit !== null);
 

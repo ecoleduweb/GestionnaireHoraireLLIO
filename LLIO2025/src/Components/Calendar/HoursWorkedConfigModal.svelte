@@ -21,9 +21,11 @@
   });
 
   
-  if (initialConfig) {
-    Object.assign(config, initialConfig);
-  }
+  $effect(() => {
+    if (initialConfig) {
+      Object.assign(config, initialConfig);
+    }
+  });
 
   let isSubmitting = $state(false);
   let isLoading = $state(true);
