@@ -181,6 +181,7 @@
         // Configuration personnalisée pour FullCalendar
         const calendarOptions = {
           initialView: activeView,
+          stickyHeaderDates: true,
           locale: frLocale, // Utiliser la locale française
           firstDay: 1, // 1 = lundi (standard français)
           buttonText: {
@@ -201,7 +202,7 @@
           eventDrop: handleEventDropOrResize,
           eventResize: handleEventDropOrResize,
 
-          height: 'auto',
+          height: '100vh',
           contentHeight: 'auto', // Hauteur automatique
 
           expandRows: false,
@@ -607,9 +608,9 @@
       </div>
 
       <!-- Calendrier -->
-      <div class="border border-gray-200 rounded-lg overflow-hidden">
-        <div bind:this={calendarEl} class="w-full"></div>
-      </div>
+      <div class="border border-gray-200 rounded-lg overflow-hidden calendar-container">
+      <div bind:this={calendarEl} class="w-full h-full"></div>
+    </div>
     </div>
   </div>
 </div>
@@ -665,6 +666,9 @@
 {/if}
 
 <style>
+  :global(body) {
+    overflow: hidden;
+  }
   :global(.fc .fc-timegrid-slot) {
     height: 25px !important;
     min-height: 25px !important;
@@ -744,4 +748,21 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+  :global(.fc) {
+  height: 100%;
+}
+
+:global(.fc-scroller) {
+  overflow-y: auto !important;
+}
+.calendar-container {
+  height: calc(100vh - 220px);
+  overflow: auto; 
+}
+
+.calendar-container :global(.fc) {
+  height: 100% !important;
+}
+
+
 </style>
