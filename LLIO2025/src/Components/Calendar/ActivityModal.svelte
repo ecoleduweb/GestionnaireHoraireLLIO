@@ -758,14 +758,36 @@
                 <div
                   class="custom-select"
                   class:disabled-select={!activity.projectId}
+                  role="button"
+                  tabindex={activity.projectId ? 0 : -1}
+                  aria-disabled={!activity.projectId}
+                  aria-expanded={categoryDropdownOpen}
                   onclick={(e) => {
                     if (!activity.projectId) {
                       e.preventDefault();
                       return;
                     }
+
                     categoryDropdownOpen = !categoryDropdownOpen;
+
                     if (categoryDropdownOpen) {
                       document.getElementById('activity-category-search')?.focus();
+                    }
+                  }}
+                  onkeydown={(e) => {
+                    if (!activity.projectId) {
+                      e.preventDefault();
+                      return;
+                    }
+
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+
+                      categoryDropdownOpen = !categoryDropdownOpen;
+
+                      if (categoryDropdownOpen) {
+                        document.getElementById('activity-category-search')?.focus();
+                      }
                     }
                   }}
                 >
@@ -818,17 +840,30 @@
                           <div
                             class="category-item"
                             class:selected={category.id === activity.categoryId}
+                            role="button"
+                            tabindex="0"
                             onclick={(e) => {
                               e.stopPropagation();
                               selectCategory(category.id);
                             }}
+                            onkeydown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                selectCategory(category.id);
+                              }
+                            }}
                           >
                             {category.name}
+
                             {#if category.name !== 'Par défaut'}
                               <button
+                                type="button"
                                 class="justify-end p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-                                onclick={() => handleDeleteCategory(category)}
-                                aria-label="Supprimer le projet"
+                                onclick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteCategory(category);
+                                }}
+                                aria-label="Supprimer la catégorie"
                               >
                                 <Trash2 size={16} />
                               </button>
@@ -840,10 +875,10 @@
 
                     <!-- Option "Ajouter une nouvelle catégorie" uniquement si un projet est sélectionné -->
                     {#if activity.projectId && searchTerm && !filteredCategories.some((cat) => cat.name.toLowerCase() === searchTerm.toLowerCase())}
-                      <div class="add-category" onclick={handleAddCategory}>
+                      <button type="button" class="add-category" onclick={handleAddCategory}>
                         <Plus size={16} />
                         Ajouter "{searchTerm}"
-                      </div>
+                      </button>
                     {/if}
                   </div>
                 {/if}
@@ -852,44 +887,44 @@
                   <span class="text-red-500 text-sm mt-1">{$errors.categoryId}</span>
                 {/if}
               </div>
-            </div>
 
-            <!-- Champ Nom -->
-            <div>
-              <label for="activity-name" class="block text-gray-700 font-medium mb-2">
-                Nom
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <input
-                id="activity-name"
-                name="name"
-                type="text"
-                bind:value={activity.name}
-                placeholder="Nom de l'activité..."
-                class="form-input"
-              />
-              {#if $errors.name}
-                <span class="text-red-500 text-sm">{$errors.name}</span>
-              {/if}
-            </div>
+              <!-- Champ Nom -->
+              <div>
+                <label for="activity-name" class="block text-gray-700 font-medium mb-2">
+                  Nom
+                  <span class="text-gray-400">(optionnel)</span>
+                </label>
+                <input
+                  id="activity-name"
+                  name="name"
+                  type="text"
+                  bind:value={activity.name}
+                  placeholder="Nom de l'activité..."
+                  class="form-input"
+                />
+                {#if $errors.name}
+                  <span class="text-red-500 text-sm">{$errors.name}</span>
+                {/if}
+              </div>
 
-            <!-- Champ Description -->
-            <div>
-              <label for="activity-description" class="block text-gray-700 font-medium mb-2">
-                Description
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <textarea
-                id="activity-description"
-                name="description"
-                bind:value={activity.description}
-                placeholder="Description de l'activité..."
-                rows="3"
-                class="form-input"
-              ></textarea>
-              {#if $errors.description}
-                <span class="text-red-500 text-sm">{$errors.description}</span>
-              {/if}
+              <!-- Champ Description -->
+              <div>
+                <label for="activity-description" class="block text-gray-700 font-medium mb-2">
+                  Description
+                  <span class="text-gray-400">(optionnel)</span>
+                </label>
+                <textarea
+                  id="activity-description"
+                  name="description"
+                  bind:value={activity.description}
+                  placeholder="Description de l'activité..."
+                  rows="3"
+                  class="form-input"
+                ></textarea>
+                {#if $errors.description}
+                  <span class="text-red-500 text-sm">{$errors.description}</span>
+                {/if}
+              </div>
             </div>
           </div>
         </form>
