@@ -13,6 +13,7 @@ const detailedProjectsBase = [
     employees: [
       {
         name: "Katell Arnault de la Ménardière",
+        hourlyRate: 85,
         categories: [
           { name: "Développement", timeSpent: 30, timeEstimated: 25 },
           { name: "Graphisme", timeSpent: 15, timeEstimated: 30 },
@@ -20,6 +21,7 @@ const detailedProjectsBase = [
       },
       {
         name: "Jean-François Jasmin",
+        hourlyRate: null,
         categories: [
           { name: "Développement", timeSpent: 20, timeEstimated: 50 },
         ],
@@ -630,6 +632,18 @@ export const projectMocks = {
       status: 200,
       json: {
         projects: [detailedProjectsBase[0]],
+      },
+    },
+  },
+
+  updateEmployeeRateSuccess: {
+    url: "/employee/*/rate",
+    method: "PUT",
+    response: {
+      status: 200,
+      json: {
+        message: "Taux horaire mis à jour avec succès",
+        hourlyRate: 75,
       },
     },
   },

@@ -36,7 +36,7 @@ test.describe('checkCategoriesRename', () => {
         
         await page.waitForTimeout(2000);
 
-        await page.getByRole('button', { name: 'Katell Arnault de la Ménardière 12h00 15h00 3h00' }).first().click();
+        await page.getByRole('button', { name: 'Katell Arnault de la Ménardière' }).first().click();
         await page.getByRole('cell', { name: 'Développement' }).hover();
         await page.getByRole('button', { name: 'Renommer la catégorie' }).click();
         await page.locator('form').getByRole('textbox').click();
@@ -60,7 +60,7 @@ test.describe('checkCategoriesRename', () => {
         
         await page.waitForTimeout(2000);
 
-        await page.getByRole('button', { name: 'Katell Arnault de la Ménardière 12h00 15h00 3h00' }).first().click();
+        await page.getByRole('button', { name: 'Katell Arnault de la Ménardière' }).first().click();
         await page.getByRole('cell', { name: 'Développement' }).hover();
         await page.getByRole('button', { name: 'Renommer la catégorie' }).click();
         await page.locator('form').getByRole('textbox').click();

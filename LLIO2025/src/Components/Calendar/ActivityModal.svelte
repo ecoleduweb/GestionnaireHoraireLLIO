@@ -1,16 +1,5 @@
 <script lang="ts">
-  import { validateActivityForm } from '../../Validation/Activity';
   import type { Activity, User, Project, Category } from '../../Models';
-  import { activityTemplate } from '../../forms/activity';
-  import { ActivityApiService } from '../../services/ActivityApiService';
-  import { CategoryApiService } from '../../services/CategoryApiService';
-  import {
-    getHoursFromDate,
-    getMinutesFromDate,
-    createDateWithTime,
-    initializeActivityDates,
-    applyEndTime as applyEndTimeUtil,
-  } from '../../utils/date';
   import '../../style/app.css';
   import { ChevronDown, X, Plus, Trash2 } from 'lucide-svelte';
   import SearchSelect from '../Global/SearchSelect.svelte';
@@ -299,7 +288,7 @@
       time.endHours !== initialSnapshot.eh ||
       time.endMinutes !== initialSnapshot.em;
 
-    if (isDirty) {
+    if (isActivityDirty) {
       showCloseConfirmModal = true;
     } else {
       onClose();
@@ -577,7 +566,6 @@
 <svelte:window onclick={handleOutsideClick} />
 
 {#if show}
-  <!-- Structure principale avec Tailwind -->
   <div class="fixed inset-0 z-40 flex justify-start">
     <!-- Overlay semi-transparent avec opacité à 40% comme dans l'original -->
     <button
@@ -588,19 +576,19 @@
     ></button>
     <!-- Panneau latéral avec bordure et ombre à gauche pour délimiter -->
     <div
-      class="w-full max-w-[300px] bg-white h-full overflow-y-auto relative flex flex-col z-50 animate-slideIn border-r border-gray-300 shadow-xl"
+            class="w-full max-w-[300px] bg-white h-full overflow-y-auto relative flex flex-col z-50 animate-slideIn border-r border-gray-300 shadow-xl"
     >
-      <!-- En-tête avec titre et bouton de fermeture -->
+      <!-- Header -->
       <div class="flex items-center justify-between bg-[#015e61] text-white px-6 py-4">
         <h2 class="text-xl font-medium">
           {editMode ? "Modifier l'activité" : 'Nouvelle activité'}
         </h2>
-        <button type="button" class="text-white hover:text-gray-200" onclick={handleClose}>
+        <button type="button" class="text-white hover:text-gray-200" onclick={handlePreventClosingIfDirty}>
           <X />
         </button>
       </div>
 
-      <!-- Contenu du formulaire - espace vertical ajusté -->
+      <!-- Form -->
       <div class="p-6 flex-grow">
         <form
           class="flex flex-col"
