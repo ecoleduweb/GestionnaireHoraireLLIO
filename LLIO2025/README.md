@@ -1,6 +1,6 @@
 # Application WEB LLIO
 
-Une application WEB de gestion de calendrier développée avec SvelteKit et TypeScript, intégrant FullCalendar.
+Une application WEB de gestion de calendrier développée avec SvelteKit et TypeScript, intégrant FullCalendar..
 
 ---
 
