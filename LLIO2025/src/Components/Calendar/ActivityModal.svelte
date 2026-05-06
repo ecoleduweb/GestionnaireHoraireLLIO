@@ -27,7 +27,7 @@
     onUpdate,
   }: Props = $props();
 
-  const editMode = activityToEdit !== null;
+  const editMode = $derived(activityToEdit !== null);
 
   let showCloseConfirmModal = $state(false);
   let isActivityDirty = $state(false);

@@ -224,7 +224,7 @@
           // Only render custom content in week view
           if (activeView !== 'timeGridWeek') return { html: '' };
 
-          const dateStr = arg.date.toISOString().split('T')[0];
+          const dateStr = formatDate(arg.date)
           const dayLabel = arg.date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' });
 
           return {
@@ -294,7 +294,8 @@
                     (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
             );
             isImportingOutlook = true;
-            outlookImportDate = new Date(date);
+            const [y, m, d] = date.split('-').map(Number);
+            outlookImportDate = new Date(y, m - 1, d);
           } else {
             isNoEventToImportOutlookModalShowing = true;
             btn.textContent = '+ Outlook';
@@ -303,8 +304,8 @@
           }
         } catch (err) {
           if (err?.code === 'GRAPH_EXPIRED') {
-            alert("Votre connexion à Outlook a expirée. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.")
-            window.location.href = "/";
+            alert("Votre connexion à Outlook a expiré. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.")
+            await goto("/");
           } else {
             console.error('Erreur import Outlook:', err);
             alert("Erreur lors de l'import Outlook : " + err.message);

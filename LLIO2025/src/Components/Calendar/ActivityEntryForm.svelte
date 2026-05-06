@@ -31,7 +31,7 @@
   let {
     projects,
     activityToEdit,
-    activityToImport = $bindable(null),
+    activityToImport = null,
     selectedDate = null,
     isDirty = $bindable(false),
     onClose,
@@ -131,7 +131,7 @@
       if (activity.categoryId) {
         const categoryExists = projectCategories.some((c) => c.id === activity.categoryId);
 
-        if (!categoryExists && editMode) {
+        if (!categoryExists && editMode && projectCategories.length > 0) {
           activity.categoryId = projectCategories[0].id;
         } else if (!categoryExists) {
           activity.categoryId = null;
@@ -267,8 +267,8 @@
 
   $effect(() => {
     if (activity.projectId && projectCategories.length >= 1) {
-      const currentCategoryExists = projectCategories.find((c) => c.id === activity.categoryId);
-      if (!activity.categoryId || !currentCategoryExists) {
+      const currentCategory = projectCategories.find((c) => c.id === activity.categoryId);
+      if (!activity.categoryId || !currentCategory) {
         activity.categoryId = projectCategories[0].id;
       }
     }

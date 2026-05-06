@@ -105,7 +105,7 @@ test.describe("ImportOutlook", () => {
 
     expect(dialog.type()).toBe("alert");
     expect(dialog.message()).toContain(
-      "Votre connexion à Outlook a expirée. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.",
+      "Votre connexion à Outlook a expiré. Vous serez redirigés à la page de connexion pour vous reconnecter. Vous pourrez alors essayer d'importer vos évènements à nouveau.",
     );
     await dialog.dismiss();
 

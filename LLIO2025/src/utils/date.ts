@@ -187,7 +187,7 @@ export const isDateInCurrentWeek = (date: Date) => {
   return isThisWeek(date, { weekStartsOn: 1 });
 };
 
-export const roundTimeToNearest15Minutes = (dateStr) => {
+export const roundTimeToNearest15Minutes = (dateStr: string) => {
   const date = new Date(dateStr);
   const ms = 15 * 60 * 1000;
   return new Date(Math.round(date.getTime() / ms) * ms);

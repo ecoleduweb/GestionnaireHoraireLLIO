@@ -28,16 +28,12 @@
 
     let selectedEventInt = $state<number>(0);
     let selectedEvent = $derived(events[selectedEventInt]);
-    let selectedEventProject = $derived(projects.find((p) => selectedEvent.subject.includes(p.uniqueId)))
+    let selectedEventProject = $derived(selectedEvent ? projects.find((p) => selectedEvent.subject.includes(p.uniqueId)) : undefined)
     let activity = $state<Activity>({} as Activity);
     let eventsDoneInt = $state<number[]>([]);
-    let eventsLeftInt = $derived<number[]>((() : number[] => {
-        let e = [];
-        for (let i = 0; i < events.length; i++) {
-            if(!eventsDoneInt.includes(i)) e.push(i);
-        }
-        return e;
-    })())
+    let eventsLeftInt = $derived<number[]>(
+        events.map((_, i) => i).filter((i) => !eventsDoneInt.includes(i))
+    );
 
     $effect(() => {
         // On va chercher l'événement et son projet manuellement afin que l'effect réagisse à un mise-à-jour de ceux-ci.
@@ -86,8 +82,11 @@
 
     const handleDone = () => {
         eventsDoneInt.push(selectedEventInt);
+        if (eventsLeftInt.length === 0) {
+            onClose();
+            return;
+        }
         handleNext();
-        if (eventsLeftInt.length === 0) onClose();
     }
 </script>
 
@@ -106,12 +105,7 @@
 
         <div class="modal-content">
             {#if eventsLeftInt.length > 0}
-                <form
-                        class="flex flex-col h-full"
-                        onsubmit={(e) => {
-                  e.preventDefault();
-                }}
-                >
+                <div class="flex flex-col h-full">
                     <div class="nav-row">
                         <button
                                 type="button"
@@ -136,7 +130,7 @@
                         <div class="form-group">
                             <ActivityEntryForm activityToImport={activity} projects={projects} onClose={handleDone} onDelete={()=>{}} onSubmit={onActivityImported} onUpdate={()=>{}} activityToEdit={null} />
                         </div>
-                </form>
+                </div>
             {:else}
                 <p class="text-center">Tous les évènements ont été importés !<br/>Vous pouvez maintenant quitter cette fenêtre.</p>
             {/if}
