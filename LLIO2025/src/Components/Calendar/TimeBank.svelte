@@ -63,12 +63,12 @@
 
 <div class="time-bank-section">
   {#if !timeBalance.isConfigured}
-    <button class="link" on:click={openConfigModal}>Configurer votre banque d'heures</button>
+    <button class="link" onclick={openConfigModal}>Configurer votre banque d'heures</button>
   {:else}
     <p class="time-bank-text">
       Vous avez
       {' '}
-      <button class="link" on:click={openConfigModal} data-testid="total-hours">{timeBalance.displayedHoursTotal ?? 0}</button>
+      <button class="link" onclick={openConfigModal} data-testid="total-hours">{timeBalance.displayedHoursTotal ?? 0}</button>
       {' '}heures en banque.
     </p>
   {/if}
