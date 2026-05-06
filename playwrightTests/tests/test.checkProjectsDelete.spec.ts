@@ -49,7 +49,7 @@ test.describe('checkProjectsDelete', () => {
 
         await page.getByRole('button', { name: 'Supprimer le projet' }).first().click();
 
-        const confirmBtn = page.getByRole('button', { name: 'Confirmer', exact: true });
+        const confirmBtn = await page.getByRole('button', { name: 'Confirmer', exact: true });
         await expect(confirmBtn).toBeVisible();
         await expect(confirmBtn).toBeEnabled();
 
