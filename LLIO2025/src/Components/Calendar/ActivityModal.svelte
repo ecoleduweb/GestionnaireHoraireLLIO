@@ -13,7 +13,7 @@
   } from '../../utils/date';
   import '../../style/app.css';
   import { ChevronDown, X, Plus, Trash2 } from 'lucide-svelte';
-  import SearchSelect from "../Global/SearchSelect.svelte";
+  import SearchSelect from '../Global/SearchSelect.svelte';
   import ConfirmationModal from '../Modal/ConfirmationModal.svelte';
 
   type Props = {
@@ -53,13 +53,13 @@
   let isProjectSelectFocused = $state(true);
 
   $effect(() => {
-  if (selectedDate && selectedDate.start) {
-    const { startDate, endDate } = initializeActivityDates(selectedDate.start);
+    if (selectedDate && selectedDate.start) {
+      const { startDate, endDate } = initializeActivityDates(selectedDate.start);
 
-    initialActivity.startDate = startDate;
-    initialActivity.endDate = selectedDate.end ? new Date(selectedDate.end) : endDate;
-  }
-});
+      initialActivity.startDate = startDate;
+      initialActivity.endDate = selectedDate.end ? new Date(selectedDate.end) : endDate;
+    }
+  });
 
   const activity = $state<Activity>(initialActivity);
 
@@ -79,21 +79,21 @@
     sh: time.startHours,
     sm: time.startMinutes,
     eh: time.endHours,
-    em: time.endMinutes
+    em: time.endMinutes,
   };
 
   $effect(() => {
-  if (activityToEdit) {
-    Object.assign(activity, activityToEdit);
+    if (activityToEdit) {
+      Object.assign(activity, activityToEdit);
 
-    time.startHours = getHoursFromDate(activityToEdit.startDate);
-    time.startMinutes = getMinutesFromDate(activityToEdit.startDate);
-    time.endHours = getHoursFromDate(activityToEdit.endDate);
-    time.endMinutes = getMinutesFromDate(activityToEdit.endDate);
-  }
-});
+      time.startHours = getHoursFromDate(activityToEdit.startDate);
+      time.startMinutes = getMinutesFromDate(activityToEdit.startDate);
+      time.endHours = getHoursFromDate(activityToEdit.endDate);
+      time.endMinutes = getMinutesFromDate(activityToEdit.endDate);
+    }
+  });
 
-   // InitialProjectId permet de fermer la modale quand on n'a pas effectué de modification.
+  // InitialProjectId permet de fermer la modale quand on n'a pas effectué de modification.
   const initialProjectId = activity.projectId;
 
   const {
@@ -143,7 +143,7 @@
     }
     try {
       projectCategories = await CategoryApiService.getCategoriesByProject(projectId);
-      
+
       if (activity.categoryId) {
         const categoryExists = projectCategories.some((c) => c.id === activity.categoryId);
 
@@ -238,7 +238,9 @@
       onClose();
     } catch (error) {
       console.error('Erreur lors de la soumission', error);
-      alert('Activité incomplète \nVeuillez remplir tous les champs obligatoires (suivis d\'une astérisque rouge) de l\'activité avant de l\'enregistrer.');
+      alert(
+        "Activité incomplète \nVeuillez remplir tous les champs obligatoires (suivis d'une astérisque rouge) de l'activité avant de l'enregistrer."
+      );
     } finally {
       isSubmitting = false;
     }
@@ -260,7 +262,7 @@
 
   const deleteCategoryFromList = (category: Category) => {
     projectCategories = projectCategories.filter((cat) => cat != category);
-  }
+  };
 
   const handleDeleteCategory = async (category: Category) => {
     if (!category) return;
@@ -270,7 +272,7 @@
         await CategoryApiService.deleteCategory(category.id);
         deleteCategoryFromList(category);
       } catch (error) {
-        alert("Erreur lors de la suppression de la catégorie");
+        alert('Erreur lors de la suppression de la catégorie');
         console.error('Erreur lors de la suppression de la catégorie', error);
       }
     }
@@ -280,14 +282,14 @@
     onClose();
   };
 
-  // Le e.stopPropagation empêche le clic de traverser la modale, 
-  // car sinon le cliquer sur le fond gris pourrait déclencher une action sur le calendrier 
-  // qui se trouve derrière comme ajouter une activité. 
-  // On a ajouté un if avec un (e) pour empêché que la méthode soit appeler autre part 
+  // Le e.stopPropagation empêche le clic de traverser la modale,
+  // car sinon le cliquer sur le fond gris pourrait déclencher une action sur le calendrier
+  // qui se trouve derrière comme ajouter une activité.
+  // On a ajouté un if avec un (e) pour empêché que la méthode soit appeler autre part
   // sans raison du coup un événement mouse est obligatoire
-const handlePreventClosingIfDirty = (e: MouseEvent) => {
+  const handlePreventClosingIfDirty = (e: MouseEvent) => {
     if (e) e.stopPropagation();
-    const isDirty = 
+    const isDirty =
       activity.projectId !== initialSnapshot.projectId ||
       activity.categoryId !== initialSnapshot.categoryId ||
       (activity.name || '') !== initialSnapshot.name ||
@@ -304,10 +306,10 @@ const handlePreventClosingIfDirty = (e: MouseEvent) => {
     }
   };
 
-const confirmClose = () => {
-  showCloseConfirmModal = false;
-  onClose();
-};
+  const confirmClose = () => {
+    showCloseConfirmModal = false;
+    onClose();
+  };
 
   const handleAddCategory = (e) => {
     e.stopPropagation();
@@ -346,9 +348,9 @@ const confirmClose = () => {
   };
 
   const getDisplayText = (uniqueId, name) => {
-    const separator = " | ";
+    const separator = ' | ';
     const availableForName = uniqueId.length - separator.length;
-    if (name === undefined || name === null || name.trim() === "") {
+    if (name === undefined || name === null || name.trim() === '') {
       return uniqueId; // Si le nom est vide, retourner uniquement l'uniqueId
     }
 
@@ -356,371 +358,17 @@ const confirmClose = () => {
   };
 
   $effect(() => {
-  if (activity.projectId && projectCategories.length >= 1) {
-    const currentCategoryExists = projectCategories.find(c => c.id === activity.categoryId);
-    
-    if (!activity.categoryId || !currentCategoryExists) {
-      activity.categoryId = projectCategories[0].id;
+    if (activity.projectId && projectCategories.length >= 1) {
+      const currentCategoryExists = projectCategories.find((c) => c.id === activity.categoryId);
+
+      if (!activity.categoryId || !currentCategoryExists) {
+        activity.categoryId = projectCategories[0].id;
+      }
     }
-  }
   });
 
   const { form, errors, setFields } = validateActivityForm(handleSubmit, activity);
 </script>
-
-<svelte:window onclick={handleOutsideClick} />
-
-{#if show}
-  <!-- Structure principale avec Tailwind -->
-  <div class="fixed inset-0 z-40 flex justify-start">
-    <!-- Overlay semi-transparent avec opacité à 40% comme dans l'original -->
-    <div
-      class="absolute inset-0 bg-gray-950/40 transition-opacity"
-      onclick={handlePreventClosingIfDirty}
-    ></div>
-
-    <!-- Panneau latéral avec bordure et ombre à gauche pour délimiter -->
-    <div
-      class="w-full max-w-[300px] bg-white h-full overflow-y-auto relative flex flex-col z-50 animate-slideIn border-r border-gray-300 shadow-xl"
-    >
-      <!-- En-tête avec titre et bouton de fermeture -->
-      <div class="flex items-center justify-between bg-[#015e61] text-white px-6 py-4">
-        <h2 class="text-xl font-medium">
-          {editMode ? "Modifier l'activité" : 'Nouvelle activité'}
-        </h2>
-        <button type="button" class="text-white hover:text-gray-200" onclick={handleClose}>
-          <X />
-        </button>
-      </div>
-
-      <!-- Contenu du formulaire - espace vertical ajusté -->
-      <div class="p-6 flex-grow">
-        <form
-          class="flex flex-col"
-          use:form
-          onsubmit={(e) => {
-            e.preventDefault();
-          }}
-        >
-
-        <!-- Séparateur et boutons d'action -->
-          <div class="mt-auto">
-            
-            <!-- Actions en bas du formulaire -->
-            <div class="flex justify-center gap-5">
-              {#if editMode}
-                <button
-                  type="button"
-                  class="py-3 px-6 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition"
-                  onclick={handleDelete}
-                >
-                  Supprimer
-                </button>
-                <button
-                  type="submit"
-                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'En cours...' : 'Modifier'}
-                </button>
-              {:else}
-                <button
-                  type="button"
-                  class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200"
-                  onclick={handleClose}
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'En cours...' : 'Créer'}
-                </button>
-              {/if}
-            </div>
-
-            <!-- Ligne de séparation -->
-            <div class="border-t border-gray-200 my-6"></div>
-
-          </div>
-
-          <!-- Champs de formulaire avec espacement vertical uniforme -->
-          <div class="space-y-6">
-            <!-- Projet -->
-            <div>
-              <label for="activity-project" class="block text-gray-700 font-medium mb-2">
-                Projet
-                <span class="text-red-500">*</span>
-              </label>
-              <SearchSelect
-                id="activity-project"
-                name="projectId"
-                items={projects.map((value) => {
-                  return { value: value.id, label: getDisplayText(value.uniqueId, value.name) };
-                })}
-                bind:selectedValue={activity.projectId}
-                placeholder="Sélectionner un projet"
-                setFields={setFields}
-                bind:focused={isProjectSelectFocused}
-                onSubmit={()=>{
-                  const form = document.querySelector('form');
-                  form?.requestSubmit();}}
-                required
-              />
-              {#if $errors.projectId}
-                <span class="text-red-500 text-sm">{$errors.projectId}</span>
-              {/if}
-            </div>
-
-            <!-- Sélecteurs d'heure côte à côte -->
-            <div>
-              <label class="block text-gray-700 font-medium mb-2">
-                Heure de début
-                <span class="text-red-500">*</span>
-              </label>
-              <div class="flex gap-3">
-                <div class="select-container form-select-flex">
-                  <select bind:value={time.startHours} class="form-select w-full">
-                    {#each hours as hour}
-                      <option value={hour}>{hour} h</option>
-                    {/each}
-                  </select>
-                  <div class="select-icon">
-                    <ChevronDown size={18} />
-                  </div>
-                </div>
-                <div class="select-container form-select-flex">
-                  <select bind:value={time.startMinutes} class="form-select w-full">
-                    {#each minutes as minute}
-                      <option value={minute}>{minute} min</option>
-                    {/each}
-                  </select>
-                  <div class="select-icon">
-                    <ChevronDown size={18} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Sélecteurs d'heure de fin -->
-            <div>
-              <label class="block text-gray-700 font-medium mb-2">
-                Heure de fin
-                <span class="text-red-500">*</span>
-              </label>
-              <div class="flex gap-3">
-                <div class="select-container form-select-flex">
-                  <select
-                    bind:value={time.endHours}
-                    onchange={applyEndTime}
-                    class="form-select w-full"
-                  >
-                    {#each hours as hour}
-                      <option value={hour}>{hour} h</option>
-                    {/each}
-                  </select>
-                  <div class="select-icon">
-                    <ChevronDown size={18} />
-                  </div>
-                </div>
-                <div class="select-container form-select-flex">
-                  <select
-                    bind:value={time.endMinutes}
-                    onchange={applyEndTime}
-                    class="form-select w-full"
-                  >
-                    {#each minutes as minute}
-                      <option value={minute}>{minute} min</option>
-                    {/each}
-                  </select>
-                  <div class="select-icon">
-                    <ChevronDown size={18} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          <!-- Catégorie avec dropdown et recherche intégrée -->
-            <div>
-              <label for="activity-category-search" class="block text-gray-700 font-medium mb-2">
-                Catégorie
-                <span class="text-red-500">*</span>
-              </label>
-              <div class="category-dropdown-container">
-                <!-- Sélecteur personnalisé avec champ de recherche intégré -->
-                <div
-                  class="custom-select"
-                  class:disabled-select={!activity.projectId}
-                  onclick={(e) => {
-                    if (!activity.projectId) {
-                      e.preventDefault();
-                      return;
-                    }
-                    categoryDropdownOpen = !categoryDropdownOpen;
-                    if (categoryDropdownOpen) {
-                      document.getElementById('activity-category-search')?.focus();
-                    }
-                  }}
-                >
-                  {#if !categoryDropdownOpen || !isSearchFocused}
-                    <span class="select-value">
-                      {!activity.projectId
-                        ? 'Sélectionner une catégorie'
-                        : projectCategories.find((c) => c.id === activity.categoryId)?.name ||
-                          'Sélectionner une catégorie'}
-                    </span>
-                  {/if}
-
-                  <input
-                    id="activity-category-search"
-                    type="text"
-                    class="search-input"
-                    placeholder="Rechercher une catégorie..."
-                    bind:value={searchTerm}
-                    disabled={!activity.projectId}
-                    style="opacity: {categoryDropdownOpen ? '1' : '0'}"
-                    onfocus={() => {
-                      if (activity.projectId) {
-                        categoryDropdownOpen = true;
-                        isSearchFocused = true;
-                      }
-                    }}
-                    onblur={() => {
-                      isSearchFocused = false;
-                    }}
-                    onclick={(e) => e.stopPropagation()}
-                  />
-
-                  <div class="arrow-icon">
-                    <ChevronDown size={18} class="text-gray-600" />
-                  </div>
-                </div>
-
-                {#if categoryDropdownOpen && activity.projectId}
-                  <div class="dropdown-content">
-                    <!-- Liste des catégories -->
-                    <div class="category-list">
-                      {#if filteredCategories.length === 0}
-                        <div class="no-results">
-                          {searchTerm
-                            ? 'Aucun résultat trouvé'
-                            : 'Aucune catégorie disponible pour ce projet'}
-                        </div>
-                      {:else}
-                        {#each filteredCategories as category}
-                          <div
-                            class="category-item"
-                            class:selected={category.id === activity.categoryId}
-                            onclick={(e) => {
-                              e.stopPropagation();
-                              selectCategory(category.id);
-                            }}
-                          >
-                            {category.name}
-                            {#if category.name !== "Par défaut"}
-                              <button
-                                class="justify-end p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-                                onclick={() => handleDeleteCategory(category)}
-                                aria-label="Supprimer le projet"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            {/if}
-                          </div>
-                        {/each}
-                      {/if}
-                    </div>
-
-                    <!-- Option "Ajouter une nouvelle catégorie" uniquement si un projet est sélectionné -->
-                    {#if activity.projectId && searchTerm && !filteredCategories.some((cat) => cat.name.toLowerCase() === searchTerm.toLowerCase())}
-                      <div class="add-category" onclick={handleAddCategory}>
-                        <Plus size={16} />
-                        Ajouter "{searchTerm}"
-                      </div>
-                    {/if}
-                  </div>
-                {/if}
-
-                {#if $errors.categoryId}
-                  <span class="text-red-500 text-sm mt-1">{$errors.categoryId}</span>
-                {/if}
-              </div>
-            </div>
-
-            <!-- Champ Nom -->
-            <div>
-              <label for="activity-name" class="block text-gray-700 font-medium mb-2">
-                Nom
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <input
-                id="activity-name"
-                name="name"
-                type="text"
-                bind:value={activity.name}
-                placeholder="Nom de l'activité..."
-                class="form-input"
-              />
-              {#if $errors.name}
-                <span class="text-red-500 text-sm">{$errors.name}</span>
-              {/if}
-            </div>
-
-            <!-- Champ Description -->
-            <div>
-              <label for="activity-description" class="block text-gray-700 font-medium mb-2">
-                Description
-                <span class="text-gray-400">(optionnel)</span>
-              </label>
-              <textarea
-                id="activity-description"
-                name="description"
-                bind:value={activity.description}
-                placeholder="Description de l'activité..."
-                rows="3"
-                class="form-input"
-              ></textarea>
-              {#if $errors.description}
-                <span class="text-red-500 text-sm">{$errors.description}</span>
-              {/if}
-            </div>
-
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-  {#if showCategoryConfirmModal}
-    <ConfirmationModal
-      modalTitle="Confirmer l'ajout"
-      modalText={`Voulez-vous ajouter la catégorie "${categoryToAdd}" ?`}
-      errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"
-      onSuccess={() => {
-        showCategoryConfirmModal = false;
-        confirmAddCategory();
-      }}
-      onClose={() => {
-        showCategoryConfirmModal = false;
-      }}
-    />
-  {/if}
-  {#if showCloseConfirmModal}
-      <ConfirmationModal
-        modalTitle="Modifications non enregistrées"
-        modalText="Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter sans sauvegarder ?"
-        confirmText="Oui, quitter"
-        cancelText="Non, rester"
-        errorText=""
-        onSuccess={confirmClose}
-        onClose={() => {
-          showCloseConfirmModal = false;
-        }}
-      />
-  {/if}
-{/if}
-
 
 <style>
   /* Animation pour le panneau latéral - ne peut pas être fait en Tailwind standard */
@@ -925,3 +573,354 @@ const confirmClose = () => {
     opacity: 0.7;
   }
 </style>
+
+<svelte:window onclick={handleOutsideClick} />
+
+{#if show}
+  <!-- Structure principale avec Tailwind -->
+  <div class="fixed inset-0 z-40 flex justify-start">
+    <!-- Overlay semi-transparent avec opacité à 40% comme dans l'original -->
+    <button
+      type="button"
+      class="absolute inset-0 bg-gray-950/40 transition-opacity"
+      onclick={handlePreventClosingIfDirty}
+      aria-label="Fermer la fenêtre"
+    ></button>
+    <!-- Panneau latéral avec bordure et ombre à gauche pour délimiter -->
+    <div
+      class="w-full max-w-[300px] bg-white h-full overflow-y-auto relative flex flex-col z-50 animate-slideIn border-r border-gray-300 shadow-xl"
+    >
+      <!-- En-tête avec titre et bouton de fermeture -->
+      <div class="flex items-center justify-between bg-[#015e61] text-white px-6 py-4">
+        <h2 class="text-xl font-medium">
+          {editMode ? "Modifier l'activité" : 'Nouvelle activité'}
+        </h2>
+        <button type="button" class="text-white hover:text-gray-200" onclick={handleClose}>
+          <X />
+        </button>
+      </div>
+
+      <!-- Contenu du formulaire - espace vertical ajusté -->
+      <div class="p-6 flex-grow">
+        <form
+          class="flex flex-col"
+          use:form
+          onsubmit={(e) => {
+            e.preventDefault();
+          }}
+        >
+          <!-- Séparateur et boutons d'action -->
+          <div class="mt-auto">
+            <!-- Actions en bas du formulaire -->
+            <div class="flex justify-center gap-5">
+              {#if editMode}
+                <button
+                  type="button"
+                  class="py-3 px-6 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition"
+                  onclick={handleDelete}
+                >
+                  Supprimer
+                </button>
+                <button
+                  type="submit"
+                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'En cours...' : 'Modifier'}
+                </button>
+              {:else}
+                <button
+                  type="button"
+                  class="py-3 px-6 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 transition border border-gray-200"
+                  onclick={handleClose}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  class="py-3 px-6 bg-[#015e61] text-white rounded-lg font-medium hover:bg-[#014446] hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 transition disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'En cours...' : 'Créer'}
+                </button>
+              {/if}
+            </div>
+
+            <!-- Ligne de séparation -->
+            <div class="border-t border-gray-200 my-6"></div>
+          </div>
+
+          <!-- Champs de formulaire avec espacement vertical uniforme -->
+          <div class="space-y-6">
+            <!-- Projet -->
+            <div>
+              <label for="activity-project" class="block text-gray-700 font-medium mb-2">
+                Projet
+                <span class="text-red-500">*</span>
+              </label>
+              <SearchSelect
+                id="activity-project"
+                name="projectId"
+                items={projects.map((value) => {
+                  return { value: value.id, label: getDisplayText(value.uniqueId, value.name) };
+                })}
+                bind:selectedValue={activity.projectId}
+                placeholder="Sélectionner un projet"
+                {setFields}
+                bind:focused={isProjectSelectFocused}
+                onSubmit={() => {
+                  const form = document.querySelector('form');
+                  form?.requestSubmit();
+                }}
+                required
+              />
+              {#if $errors.projectId}
+                <span class="text-red-500 text-sm">{$errors.projectId}</span>
+              {/if}
+            </div>
+
+            <!-- Sélecteurs d'heure côte à côte -->
+            <div>
+              <label for="start-hours" class="block text-gray-700 font-medium mb-2">
+                Heure de début
+                <span class="text-red-500">*</span>
+              </label>
+              <div class="flex gap-3">
+                <div class="select-container form-select-flex">
+                  <select bind:value={time.startHours} class="form-select w-full">
+                    {#each hours as hour}
+                      <option value={hour}>{hour} h</option>
+                    {/each}
+                  </select>
+                  <div class="select-icon">
+                    <ChevronDown size={18} />
+                  </div>
+                </div>
+                <div class="select-container form-select-flex">
+                  <select bind:value={time.startMinutes} class="form-select w-full">
+                    {#each minutes as minute}
+                      <option value={minute}>{minute} min</option>
+                    {/each}
+                  </select>
+                  <div class="select-icon">
+                    <ChevronDown size={18} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sélecteurs d'heure de fin -->
+            <div>
+              <label for="end-hours" class="block text-gray-700 font-medium mb-2">
+                Heure de fin
+                <span class="text-red-500">*</span>
+              </label>
+              <div class="flex gap-3">
+                <div class="select-container form-select-flex">
+                  <select
+                    bind:value={time.endHours}
+                    onchange={applyEndTime}
+                    class="form-select w-full"
+                  >
+                    {#each hours as hour}
+                      <option value={hour}>{hour} h</option>
+                    {/each}
+                  </select>
+                  <div class="select-icon">
+                    <ChevronDown size={18} />
+                  </div>
+                </div>
+                <div class="select-container form-select-flex">
+                  <select
+                    bind:value={time.endMinutes}
+                    onchange={applyEndTime}
+                    class="form-select w-full"
+                  >
+                    {#each minutes as minute}
+                      <option value={minute}>{minute} min</option>
+                    {/each}
+                  </select>
+                  <div class="select-icon">
+                    <ChevronDown size={18} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Catégorie avec dropdown et recherche intégrée -->
+            <div>
+              <label for="activity-category-search" class="block text-gray-700 font-medium mb-2">
+                Catégorie
+                <span class="text-red-500">*</span>
+              </label>
+              <div class="category-dropdown-container">
+                <!-- Sélecteur personnalisé avec champ de recherche intégré -->
+                <div
+                  class="custom-select"
+                  class:disabled-select={!activity.projectId}
+                  onclick={(e) => {
+                    if (!activity.projectId) {
+                      e.preventDefault();
+                      return;
+                    }
+                    categoryDropdownOpen = !categoryDropdownOpen;
+                    if (categoryDropdownOpen) {
+                      document.getElementById('activity-category-search')?.focus();
+                    }
+                  }}
+                >
+                  {#if !categoryDropdownOpen || !isSearchFocused}
+                    <span class="select-value">
+                      {!activity.projectId
+                        ? 'Sélectionner une catégorie'
+                        : projectCategories.find((c) => c.id === activity.categoryId)?.name ||
+                          'Sélectionner une catégorie'}
+                    </span>
+                  {/if}
+
+                  <input
+                    id="activity-category-search"
+                    type="text"
+                    class="search-input"
+                    placeholder="Rechercher une catégorie..."
+                    bind:value={searchTerm}
+                    disabled={!activity.projectId}
+                    style="opacity: {categoryDropdownOpen ? '1' : '0'}"
+                    onfocus={() => {
+                      if (activity.projectId) {
+                        categoryDropdownOpen = true;
+                        isSearchFocused = true;
+                      }
+                    }}
+                    onblur={() => {
+                      isSearchFocused = false;
+                    }}
+                    onclick={(e) => e.stopPropagation()}
+                  />
+
+                  <div class="arrow-icon">
+                    <ChevronDown size={18} class="text-gray-600" />
+                  </div>
+                </div>
+
+                {#if categoryDropdownOpen && activity.projectId}
+                  <div class="dropdown-content">
+                    <!-- Liste des catégories -->
+                    <div class="category-list">
+                      {#if filteredCategories.length === 0}
+                        <div class="no-results">
+                          {searchTerm
+                            ? 'Aucun résultat trouvé'
+                            : 'Aucune catégorie disponible pour ce projet'}
+                        </div>
+                      {:else}
+                        {#each filteredCategories as category}
+                          <div
+                            class="category-item"
+                            class:selected={category.id === activity.categoryId}
+                            onclick={(e) => {
+                              e.stopPropagation();
+                              selectCategory(category.id);
+                            }}
+                          >
+                            {category.name}
+                            {#if category.name !== 'Par défaut'}
+                              <button
+                                class="justify-end p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                                onclick={() => handleDeleteCategory(category)}
+                                aria-label="Supprimer le projet"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            {/if}
+                          </div>
+                        {/each}
+                      {/if}
+                    </div>
+
+                    <!-- Option "Ajouter une nouvelle catégorie" uniquement si un projet est sélectionné -->
+                    {#if activity.projectId && searchTerm && !filteredCategories.some((cat) => cat.name.toLowerCase() === searchTerm.toLowerCase())}
+                      <div class="add-category" onclick={handleAddCategory}>
+                        <Plus size={16} />
+                        Ajouter "{searchTerm}"
+                      </div>
+                    {/if}
+                  </div>
+                {/if}
+
+                {#if $errors.categoryId}
+                  <span class="text-red-500 text-sm mt-1">{$errors.categoryId}</span>
+                {/if}
+              </div>
+            </div>
+
+            <!-- Champ Nom -->
+            <div>
+              <label for="activity-name" class="block text-gray-700 font-medium mb-2">
+                Nom
+                <span class="text-gray-400">(optionnel)</span>
+              </label>
+              <input
+                id="activity-name"
+                name="name"
+                type="text"
+                bind:value={activity.name}
+                placeholder="Nom de l'activité..."
+                class="form-input"
+              />
+              {#if $errors.name}
+                <span class="text-red-500 text-sm">{$errors.name}</span>
+              {/if}
+            </div>
+
+            <!-- Champ Description -->
+            <div>
+              <label for="activity-description" class="block text-gray-700 font-medium mb-2">
+                Description
+                <span class="text-gray-400">(optionnel)</span>
+              </label>
+              <textarea
+                id="activity-description"
+                name="description"
+                bind:value={activity.description}
+                placeholder="Description de l'activité..."
+                rows="3"
+                class="form-input"
+              ></textarea>
+              {#if $errors.description}
+                <span class="text-red-500 text-sm">{$errors.description}</span>
+              {/if}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {#if showCategoryConfirmModal}
+    <ConfirmationModal
+      modalTitle="Confirmer l'ajout"
+      modalText={`Voulez-vous ajouter la catégorie "${categoryToAdd}" ?`}
+      errorText="Erreur lors de la suppression du projet, il a soit une ou des activités liées à ce projet ou bien le projet est inexistant"
+      onSuccess={() => {
+        showCategoryConfirmModal = false;
+        confirmAddCategory();
+      }}
+      onClose={() => {
+        showCategoryConfirmModal = false;
+      }}
+    />
+  {/if}
+  {#if showCloseConfirmModal}
+    <ConfirmationModal
+      modalTitle="Modifications non enregistrées"
+      modalText="Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter sans sauvegarder ?"
+      confirmText="Oui, quitter"
+      cancelText="Non, rester"
+      errorText=""
+      onSuccess={confirmClose}
+      onClose={() => {
+        showCloseConfirmModal = false;
+      }}
+    />
+  {/if}
+{/if}
