@@ -47,7 +47,7 @@ test.describe("checkCategoriesDelete", () => {
       await dialog.accept();
     });
 
-    await page.getByRole("button", { name: "Supprimer le projet" }).click();
+    await page.getByRole("button", { name: "Supprimer la catégorie" }).click();
 
     const apiMocker = new ApiMocker(page);
     await apiMocker
@@ -57,7 +57,7 @@ test.describe("checkCategoriesDelete", () => {
     await page.getByRole("textbox", { name: "Catégorie *" }).click();
 
     await expect(
-      page.getByRole("button", { name: "Supprimer le projet" }),
+      page.getByRole("button", { name: "Supprimer la catégorie" }),
     ).toHaveCount(0, { timeout: 15000 });
   });
 
@@ -94,12 +94,12 @@ test.describe("checkCategoriesDelete", () => {
       }
     });
 
-    await page.getByRole("button", { name: "Supprimer le projet" }).click();
+    await page.getByRole("button", { name: "Supprimer la catégorie" }).click();
 
     await page.getByRole("textbox", { name: "Catégorie *" }).click();
 
     await expect(
-      page.getByRole("button", { name: "Supprimer le projet" }),
+      page.getByRole("button", { name: "Supprimer la catégorie" }),
     ).toHaveCount(1, { timeout: 15000 });
   });
 });
