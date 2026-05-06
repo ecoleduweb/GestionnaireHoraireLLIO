@@ -52,11 +52,14 @@
   let categoryToAdd = $state('');
   let isProjectSelectFocused = $state(true);
 
+  $effect(() => {
   if (selectedDate && selectedDate.start) {
     const { startDate, endDate } = initializeActivityDates(selectedDate.start);
+
     initialActivity.startDate = startDate;
-    initialActivity.endDate = endDate ? new Date(selectedDate.end) : endDate;
+    initialActivity.endDate = selectedDate.end ? new Date(selectedDate.end) : endDate;
   }
+});
 
   const activity = $state<Activity>(initialActivity);
 
@@ -79,13 +82,16 @@
     em: time.endMinutes
   };
 
+  $effect(() => {
   if (activityToEdit) {
     Object.assign(activity, activityToEdit);
+
     time.startHours = getHoursFromDate(activityToEdit.startDate);
     time.startMinutes = getMinutesFromDate(activityToEdit.startDate);
     time.endHours = getHoursFromDate(activityToEdit.endDate);
     time.endMinutes = getMinutesFromDate(activityToEdit.endDate);
   }
+});
 
    // InitialProjectId permet de fermer la modale quand on n'a pas effectué de modification.
   const initialProjectId = activity.projectId;
