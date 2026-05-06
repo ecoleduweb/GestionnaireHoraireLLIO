@@ -16,7 +16,7 @@
     open = !open;
   }
 
-  let categories: Category[] = $state(project.employees[selectedEmployee].categories);
+  let categories: Category[] = $derived(project.employees[selectedEmployee].categories);
 </script>
 
 <div class="border-l-10 border-b" style="border-left-color: {project.color}">

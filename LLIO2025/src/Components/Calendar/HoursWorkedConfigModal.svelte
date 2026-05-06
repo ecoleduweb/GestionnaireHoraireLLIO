@@ -21,9 +21,11 @@
   });
 
   
-  if (initialConfig) {
-    Object.assign(config, initialConfig);
-  }
+  $effect(() => {
+    if (initialConfig) {
+      Object.assign(config, initialConfig);
+    }
+  });
 
   let isSubmitting = $state(false);
   let isLoading = $state(true);
@@ -80,24 +82,24 @@
         <form use:form>
 
           <div class="form-group">
-            <label>Début de la période</label>
-            <input type="date" name="startDate" bind:value={config.startDate} />
+            <label for="startDate-input" >Début de la période</label>
+            <input type="date" name="startDate" id="startDate-input" bind:value={config.startDate} />
             {#if $errors.startDate}
               <span class="error-text">{$errors.startDate}</span>
             {/if}
           </div>
 
           <div class="form-group">
-            <label>Heures par semaine</label>
-            <input type="number" name="hoursPerWeek" bind:value={config.hoursPerWeek} />
+            <label for="hoursPerWeek-input" >Heures par semaine</label>
+            <input type="number" name="hoursPerWeek" id="hoursPerWeek-input" bind:value={config.hoursPerWeek} />
             {#if $errors.hoursPerWeek}
               <span class="error-text">{$errors.hoursPerWeek}</span>
             {/if}
           </div>
 
           <div class="form-group">
-            <label>Heure en banque</label>
-            <input type="number" name="offset" bind:value={config.offset} />
+            <label for="offset-input" >Heure en banque</label>
+            <input type="number" name="offset" id="offset-input" bind:value={config.offset} />
             {#if $errors.offset}
               <span class="error-text">{$errors.offset}</span>
             {/if}

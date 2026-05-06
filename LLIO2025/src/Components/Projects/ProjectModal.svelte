@@ -17,10 +17,12 @@
 
   const project = $state<ProjectBase>(projectTemplate.generate());
 
-  if (projectToEdit) {
-    Object.assign(project, projectToEdit);
-    project.estimatedHours = projectToEdit.totalTimeEstimated || 0;
-  }
+  $effect(() => {
+    if (projectToEdit) {
+      Object.assign(project, projectToEdit);
+      project.estimatedHours = projectToEdit.totalTimeEstimated || 0;
+    }
+  });
 
   const editMode = $derived(projectToEdit !== null);
 
@@ -235,18 +237,12 @@
   }
 
   input,
-  textarea,
   select {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
-  }
-
-  input[type='checkbox'] {
-    width: auto;
-    margin-right: 8px;
   }
 
   .modal-footer {
@@ -256,9 +252,4 @@
     margin-top: 24px;
   }
 
-  .error-text {
-    color: #e53e3e;
-    font-size: 14px;
-    margin-top: 4px;
-  }
 </style>
