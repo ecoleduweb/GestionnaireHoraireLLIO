@@ -5,19 +5,20 @@
   import ProjectItem from './ProjectPaneItem.svelte';
   import { Plus } from 'lucide-svelte';
   import ProjectModal from './ProjectModal.svelte';
-  import type { Project, UserInfo } from '../../Models';
-  import { UserRole } from '$lib/types/enums';
+  import type { DetailedProject, Project, UserInfo } from '../../Models';
+  import { ProjectStatus, UserRole } from '$lib/types/enums';
   import NavButton from '../NavButton.svelte';
   import { ProjectApiService } from '../../services/ProjectApiService';
   import ConfirmationModal from '../Modal/ConfirmationModal.svelte';
 
   type Props = {
     currentUser: UserInfo;
-    projects : Project[];
+    projects : DetailedProject[];
     onProjectsRefresh: () => void;
+    onProjectArchive: (project: DetailedProject) => void;
   };
 
-  let { projects = [], currentUser, onProjectsRefresh }: Props = $props();
+  let { projects = [], currentUser, onProjectsRefresh, onProjectArchive }: Props = $props();
   let isArchivedVisible = $state(false);
   let showModal = $state(false);
   let showModalDelete = $state(false);
@@ -79,7 +80,7 @@
 
     <div class="overflow-y-auto max-h-[calc(100vh-150px)]">
       {#each projects.filter((x) => !x.isArchived) as project}
-        <ProjectItem {project} {currentUser} onEdit={handleEditProject} onDelete={handleDeleteProject} />
+        <ProjectItem {project} {currentUser} onEdit={handleEditProject} onArchive={onProjectArchive} onDelete={handleDeleteProject} />
       {/each}
 
       <!-- Projets archivés -->
@@ -110,7 +111,7 @@
           {#if isArchivedVisible}
             <div transition:slide={{ duration: 300, easing: quintOut }}>
               {#each projects.filter((x) => x.isArchived) as project}
-                <ProjectItem {project} {currentUser} onEdit={handleEditProject} onDelete={handleDeleteProject} />
+                <ProjectItem {project} {currentUser} onEdit={handleEditProject} onArchive={onProjectArchive} onDelete={handleDeleteProject} />
               {/each}
             </div>
           {/if}

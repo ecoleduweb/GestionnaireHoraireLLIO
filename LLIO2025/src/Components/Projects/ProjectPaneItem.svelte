@@ -1,18 +1,21 @@
 <script lang="ts">
   import { formatHours } from '../../utils/date';
-  import { Pencil, User, Trash2 } from 'lucide-svelte';
-  import type { Project, UserInfo } from '../../Models';
+  import { Pencil, Trash2, Archive, ArchiveX } from 'lucide-svelte';
+  import type { DetailedProject, Project, UserInfo } from '../../Models';
   import { UserRole } from '$lib/types/enums';
   import { getHoursColor } from '../../utils/displayUtils';
+  import ToggleArchiveButton from './ToggleArchiveButton.svelte';
+  import { on } from 'svelte/events';
 
   type Props = {
-    project: Project;
+    project: DetailedProject;
     currentUser: UserInfo | null;
     onEdit: (project: Project) => void;
+    onArchive: (project: Project) => void;
     onDelete: (project: Project) => void;
   };
 
-  let { project, currentUser, onEdit, onDelete } = $props();
+  let { project, currentUser, onArchive, onEdit, onDelete }: Props = $props();
 
   const handleEdit = (event: MouseEvent) =>{
     event.stopPropagation(); // Empêche la propagation du clic aux éléments parents
@@ -44,6 +47,7 @@
         >
           <Pencil size={16} />
         </button>
+        <ToggleArchiveButton project={project} onArchive={onArchive}/>
       {/if}
       {#if currentUser.role == UserRole.Admin}
         <button

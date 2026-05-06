@@ -1,10 +1,14 @@
 // ProjectApiService.ts
 import { ProjectStatus } from '$lib/types/enums';
-import type { ProjectBase, Project, DetailedProject, User } from '../Models/index';
+import type { ProjectBase, Project, DetailedProject, ArchiveProject, User } from '../Models/index';
 import { DELETE, GET, POST, PUT } from '../ts/server';
 
 interface ProjectDeleteResponse {
   deleted: boolean;
+}
+
+interface ProjectArchiveResponse {
+  archived: boolean;
 }
 
 interface ProjectResponse {
@@ -44,6 +48,17 @@ const deleteProject = async (projectId: number): Promise<void> => {
   } catch (error) {
     console.error('Erreur lors de la suppression du projet:', error);
     throw new Error('Erreur lors de la suppression du projet. Veuillez réessayer.');
+  }
+};
+
+const toggleArchiveProject = async (projectId: number, archivedStatus: boolean): Promise<DetailedProject> => {
+  try {
+    const response = await POST<ArchiveProject, DetailedProject>(`/project/toggleArchive/${projectId}`, {Archived: archivedStatus});
+    return response;
+  } catch (error) {
+    console.log(error)
+    console.error("Erreur lors de la suppression du projet:", error);
+    throw new Error("Erreur lors de la suppression du projet. Veuillez réessayer.");
   }
 };
 
@@ -150,6 +165,7 @@ const deleteCoManagerFromProject = async (projectId: number, userId: number): Pr
 export const ProjectApiService = {
   createProject,
   updateProject,
+  toggleArchiveProject,
   deleteProject,
   getProjects,
   getProject,

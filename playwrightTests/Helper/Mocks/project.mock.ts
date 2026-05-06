@@ -292,6 +292,44 @@ export const projectMocks = {
       },
     },
   },
+  getDetailedProjectsSuccessAfterArchive: {
+    url: "/projects/detailed",
+    method: "GET",
+    response: {
+      status: 200,
+      json: {
+        projects: detailedProjectsBase.map((p) =>
+          p.id === 1
+            ? {
+                ...p,
+                status: 2,
+                isArchived: true
+              }
+            : p,
+        ),
+      },
+    },
+  },
+  archiveSuccess: {
+    url: "/project/toggleArchive/1",
+    method: "POST",
+    response: {
+      status: 200,
+      json: {
+        updatedProject: {...detailedProjectsBase[0], isArchived: true}
+      },
+    },
+  },
+  archiveFailed: {
+    url: "/project/toggleArchive/1",
+    method: "POST",
+    response: {
+      status: 400,
+      json: {
+        archived: false
+      },
+    },
+  },
   getProjectsListSuccess: {
     url: "/projects",
     method: "GET",
