@@ -225,10 +225,10 @@
           },
 
           dayHeaderContent: (arg) => {
-            // Only render custom content in week view
-            if (activeView !== 'timeGridWeek') return { html: '' };
+            // Utiliser arg.view.type au lieu de activeView (closure stale)
+            if (arg.view.type !== 'timeGridWeek') return;
 
-            const dateStr = formatDate(arg.date)
+            const dateStr = formatDate(arg.date);
             const dayLabel = arg.date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' });
 
             return {
@@ -242,7 +242,8 @@
                     + Outlook
                   </button>
                 </div>
-              `};
+              `
+            };
           }
 
         }
