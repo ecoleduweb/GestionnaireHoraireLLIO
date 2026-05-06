@@ -13,18 +13,22 @@
     onSuccess: (value: string) => void | Promise<void>;
   };
 
-  let {
+let {
     modalTitle,
     modalText,
     confirmText = 'Confirmer',
     cancelText = 'Annuler',
-    defaultTextInValue,
+    defaultTextInValue = '',
     errorText = '',
     onClose,
     onSuccess
   }: Props = $props();
 
-  let textValue = $state(defaultTextInValue);
+  let textValue = $state("");
+  
+  $effect(() => {
+    textValue = defaultTextInValue;
+  });
 
   const submit = async () => {
     await onSuccess(textValue);
