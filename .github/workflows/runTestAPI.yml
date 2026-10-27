@@ -7,12 +7,38 @@ on:
 jobs:
   unit-testing:
     runs-on: ubuntu-latest
+
+    env:
+      DB_USER: testuser
+      DB_PASSWORD: testpassword
+      DB_ROOT_PASSWORD: rootpassword
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_NAME_RUN: app_run
+      DB_NAME_TEST: app_test
+
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: ${{ env.DB_ROOT_PASSWORD }}
+          MARIADB_DATABASE: ${{ env.DB_NAME_TEST }}
+          MARIADB_USER: ${{ env.DB_USER }}
+          MARIADB_PASSWORD: ${{ env.DB_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: "1.24"
 
@@ -24,12 +50,12 @@ jobs:
         working-directory: API
         run: |
           cat > .env << EOF
-          DB_USER=${{ secrets.DB_USER }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_HOST=${{ secrets.DB_HOST_DEV }}
-          DB_PORT=${{ secrets.DB_PORT }}
-          DB_NAME_RUN=${{ secrets.DB_NAME_RUN }}
-          DB_NAME_TEST=${{ secrets.DB_NAME_TEST }}
+          DB_USER=${DB_USER}
+          DB_PASSWORD=${DB_PASSWORD}
+          DB_HOST=${DB_HOST}
+          DB_PORT=${DB_PORT}
+          DB_NAME_RUN=${DB_NAME_RUN}
+          DB_NAME_TEST=${DB_NAME_TEST}
           ENV=TEST
           AZUREAD_CLIENT_ID=${{ secrets.AZUREAD_CLIENT_ID }}
           AZUREAD_CLIENT_SECRET=${{ secrets.AZUREAD_CLIENT_SECRET }}
@@ -40,11 +66,21 @@ jobs:
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           EOF
 
-      - name: Verify database connection
+      - name: Prepare database
         run: |
           sudo apt-get update
           sudo apt-get install -y mariadb-client
-          mariadb --no-defaults -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }} -h${{ secrets.DB_HOST_DEV }} -P${{ secrets.DB_PORT }} ${{ secrets.DB_NAME_TEST }} -e "SELECT 'Connection test successful';"
+
+          # Create the second database and grant the app user access to both
+          mariadb --no-defaults -uroot -p"${DB_ROOT_PASSWORD}" -h"${DB_HOST}" -P"${DB_PORT}" -e "
+            CREATE DATABASE IF NOT EXISTS ${DB_NAME_RUN};
+            GRANT ALL PRIVILEGES ON ${DB_NAME_RUN}.* TO '${DB_USER}'@'%';
+            GRANT ALL PRIVILEGES ON ${DB_NAME_TEST}.* TO '${DB_USER}'@'%';
+            FLUSH PRIVILEGES;"
+
+          # Verify the connection as the app user
+          mariadb --no-defaults -u"${DB_USER}" -p"${DB_PASSWORD}" -h"${DB_HOST}" -P"${DB_PORT}" "${DB_NAME_TEST}" \
+            -e "SELECT 'Connection test successful';"
 
       - name: Run tests
         working-directory: API
