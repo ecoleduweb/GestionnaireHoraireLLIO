@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Deploy Full Application
-        uses: appleboy/ssh-action@v0.1.2
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.DEV_SSH_HOST }}
           key: ${{ secrets.DEV_SSH_KEY }}
@@ -22,51 +22,24 @@ jobs:
 
             set -e
             echo "Starting deployment process..."
-            echo "Preparing backup using fresh repo..."
-            cd /root
-            rm -rf /root/backup-temp
-            git clone https://github.com/ecoleduweb/GestionnaireHoraire.git backup-temp
-
-            cat > /root/backup-temp/docs/Backup/db.config <<EOF
-            DB_USER="${{ secrets.DB_USER }}"
-            DB_PASS="${{ secrets.DB_PASSWORD }}"
-            DB_NAME="${{ secrets.DB_NAME_RUN }}"
-
-            DB_HOST="${{ secrets.DB_HOST }}"
-            DB_PORT="${{ secrets.DB_PORT }}"
-
-            BACKUP_DIR="/var/backups/mariadb"
-            RETENTION_DAYS=365
-            EOF
-
-            chmod 600 /root/backup-temp/docs/Backup/db.config
-            chmod +x /root/backup-temp/docs/Backup/backup.sh
-
-            echo "Running backup..."
-            /root/backup-temp/docs/Backup/backup.sh
-
-          
-
             # Arrêt des services
             echo "Stopping services..."
-            sudo systemctl stop llio-api.service || echo "API service not running"
-            sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
+            systemctl stop llio-frontend.service || echo "Front-end service not running"
+            systemctl stop llio-api.service || echo "API service not running"
 
-            
-            # Suppression et récréation du répertoire
+            # Suppression et recréation du répertoire
             echo "Refreshing project directory..."
-            cd /root/ProjetLLIO2025
-            rm -rf GestionnaireHoraire
+            mkdir -p /var/www/llio
+            find /var/www/llio -mindepth 1 -delete
             
-            # Clonage du dépôt
-            echo "Copying project from backup-temp..."
-            rm -rf /root/ProjetLLIO2025/GestionnaireHoraire
-            cp -r /root/backup-temp /root/ProjetLLIO2025/GestionnaireHoraire
+            #Préparation du VENV
+            echo "Cloning fresh repository..."
+            git clone --branch ${{ github.ref_name }} --depth 1 https://github.com/ecoleduweb/GestionnaireHoraire.git /var/www/llio
 
 
             # Configuration API
             echo "Configuring API..."
-            cd /root/ProjetLLIO2025/GestionnaireHoraire/API
+            cd /var/www/llio/API
             cat > .env << EOF
             DB_USER=${{ secrets.DB_USER }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -94,7 +67,7 @@ jobs:
 
             # Configuration Frontend
             echo "Configuring Frontend..."
-            cd /root/ProjetLLIO2025/GestionnaireHoraire/LLIO2025
+            cd /var/www/llio/LLIO2025
             cat > .env << EOF
             VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
             PUBLIC_ENABLED_TELEMETRY=true
@@ -104,16 +77,12 @@ jobs:
             EOF
 
             echo "Building Frontend..."
-            npm install
+            npm ci
             npm run build
 
             # Démarrage des services
             echo "Starting services..."
-            sudo systemctl start llio-api || echo "Failed to start API service"
-            sudo systemctl start llio-frontend || echo "Failed to start Frontend service"
-
-            echo "Checking services status..."
-            sudo systemctl status llio-api --no-pager
-            sudo systemctl status llio-frontend --no-pager
+            systemctl start back-end.service || echo "Failed to start API service"
+            systemctl start front-end.service || echo "Failed to start Frontend service"
 
             echo "Deployment completed successfully!"

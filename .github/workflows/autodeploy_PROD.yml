@@ -3,7 +3,7 @@ name: Deployer LLIO PROD
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -12,63 +12,34 @@ jobs:
 
     steps:
       - name: Deploy Full Application
-        uses: appleboy/ssh-action@v0.1.2
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.PROD_SSH_HOST }}
           key: ${{ secrets.PROD_SSH_KEY }}
           username: ${{ secrets.PROD_SSH_USERNAME }}
           debug: true
           script: |
-
+          
             set -e
             echo "Starting deployment process..."
-            echo "Preparing backup using fresh repo..."
-            cd /root
-            rm -rf /root/backup-temp
-            git clone https://github.com/ecoleduweb/GestionnaireHoraire.git backup-temp
-
-            cat > /root/backup-temp/docs/Backup/db.config <<EOF
-            DB_USER="${{ secrets.PROD_DB_USER }}"
-            DB_PASS="${{ secrets.PROD_DB_PASSWORD }}"
-            DB_NAME="${{ secrets.PROD_DB_NAME_RUN }}"
-
-            DB_HOST="${{ secrets.PROD_DB_HOST }}"
-            DB_PORT="${{ secrets.PROD_DB_PORT }}"
-
-            BACKUP_DIR="/var/backups/mariadb"
-            RETENTION_DAYS=365
-            EOF
-
-            chmod 600 /root/backup-temp/docs/Backup/db.config
-            chmod +x /root/backup-temp/docs/Backup/backup.sh
-
-            echo "Running backup..."
-            /root/backup-temp/docs/Backup/backup.sh
-
             # Arrêt des services
             echo "Stopping services..."
-            sudo systemctl stop llio-api.service || echo "API service not running"
-            sudo systemctl stop llio-frontend.service || echo "Frontend service not running"
+            systemctl stop llio-frontend.service || echo "Front-end service not running"
+            systemctl stop llio-api.service || echo "API service not running"
 
-            # Copie du fichier de logs
-            echo "Moving logs file to logs backup folder..."
-            mkdir -p /root/logs
-            DATE=$(date +'%Y-%m-%d_%H-%M')
-            [ -f "/var/www/GestionnaireHoraire/API/logs.txt" ] && cp "/var/www/GestionnaireHoraire/API/logs.txt" /root/logs/logs_llio_$DATE.txt
-
-            # Suppression et récréation du répertoire
+            # Suppression et recréation du répertoire
             echo "Refreshing project directory..."
-            cd /var/www
-            rm -rf GestionnaireHoraire
+            mkdir -p /var/www/llio
+            find /var/www/llio -mindepth 1 -delete
+            
+            #Préparation du VENV
+            echo "Cloning fresh repository..."
+            git clone --branch ${{ github.ref_name }} --depth 1 https://github.com/ecoleduweb/GestionnaireHoraire.git /var/www/llio
 
-            # Clonage du dépôt
-            echo "Copying project from backup-temp..."
-            rm -rf /var/www/GestionnaireHoraire
-            cp -r /root/backup-temp /var/www/GestionnaireHoraire
 
             # Configuration API
             echo "Configuring API..."
-            cd /var/www/GestionnaireHoraire/API
+            cd /var/www/llio/API
             cat > .env << EOF
             DB_USER=${{ secrets.PROD_DB_USER }}
             DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
@@ -90,12 +61,11 @@ jobs:
             EOF
 
             echo "Building API..."
-            go mod tidy
-            go build -o app
+            /usr/local/go/bin/go mod tidy
+            /usr/local/go/bin/go build -o app
 
             # Configuration Frontend
             echo "Configuring Frontend..."
-            cd /var/www/GestionnaireHoraire/LLIO2025
             cat > .env << EOF
             VITE_API_BASE_URL=${{ secrets.PROD_VITE_API_BASE_URL }}
             PUBLIC_ENABLED_TELEMETRY=true
@@ -104,16 +74,13 @@ jobs:
             EOF
 
             echo "Building Frontend..."
-            npm install
+            npm ci
             npm run build
 
             # Démarrage des services
             echo "Starting services..."
-            sudo systemctl start llio-api || echo "Failed to start API service"
-            sudo systemctl start llio-frontend || echo "Failed to start Frontend service"
-
-            echo "Checking services status..."
-            sudo systemctl status llio-api --no-pager
-            sudo systemctl status llio-frontend --no-pager
+            systemctl start back-end.service || echo "Failed to start API service"
+            systemctl start front-end.service || echo "Failed to start Frontend service"
 
             echo "Deployment completed successfully!"
+            
