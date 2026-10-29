@@ -17,7 +17,6 @@ jobs:
           host: ${{ secrets.DEV_SSH_HOST }}
           key: ${{ secrets.DEV_SSH_KEY }}
           username: ${{ secrets.SSH_USERNAME }}
-          debug: true
           script: |
 
             set -e
@@ -77,12 +76,12 @@ jobs:
             EOF
 
             echo "Building Frontend..."
-            npm ci
+            npm install
             npm run build
 
             # Démarrage des services
             echo "Starting services..."
-            systemctl start back-end.service || echo "Failed to start API service"
-            systemctl start front-end.service || echo "Failed to start Frontend service"
+            systemctl start llio-api.service || echo "Failed to start API service"
+            systemctl start llio-frontend.service || echo "Failed to start Frontend service"
 
             echo "Deployment completed successfully!"

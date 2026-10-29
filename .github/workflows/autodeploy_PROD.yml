@@ -17,7 +17,6 @@ jobs:
           host: ${{ secrets.PROD_SSH_HOST }}
           key: ${{ secrets.PROD_SSH_KEY }}
           username: ${{ secrets.PROD_SSH_USERNAME }}
-          debug: true
           script: |
           
             set -e
@@ -61,11 +60,12 @@ jobs:
             EOF
 
             echo "Building API..."
-            /usr/local/go/bin/go mod tidy
-            /usr/local/go/bin/go build -o app
+            /usr/bin/go mod tidy
+            /usr/bin/go build -o app
 
             # Configuration Frontend
             echo "Configuring Frontend..."
+            cd /var/www/llio/LLIO2025
             cat > .env << EOF
             VITE_API_BASE_URL=${{ secrets.PROD_VITE_API_BASE_URL }}
             PUBLIC_ENABLED_TELEMETRY=true
@@ -74,13 +74,13 @@ jobs:
             EOF
 
             echo "Building Frontend..."
-            npm ci
+            npm install
             npm run build
 
             # Démarrage des services
             echo "Starting services..."
-            systemctl start back-end.service || echo "Failed to start API service"
-            systemctl start front-end.service || echo "Failed to start Frontend service"
+            systemctl start llio-api.service || echo "Failed to start API service"
+            systemctl start llio-frontend.service || echo "Failed to start Frontend service"
 
             echo "Deployment completed successfully!"
             
