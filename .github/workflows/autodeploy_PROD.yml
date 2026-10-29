@@ -60,8 +60,8 @@ jobs:
             EOF
 
             echo "Building API..."
-            /usr/local/go/bin/go mod tidy
-            /usr/local/go/bin/go build -o app
+            /usr/bin/go mod tidy
+            /usr/bin/go build -o app
 
             # Configuration Frontend
             echo "Configuring Frontend..."
