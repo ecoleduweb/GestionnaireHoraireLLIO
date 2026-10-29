@@ -17,7 +17,6 @@ jobs:
           host: ${{ secrets.PROD_SSH_HOST }}
           key: ${{ secrets.PROD_SSH_KEY }}
           username: ${{ secrets.PROD_SSH_USERNAME }}
-          debug: true
           script: |
           
             set -e
