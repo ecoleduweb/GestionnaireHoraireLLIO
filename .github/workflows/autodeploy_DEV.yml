@@ -76,7 +76,7 @@ jobs:
             EOF
 
             echo "Building Frontend..."
-            npm ci
+            npm install
             npm run build
 
             # Démarrage des services
