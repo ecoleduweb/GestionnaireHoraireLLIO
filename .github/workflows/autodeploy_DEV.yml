@@ -5,12 +5,22 @@ on:
     branches:
       - main
   workflow_dispatch:
-
+permissions:
+  id-token: write
+  contents: read
+  
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_CLIENTID }}
+          audience: ${{ secrets.TAILSCALE_AUDIENCE }}
+          tags: ${{ secrets.TAILSCALE_TAG }}
+          
       - name: Deploy Full Application
         uses: appleboy/ssh-action@v1.2.5
         with:
